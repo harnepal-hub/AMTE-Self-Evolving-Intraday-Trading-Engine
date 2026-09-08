@@ -1,0 +1,27 @@
+project:
+  name: AMTE
+  version: "0.1.0"
+  mode: research
+
+market:
+  timeframe: 5m
+  session_timezone: Asia/Kolkata
+  market_open: "09:15"
+  market_close: "15:30"
+  force_square_off: "15:20"
+
+risk:
+  max_risk_per_trade_pct: 0.50
+  max_daily_loss_pct: 2.00
+  max_open_positions: 1
+  max_trades_per_day: 5
+
+backtest:
+  initial_capital: 100000
+  commission_per_trade: 0.0
+  slippage_bps: 2
+  prevent_lookahead: true
+
+strategy:
+  name: baseline
+  min_signal_score: 0.60
