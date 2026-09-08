@@ -1,0 +1,14 @@
+markets:
+  crypto:
+    timezone: UTC
+    session_type: continuous
+    default_timeframe: 5m
+    execution_adapter: delta_exchange
+
+  nse:
+    timezone: Asia/Kolkata
+    session_type: fixed
+    market_open: "09:15"
+    market_close: "15:30"
+    default_timeframe: 5m
+    execution_adapter: broker
