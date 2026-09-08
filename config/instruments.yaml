@@ -4,18 +4,24 @@ instruments:
     exchange: delta_exchange
     asset_class: crypto_derivative
     symbol: BTCUSD
+    signal_symbol: BTCUSD
+    execution_symbol: BTCUSD
     timezone: UTC
     session:
       type: continuous
     tick_size: 0.1
     quantity_step: 1
     quote_currency: USD
+    contract_multiplier: 1
+    lot_size: 1
 
   NIFTY50:
     market: nse
     exchange: NSE
     asset_class: index
     symbol: NIFTY 50
+    signal_symbol: NIFTY 50
+    execution_symbol: null
     timezone: Asia/Kolkata
     session:
       type: fixed
@@ -24,12 +30,16 @@ instruments:
     tick_size: 0.05
     quantity_step: 1
     quote_currency: INR
+    contract_multiplier: 1
+    lot_size: 1
 
   RELIANCE:
     market: nse
     exchange: NSE
     asset_class: equity
     symbol: RELIANCE
+    signal_symbol: RELIANCE
+    execution_symbol: RELIANCE
     timezone: Asia/Kolkata
     session:
       type: fixed
@@ -38,3 +48,5 @@ instruments:
     tick_size: 0.05
     quantity_step: 1
     quote_currency: INR
+    contract_multiplier: 1
+    lot_size: 1
