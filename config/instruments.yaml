@@ -1,0 +1,40 @@
+instruments:
+  BTCUSDT:
+    market: crypto
+    exchange: delta_exchange
+    asset_class: crypto
+    symbol: BTCUSDT
+    timezone: UTC
+    session:
+      type: continuous
+    tick_size: 0.1
+    quantity_step: 0.001
+    quote_currency: USDT
+
+  NIFTY50:
+    market: nse
+    exchange: NSE
+    asset_class: index
+    symbol: NIFTY 50
+    timezone: Asia/Kolkata
+    session:
+      type: fixed
+      open: "09:15"
+      close: "15:30"
+    tick_size: 0.05
+    quantity_step: 1
+    quote_currency: INR
+
+  RELIANCE:
+    market: nse
+    exchange: NSE
+    asset_class: equity
+    symbol: RELIANCE
+    timezone: Asia/Kolkata
+    session:
+      type: fixed
+      open: "09:15"
+      close: "15:30"
+    tick_size: 0.05
+    quantity_step: 1
+    quote_currency: INR
