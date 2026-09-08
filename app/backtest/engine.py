@@ -63,8 +63,10 @@ def _slipped_price(price: float, side: str, bps: float, is_entry: bool) -> float
     impact = bps / 10_000
     if side == "LONG":
         direction = 1 if is_entry else -1
-    else:
+    elif side == "SHORT":
         direction = -1 if is_entry else 1
+    else:
+        raise ValueError(f"Unsupported side: {side}")
     return price * (1 + direction * impact)
 
 
@@ -100,6 +102,10 @@ def run_backtest(
         raise ValueError(f"Missing OHLC columns: {sorted(missing)}")
     if cfg.initial_capital <= 0 or not 0 < cfg.risk_per_trade <= 1:
         raise ValueError("initial_capital must be positive and risk_per_trade must be in (0, 1]")
+    if cfg.max_daily_loss_pct is not None and not 0 < cfg.max_daily_loss_pct < 1:
+        raise ValueError("max_daily_loss_pct must be in (0, 1)")
+    if cfg.cooldown_bars < 0:
+        raise ValueError("cooldown_bars cannot be negative")
 
     df = bars.copy().sort_index()
     if df.empty:
@@ -111,6 +117,7 @@ def run_backtest(
     position = None
     last_exit_i = -10**9
     day_start_capital = capital
+    daily_loss_locked = False
 
     for i in range(len(df)):
         row = df.iloc[i]
@@ -118,6 +125,7 @@ def run_backtest(
         current_date = ts.date()
         if i == 0 or df.index[i - 1].date() != current_date:
             day_start_capital = capital
+            daily_loss_locked = False
 
         if position is not None:
             side = position["side"]
@@ -157,8 +165,16 @@ def run_backtest(
                 position = None
                 last_exit_i = i
 
-        # Entry is based only on the prior completed bar.
-        if position is None and i > 0 and i - last_exit_i > cfg.cooldown_bars and sig.iloc[i - 1] in (1, -1):
+        # Do not open a new trade after the session close or after a daily lock.
+        can_enter = (
+            position is None
+            and not daily_loss_locked
+            and not _session_close_hit(ts, cfg)
+            and i > 0
+            and i - last_exit_i > cfg.cooldown_bars
+            and sig.iloc[i - 1] in (1, -1)
+        )
+        if can_enter:
             side = "LONG" if sig.iloc[i - 1] == 1 else "SHORT"
             entry = _slipped_price(float(row.open), side, cfg.slippage_bps, True)
             qty = _quantity(capital, entry, cfg)
@@ -201,6 +217,7 @@ def run_backtest(
             ))
             position = None
             last_exit_i = i
+            daily_loss_locked = True
             equity = capital
 
         equity_rows.append({"timestamp": ts, "equity": equity})
