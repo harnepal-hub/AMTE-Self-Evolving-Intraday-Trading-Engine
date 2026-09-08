@@ -1,15 +1,15 @@
 instruments:
-  BTCUSDT:
+  BTCUSD:
     market: crypto
     exchange: delta_exchange
-    asset_class: crypto
-    symbol: BTCUSDT
+    asset_class: crypto_derivative
+    symbol: BTCUSD
     timezone: UTC
     session:
       type: continuous
     tick_size: 0.1
-    quantity_step: 0.001
-    quote_currency: USDT
+    quantity_step: 1
+    quote_currency: USD
 
   NIFTY50:
     market: nse
