@@ -30,3 +30,5 @@ V1 focuses exclusively on **intraday trading**. Interday/swing functionality wil
 10. Self-evaluation and controlled strategy evolution
 
 > This repository is a development project, not financial advice or a guarantee of trading performance.
+
+<!-- CI verification trigger -->
