@@ -25,9 +25,9 @@ def _epoch_ms(value: str | datetime | int | float) -> int:
 
 def fetch_historical_candles(
     pair: str,
-    interval: str = "5m",
     start: str | datetime | int | float,
     end: str | datetime | int | float,
+    interval: str = "5m",
     session: requests.Session | None = None,
 ) -> pd.DataFrame:
     """Fetch CoinDCX spot candles and return AMTE canonical OHLCV columns."""
