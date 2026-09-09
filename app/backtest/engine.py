@@ -14,9 +14,11 @@ class BacktestConfig:
     risk_per_trade: float = 0.01
     stop_loss_pct: float = 0.005
     take_profit_pct: float = 0.01
-    brokerage_per_trade: float = 0.0
+    brokerage_per_side: float = 0.0
+    fee_bps_per_side: float = 0.0
+    fixed_cost_per_side: float = 0.0
     slippage_bps: float = 0.0
-    quantity_step: int = 1
+    quantity_step: float = 1.0
     contract_multiplier: float = 1.0
     square_off_at_session_end: bool = True
     session_close: str | None = None
@@ -32,7 +34,7 @@ class Trade:
     side: str
     entry_price: float
     exit_price: float
-    quantity: int
+    quantity: float
     gross_pnl: float
     costs: float
     net_pnl: float
@@ -47,13 +49,14 @@ def _levels(side: str, entry: float, cfg: BacktestConfig) -> tuple[float, float]
     raise ValueError(f"Unsupported side: {side}")
 
 
-def _quantity(capital: float, entry: float, cfg: BacktestConfig) -> int:
+def _quantity(capital: float, entry: float, cfg: BacktestConfig) -> float:
     risk_cash = capital * cfg.risk_per_trade
     risk_per_unit = entry * cfg.stop_loss_pct * cfg.contract_multiplier
     if risk_per_unit <= 0 or cfg.quantity_step <= 0:
-        return 0
+        return 0.0
     raw = risk_cash / risk_per_unit
-    return max(0, int(raw // cfg.quantity_step) * cfg.quantity_step)
+    steps = int(raw / cfg.quantity_step + 1e-12)
+    return max(0.0, steps * cfg.quantity_step)
 
 
 def _slipped_price(price: float, side: str, bps: float, is_entry: bool) -> float:
@@ -70,6 +73,18 @@ def _slipped_price(price: float, side: str, bps: float, is_entry: bool) -> float
     return price * (1 + direction * impact)
 
 
+def _transaction_cost(price: float, quantity: float, cfg: BacktestConfig) -> float:
+    """Calculate one-side trading costs from notional plus fixed brokerage."""
+    if cfg.brokerage_per_side < 0 or cfg.fee_bps_per_side < 0 or cfg.fixed_cost_per_side < 0:
+        raise ValueError("Trading costs cannot be negative")
+    notional = price * quantity * cfg.contract_multiplier
+    return (
+        cfg.brokerage_per_side
+        + notional * cfg.fee_bps_per_side / 10_000
+        + cfg.fixed_cost_per_side
+    )
+
+
 def _session_close_hit(ts: pd.Timestamp, cfg: BacktestConfig) -> bool:
     if not cfg.square_off_at_session_end or not cfg.session_close:
         return False
@@ -83,6 +98,11 @@ def _session_close_hit(ts: pd.Timestamp, cfg: BacktestConfig) -> bool:
     return local_ts >= close
 
 
+def _gross_pnl(side: str, entry: float, exit_price: float, quantity: float, multiplier: float) -> float:
+    gross = (exit_price - entry) * quantity * multiplier
+    return gross if side == "LONG" else -gross
+
+
 def run_backtest(
     bars: pd.DataFrame,
     signals: pd.Series,
@@ -92,8 +112,10 @@ def run_backtest(
 
     A signal on bar *t* is executed at bar *t+1* open. Stops and targets are
     checked using OHLC and, when both are touched in one bar, the stop wins.
-    Session-end exits occur at the first bar at/after the configured close.
-    Slippage is adverse and costs are charged on both entry and exit.
+    If a bar gaps through a stop/target, the fill is the bar open (then
+    adverse slippage is applied). Session-end exits occur at the first bar
+    at/after the configured close. Entry and exit trading costs are charged
+    separately using the configured per-side brokerage/fee model.
     """
     cfg = config or BacktestConfig()
     required = {"open", "high", "low", "close"}
@@ -102,15 +124,24 @@ def run_backtest(
         raise ValueError(f"Missing OHLC columns: {sorted(missing)}")
     if cfg.initial_capital <= 0 or not 0 < cfg.risk_per_trade <= 1:
         raise ValueError("initial_capital must be positive and risk_per_trade must be in (0, 1]")
+    if cfg.stop_loss_pct <= 0 or cfg.take_profit_pct <= 0:
+        raise ValueError("stop_loss_pct and take_profit_pct must be positive")
     if cfg.max_daily_loss_pct is not None and not 0 < cfg.max_daily_loss_pct < 1:
         raise ValueError("max_daily_loss_pct must be in (0, 1)")
     if cfg.cooldown_bars < 0:
         raise ValueError("cooldown_bars cannot be negative")
+    if cfg.quantity_step <= 0 or cfg.contract_multiplier <= 0:
+        raise ValueError("quantity_step and contract_multiplier must be positive")
+    if cfg.slippage_bps < 0:
+        raise ValueError("slippage_bps cannot be negative")
 
     df = bars.copy().sort_index()
     if df.empty:
         return pd.DataFrame(), pd.DataFrame(columns=["equity"])
     sig = signals.reindex(df.index).fillna(0).astype(int)
+    if not sig.isin([-1, 0, 1]).all():
+        raise ValueError("Signals must contain only -1, 0, or 1")
+
     capital = cfg.initial_capital
     equity_rows: list[dict] = []
     trades: list[Trade] = []
@@ -134,13 +165,24 @@ def run_backtest(
             exit_price = None
             reason = None
 
+            # Gap-aware exits: if the opening price is already beyond a
+            # protective level, the executable price is the bar open rather
+            # than the stale stop/target level.
             if side == "LONG":
-                if row.low <= sl:
+                if row.open <= sl:
+                    exit_price, reason = float(row.open), "STOP_LOSS_GAP"
+                elif row.open >= tp:
+                    exit_price, reason = float(row.open), "TAKE_PROFIT_GAP"
+                elif row.low <= sl:
                     exit_price, reason = sl, "STOP_LOSS"
                 elif row.high >= tp:
                     exit_price, reason = tp, "TAKE_PROFIT"
             else:
-                if row.high >= sl:
+                if row.open >= sl:
+                    exit_price, reason = float(row.open), "STOP_LOSS_GAP"
+                elif row.open <= tp:
+                    exit_price, reason = float(row.open), "TAKE_PROFIT_GAP"
+                elif row.high >= sl:
                     exit_price, reason = sl, "STOP_LOSS"
                 elif row.low <= tp:
                     exit_price, reason = tp, "TAKE_PROFIT"
@@ -151,10 +193,10 @@ def run_backtest(
             if exit_price is not None:
                 fill = _slipped_price(float(exit_price), side, cfg.slippage_bps, False)
                 qty = position["quantity"]
-                gross = (fill - position["entry_price"]) * qty * cfg.contract_multiplier
-                if side == "SHORT":
-                    gross = -gross
-                costs = cfg.brokerage_per_trade
+                gross = _gross_pnl(side, position["entry_price"], fill, qty, cfg.contract_multiplier)
+                exit_cost = _transaction_cost(fill, qty, cfg)
+                entry_cost = position["entry_cost"]
+                costs = entry_cost + exit_cost
                 net = gross - costs
                 capital += net
                 trades.append(Trade(
@@ -179,6 +221,8 @@ def run_backtest(
             entry = _slipped_price(float(row.open), side, cfg.slippage_bps, True)
             qty = _quantity(capital, entry, cfg)
             if qty > 0:
+                entry_cost = _transaction_cost(entry, qty, cfg)
+                capital -= entry_cost
                 sl, tp = _levels(side, entry, cfg)
                 position = {
                     "side": side,
@@ -187,14 +231,13 @@ def run_backtest(
                     "quantity": qty,
                     "sl": sl,
                     "tp": tp,
+                    "entry_cost": entry_cost,
                 }
 
         unrealized = 0.0
         if position is not None:
             mark = float(row.close)
-            unrealized = (mark - position["entry_price"]) * position["quantity"] * cfg.contract_multiplier
-            if position["side"] == "SHORT":
-                unrealized = -unrealized
+            unrealized = _gross_pnl(position["side"], position["entry_price"], mark, position["quantity"], cfg.contract_multiplier)
 
         equity = capital + unrealized
         if (
@@ -204,10 +247,9 @@ def run_backtest(
         ):
             fill = _slipped_price(float(row.close), position["side"], cfg.slippage_bps, False)
             qty = position["quantity"]
-            gross = (fill - position["entry_price"]) * qty * cfg.contract_multiplier
-            if position["side"] == "SHORT":
-                gross = -gross
-            costs = cfg.brokerage_per_trade
+            gross = _gross_pnl(position["side"], position["entry_price"], fill, qty, cfg.contract_multiplier)
+            exit_cost = _transaction_cost(fill, qty, cfg)
+            costs = position["entry_cost"] + exit_cost
             net = gross - costs
             capital += net
             trades.append(Trade(
@@ -227,10 +269,9 @@ def run_backtest(
         side = position["side"]
         fill = _slipped_price(float(row.close), side, cfg.slippage_bps, False)
         qty = position["quantity"]
-        gross = (fill - position["entry_price"]) * qty * cfg.contract_multiplier
-        if side == "SHORT":
-            gross = -gross
-        costs = cfg.brokerage_per_trade
+        gross = _gross_pnl(side, position["entry_price"], fill, qty, cfg.contract_multiplier)
+        exit_cost = _transaction_cost(fill, qty, cfg)
+        costs = position["entry_cost"] + exit_cost
         net = gross - costs
         capital += net
         trades.append(Trade(
