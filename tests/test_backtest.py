@@ -65,9 +65,16 @@ def test_entry_and_exit_costs_are_both_charged():
 
 
 def test_gap_through_long_stop_fills_at_open():
-    idx = pd.date_range("2026-01-01 09:15", periods=3, freq="5min")
-    bars = pd.DataFrame({"open": [100, 98, 98], "high": [100, 99, 99], "low": [99, 97, 97], "close": [100, 98, 98]}, index=idx)
-    trades, _ = run_backtest(bars, pd.Series([1, 0, 0], index=idx), BacktestConfig(stop_loss_pct=0.005))
+    # Signal at 09:15 enters at 09:20 open=100. The 09:25 open gaps below
+    # the 99.50 stop, so the engine must fill at the gap-open price.
+    idx = pd.date_range("2026-01-01 09:15", periods=4, freq="5min")
+    bars = pd.DataFrame({
+        "open": [100, 100, 98, 98],
+        "high": [100, 101, 99, 99],
+        "low": [99, 99.5, 97, 97],
+        "close": [100, 100, 98, 98],
+    }, index=idx)
+    trades, _ = run_backtest(bars, pd.Series([1, 0, 0, 0], index=idx), BacktestConfig(stop_loss_pct=0.005))
     assert len(trades) == 1
     assert trades.iloc[0]["exit_reason"] == "STOP_LOSS_GAP"
     assert trades.iloc[0]["exit_price"] == 98
