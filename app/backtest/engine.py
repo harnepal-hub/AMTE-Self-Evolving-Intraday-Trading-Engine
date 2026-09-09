@@ -19,6 +19,7 @@ class BacktestConfig:
     fixed_cost_per_side: float = 0.0
     slippage_bps: float = 0.0
     quantity_step: float = 1.0
+    lot_size: float = 1.0
     contract_multiplier: float = 1.0
     square_off_at_session_end: bool = True
     session_close: str | None = None
@@ -52,11 +53,12 @@ def _levels(side: str, entry: float, cfg: BacktestConfig) -> tuple[float, float]
 def _quantity(capital: float, entry: float, cfg: BacktestConfig) -> float:
     risk_cash = capital * cfg.risk_per_trade
     risk_per_unit = entry * cfg.stop_loss_pct * cfg.contract_multiplier
-    if risk_per_unit <= 0 or cfg.quantity_step <= 0:
+    step = max(cfg.quantity_step, cfg.lot_size)
+    if risk_per_unit <= 0 or step <= 0:
         return 0.0
     raw = risk_cash / risk_per_unit
-    steps = int(raw / cfg.quantity_step + 1e-12)
-    return max(0.0, steps * cfg.quantity_step)
+    steps = int(raw / step + 1e-12)
+    return max(0.0, steps * step)
 
 
 def _slipped_price(price: float, side: str, bps: float, is_entry: bool) -> float:
@@ -130,8 +132,8 @@ def run_backtest(
         raise ValueError("max_daily_loss_pct must be in (0, 1)")
     if cfg.cooldown_bars < 0:
         raise ValueError("cooldown_bars cannot be negative")
-    if cfg.quantity_step <= 0 or cfg.contract_multiplier <= 0:
-        raise ValueError("quantity_step and contract_multiplier must be positive")
+    if cfg.quantity_step <= 0 or cfg.lot_size <= 0 or cfg.contract_multiplier <= 0:
+        raise ValueError("quantity_step, lot_size and contract_multiplier must be positive")
     if cfg.slippage_bps < 0:
         raise ValueError("slippage_bps cannot be negative")
 
@@ -165,9 +167,6 @@ def run_backtest(
             exit_price = None
             reason = None
 
-            # Gap-aware exits: if the opening price is already beyond a
-            # protective level, the executable price is the bar open rather
-            # than the stale stop/target level.
             if side == "LONG":
                 if row.open <= sl:
                     exit_price, reason = float(row.open), "STOP_LOSS_GAP"
@@ -197,7 +196,7 @@ def run_backtest(
                 exit_cost = _transaction_cost(fill, qty, cfg)
                 entry_cost = position["entry_cost"]
                 costs = entry_cost + exit_cost
-                net = gross - costs
+                net = gross - exit_cost
                 capital += net
                 trades.append(Trade(
                     position["entry_time"], ts, side,
@@ -207,7 +206,6 @@ def run_backtest(
                 position = None
                 last_exit_i = i
 
-        # Do not open a new trade after the session close or after a daily lock.
         can_enter = (
             position is None
             and not daily_loss_locked
@@ -250,7 +248,7 @@ def run_backtest(
             gross = _gross_pnl(position["side"], position["entry_price"], fill, qty, cfg.contract_multiplier)
             exit_cost = _transaction_cost(fill, qty, cfg)
             costs = position["entry_cost"] + exit_cost
-            net = gross - costs
+            net = gross - exit_cost
             capital += net
             trades.append(Trade(
                 position["entry_time"], ts, position["side"],
@@ -272,7 +270,7 @@ def run_backtest(
         gross = _gross_pnl(side, position["entry_price"], fill, qty, cfg.contract_multiplier)
         exit_cost = _transaction_cost(fill, qty, cfg)
         costs = position["entry_cost"] + exit_cost
-        net = gross - costs
+        net = gross - exit_cost
         capital += net
         trades.append(Trade(
             position["entry_time"], df.index[-1], side,
