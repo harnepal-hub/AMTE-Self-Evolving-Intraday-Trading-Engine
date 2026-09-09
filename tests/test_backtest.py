@@ -1,4 +1,5 @@
 import pandas as pd
+import pytest
 
 from app.backtest.engine import BacktestConfig, run_backtest
 from app.analytics.performance import summarize_performance
@@ -103,3 +104,51 @@ def test_slippage_is_adverse_on_entry_and_exit():
     )
     assert slipped.iloc[0]["entry_price"] > clean.iloc[0]["entry_price"]
     assert slipped.iloc[0]["net_pnl"] < clean.iloc[0]["net_pnl"]
+
+
+def test_entry_and_exit_costs_are_both_charged():
+    idx = pd.date_range("2026-01-01 09:15", periods=3, freq="5min")
+    bars = pd.DataFrame(
+        {
+            "open": [100, 100, 101],
+            "high": [100, 101, 101],
+            "low": [99, 99.5, 100],
+            "close": [100, 100.5, 101],
+        }, index=idx
+    )
+    signals = pd.Series([1, 0, 0], index=idx)
+    clean, _ = run_backtest(bars, signals, BacktestConfig(stop_loss_pct=0.02, take_profit_pct=0.05))
+    costly, _ = run_backtest(
+        bars, signals,
+        BacktestConfig(stop_loss_pct=0.02, take_profit_pct=0.05,
+                       brokerage_per_side=5, fee_bps_per_side=10, fixed_cost_per_side=2),
+    )
+    assert costly.iloc[0]["costs"] > clean.iloc[0]["costs"]
+    assert costly.iloc[0]["net_pnl"] < clean.iloc[0]["net_pnl"]
+
+
+def test_gap_through_long_stop_fills_at_open():
+    idx = pd.date_range("2026-01-01 09:15", periods=3, freq="5min")
+    bars = pd.DataFrame(
+        {
+            "open": [100, 98, 98],
+            "high": [100, 99, 99],
+            "low": [99, 97, 97],
+            "close": [100, 98, 98],
+        }, index=idx
+    )
+    signals = pd.Series([1, 0, 0], index=idx)
+    trades, _ = run_backtest(bars, signals, BacktestConfig(stop_loss_pct=0.005))
+    assert len(trades) == 1
+    assert trades.iloc[0]["exit_reason"] == "STOP_LOSS_GAP"
+    assert trades.iloc[0]["exit_price"] == 98
+
+
+def test_invalid_signal_is_rejected():
+    idx = pd.date_range("2026-01-01 09:15", periods=2, freq="5min")
+    bars = pd.DataFrame(
+        {"open": [100, 100], "high": [101, 101], "low": [99, 99], "close": [100, 100]}, index=idx
+    )
+    signals = pd.Series([2, 0], index=idx)
+    with pytest.raises(ValueError, match="Signals must contain"):
+        run_backtest(bars, signals)
