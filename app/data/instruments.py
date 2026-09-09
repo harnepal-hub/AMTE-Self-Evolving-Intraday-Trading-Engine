@@ -51,8 +51,12 @@ class InstrumentConfig(BaseModel):
     margin_currency: str | None = None
 
     def model_post_init(self, __context: object) -> None:
-        if self.signal_symbol is None:
+        if "signal_symbol" not in self.model_fields_set:
             object.__setattr__(self, "signal_symbol", self.symbol)
+        # An explicit null means the instrument is a signal-only/non-tradable
+        # source (for example an index used to generate derivative signals).
+        if "execution_symbol" not in self.model_fields_set:
+            object.__setattr__(self, "execution_symbol", self.symbol)
 
 
 class InstrumentRegistry(BaseModel):
