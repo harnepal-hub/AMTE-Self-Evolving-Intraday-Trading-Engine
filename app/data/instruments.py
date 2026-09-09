@@ -53,8 +53,6 @@ class InstrumentConfig(BaseModel):
     def model_post_init(self, __context: object) -> None:
         if self.signal_symbol is None:
             object.__setattr__(self, "signal_symbol", self.symbol)
-        if self.execution_symbol is None:
-            object.__setattr__(self, "execution_symbol", self.symbol)
 
 
 class InstrumentRegistry(BaseModel):
