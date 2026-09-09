@@ -1,4 +1,3 @@
-import pandas as pd
 import pytest
 
 from app.data.coindcx import fetch_historical_candles
@@ -30,7 +29,7 @@ def test_coindcx_candles_normalize_descending_payload():
         {"time": 1760000300000, "open": "101", "high": "102", "low": "100", "close": "101.5", "volume": "12"},
         {"time": 1760000000000, "open": "100", "high": "101", "low": "99", "close": "100.5", "volume": "10"},
     ])
-    frame = fetch_historical_candles("B-BTC_USDT", "5m", 1760000000000, 1760000600000, session)
+    frame = fetch_historical_candles("B-BTC_USDT", 1760000000000, 1760000600000, "5m", session)
     assert list(frame.columns) == ["open", "high", "low", "close", "volume"]
     assert frame.index.is_monotonic_increasing
     assert frame.iloc[0]["close"] == 100.5
@@ -39,9 +38,9 @@ def test_coindcx_candles_normalize_descending_payload():
 
 def test_coindcx_rejects_invalid_interval():
     with pytest.raises(ValueError, match="Unsupported interval"):
-        fetch_historical_candles("B-BTC_USDT", "2m", 1, 2, FakeSession([]))
+        fetch_historical_candles("B-BTC_USDT", 1, 2, "2m", FakeSession([]))
 
 
 def test_coindcx_rejects_invalid_range():
     with pytest.raises(ValueError, match="start must be earlier"):
-        fetch_historical_candles("B-BTC_USDT", "5m", 2, 1, FakeSession([]))
+        fetch_historical_candles("B-BTC_USDT", 2, 1, "5m", FakeSession([]))
