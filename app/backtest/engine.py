@@ -115,9 +115,9 @@ def run_backtest(
     A signal on bar *t* is executed at bar *t+1* open. Stops and targets are
     checked using OHLC and, when both are touched in one bar, the stop wins.
     If a bar gaps through a stop/target, the fill is the bar open (then
-    adverse slippage is applied). Session-end exits occur at the first bar
-    at/after the configured close. Entry and exit trading costs are charged
-    separately using the configured per-side brokerage/fee model.
+    adverse slippage is applied). Session-end exits take precedence on the
+    first bar at/after the configured close. Entry and exit trading costs are
+    charged separately using the configured per-side brokerage/fee model.
     """
     cfg = config or BacktestConfig()
     required = {"open", "high", "low", "close"}
@@ -167,27 +167,30 @@ def run_backtest(
             exit_price = None
             reason = None
 
-            if side == "LONG":
-                if row.open <= sl:
+            # Once the bar reaches/passes the configured session close, the
+            # position must be squared off rather than allowing a same-bar
+            # stop/target to win the classification.
+            if _session_close_hit(ts, cfg):
+                exit_price, reason = float(row.close), "SESSION_END"
+            elif side == "LONG":
+                # An open beyond a protective level is a gap fill at the open.
+                if row.open < sl:
                     exit_price, reason = float(row.open), "STOP_LOSS_GAP"
-                elif row.open >= tp:
+                elif row.open > tp:
                     exit_price, reason = float(row.open), "TAKE_PROFIT_GAP"
                 elif row.low <= sl:
                     exit_price, reason = sl, "STOP_LOSS"
                 elif row.high >= tp:
                     exit_price, reason = tp, "TAKE_PROFIT"
             else:
-                if row.open >= sl:
+                if row.open > sl:
                     exit_price, reason = float(row.open), "STOP_LOSS_GAP"
-                elif row.open <= tp:
+                elif row.open < tp:
                     exit_price, reason = float(row.open), "TAKE_PROFIT_GAP"
                 elif row.high >= sl:
                     exit_price, reason = sl, "STOP_LOSS"
                 elif row.low <= tp:
                     exit_price, reason = tp, "TAKE_PROFIT"
-
-            if exit_price is None and _session_close_hit(ts, cfg):
-                exit_price, reason = float(row.close), "SESSION_END"
 
             if exit_price is not None:
                 fill = _slipped_price(float(exit_price), side, cfg.slippage_bps, False)
