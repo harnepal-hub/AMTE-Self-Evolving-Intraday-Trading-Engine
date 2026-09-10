@@ -1,0 +1,40 @@
+name: AMTE Controlled ATR Exit Tuning
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "app/**"
+      - "scripts/run_controlled_exit_tuning.py"
+      - "requirements.txt"
+      - ".github/workflows/controlled-exit-tuning.yml"
+  workflow_dispatch:
+
+jobs:
+  tuning:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install -r requirements.txt tabulate
+      - name: Run unit tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: pytest -q
+      - name: Run controlled exit tuning
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python scripts/run_controlled_exit_tuning.py --days 365
+      - name: Upload tuning artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: amte-controlled-exit-tuning
+          path: research_artifacts/controlled_exit_tuning/
+          if-no-files-found: warn
