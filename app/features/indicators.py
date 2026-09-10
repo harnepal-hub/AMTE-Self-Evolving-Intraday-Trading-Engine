@@ -6,6 +6,17 @@ import numpy as np
 import pandas as pd
 
 
+def _rsi(close: pd.Series, window: int) -> pd.Series:
+    """Wilder-style RSI using only current/past closes."""
+    delta = close.diff()
+    gain = delta.clip(lower=0.0)
+    loss = -delta.clip(upper=0.0)
+    avg_gain = gain.ewm(alpha=1.0 / window, adjust=False, min_periods=window).mean()
+    avg_loss = loss.ewm(alpha=1.0 / window, adjust=False, min_periods=window).mean()
+    rs = avg_gain / avg_loss.replace(0, np.nan)
+    return 100.0 - (100.0 / (1.0 + rs))
+
+
 def add_features(bars: pd.DataFrame, *, fast: int = 20, slow: int = 50, atr_window: int = 14, momentum_window: int = 10) -> pd.DataFrame:
     """Return bars enriched only with information available on each bar."""
     required = {"open", "high", "low", "close", "volume"}
@@ -25,6 +36,8 @@ def add_features(bars: pd.DataFrame, *, fast: int = 20, slow: int = 50, atr_wind
     df["sma_slow"] = close.rolling(slow, min_periods=slow).mean()
     df["ema_fast"] = close.ewm(span=fast, adjust=False, min_periods=fast).mean()
     df["ema_slow"] = close.ewm(span=slow, adjust=False, min_periods=slow).mean()
+    df["ema_200"] = close.ewm(span=200, adjust=False, min_periods=200).mean()
+    df["ema_5"] = close.ewm(span=5, adjust=False, min_periods=5).mean()
 
     prev_close = close.shift(1)
     tr = pd.concat([(high - low), (high - prev_close).abs(), (low - prev_close).abs()], axis=1).max(axis=1)
@@ -32,6 +45,8 @@ def add_features(bars: pd.DataFrame, *, fast: int = 20, slow: int = 50, atr_wind
     df["atr_pct"] = df["atr"] / close
     df["atr_pct_mean"] = df["atr_pct"].shift(1).rolling(50, min_periods=50).mean()
     df["momentum"] = close.pct_change(momentum_window)
+    df["rsi_2"] = _rsi(close, 2)
+    df["rsi_14"] = _rsi(close, 14)
 
     typical = (high + low + close) / 3.0
     session_key = pd.Series(df.index.date, index=df.index)
@@ -43,8 +58,6 @@ def add_features(bars: pd.DataFrame, *, fast: int = 20, slow: int = 50, atr_wind
     df["prior_high"] = high.shift(1).rolling(20, min_periods=20).max()
     df["prior_low"] = low.shift(1).rolling(20, min_periods=20).min()
 
-    # Additional causal regime features. Every rolling statistic is shifted when
-    # it is used as a baseline so the current bar cannot define its own regime.
     df["trend_strength"] = (df["ema_fast"] - df["ema_slow"]).abs() / df["atr"].replace(0, np.nan)
     df["range_pct"] = (high - low) / close.replace(0, np.nan)
     df["range_mean"] = df["range_pct"].shift(1).rolling(20, min_periods=20).mean()
