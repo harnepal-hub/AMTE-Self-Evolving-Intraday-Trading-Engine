@@ -11,7 +11,7 @@ from pathlib import Path
 import pandas as pd
 import requests
 
-from app.research.stage3 import CANDIDATES, evaluate_candidates, evaluate_directional, realistic_config
+from app.research.stage3 import CANDIDATES, evaluate_candidates, evaluate_directional, evaluate_signal_quality, realistic_config
 
 BASE_URL = "https://public.coindcx.com/market_data/candlesticks"
 PAIR = "B-BTC_USDT"
@@ -29,13 +29,7 @@ def fetch_history(days: int) -> pd.DataFrame:
     cursor = start
     while cursor < end:
         chunk_end = min(cursor + timedelta(days=CHUNK_DAYS), end)
-        params = {
-            "pair": PAIR,
-            "from": int(cursor.timestamp()),
-            "to": int(chunk_end.timestamp()),
-            "resolution": RESOLUTION,
-            "pcode": PCODE,
-        }
+        params = {"pair": PAIR, "from": int(cursor.timestamp()), "to": int(chunk_end.timestamp()), "resolution": RESOLUTION, "pcode": PCODE}
         response = session.get(BASE_URL, params=params, timeout=30)
         response.raise_for_status()
         payload = response.json()
@@ -92,6 +86,7 @@ def main() -> None:
 
     development_leaderboard = evaluate_candidates(development, config)
     holdout_leaderboard = evaluate_candidates(holdout, config)
+    signal_quality = evaluate_signal_quality(development)
     directional_rows: list[pd.DataFrame] = []
     for strategy in CANDIDATES:
         directional_rows.append(evaluate_directional(development, config, strategy))
@@ -99,71 +94,41 @@ def main() -> None:
 
     development_leaderboard.to_csv(out / "development_leaderboard.csv", index=False)
     directional_table.to_csv(out / "development_directional.csv", index=False)
+    signal_quality.to_csv(out / "development_signal_quality.csv", index=False)
     holdout_leaderboard.to_csv(out / "holdout_reference_only.csv", index=False)
 
     winner = development_leaderboard.iloc[0]["strategy"]
     report = {
         "stage": "Stage 3 strategy research",
         "status": "completed",
-        "dataset": {
-            "source": "CoinDCX public futures candlesticks API",
-            "pair": PAIR,
-            "interval": "5m",
-            "rows": len(bars),
-            "start": bars.index.min().isoformat(),
-            "end": bars.index.max().isoformat(),
-            "sha256": dataset_sha256,
-            "development_rows": len(development),
-            "future_holdout_rows": len(holdout),
-            "development_fraction": 0.80,
-        },
-        "assumptions": {
-            "initial_capital": config.initial_capital,
-            "risk_per_trade": config.risk_per_trade,
-            "stop_loss_pct": config.stop_loss_pct,
-            "take_profit_pct": config.take_profit_pct,
-            "fee_bps_per_side": config.fee_bps_per_side,
-            "slippage_bps": config.slippage_bps,
-        },
+        "dataset": {"source": "CoinDCX public futures candlesticks API", "pair": PAIR, "interval": "5m", "rows": len(bars), "start": bars.index.min().isoformat(), "end": bars.index.max().isoformat(), "sha256": dataset_sha256, "development_rows": len(development), "future_holdout_rows": len(holdout), "development_fraction": 0.80},
+        "assumptions": {"initial_capital": config.initial_capital, "risk_per_trade": config.risk_per_trade, "stop_loss_pct": config.stop_loss_pct, "take_profit_pct": config.take_profit_pct, "fee_bps_per_side": config.fee_bps_per_side, "slippage_bps": config.slippage_bps},
         "candidates": list(CANDIDATES),
         "selection_rule": "Highest development-sample combined net P&L; holdout is not used for selection.",
         "development_winner": winner,
         "development_leaderboard": development_leaderboard.to_dict(orient="records"),
+        "development_signal_quality": signal_quality.to_dict(orient="records"),
         "development_directional": directional_table.to_dict(orient="records"),
         "holdout_reference_only": holdout_leaderboard.to_dict(orient="records"),
     }
     (out / "stage3_report.json").write_text(json.dumps(report, indent=2, default=fmt) + "\n", encoding="utf-8")
 
     lines = [
-        "# AMTE Stage 3 Strategy Research",
-        "",
+        "# AMTE Stage 3 Strategy Research", "",
         "## Dataset",
         f"- Source: CoinDCX public futures candlesticks API ({PAIR}, 5m)",
         f"- Rows: {len(bars):,}",
         f"- Period: {bars.index.min().isoformat()} to {bars.index.max().isoformat()}",
         f"- Development: first 80% ({len(development):,} rows)",
-        f"- Future holdout: final 20% ({len(holdout):,} rows), not used for selection",
-        f"- SHA-256: `{dataset_sha256}`",
-        "",
+        f"- Future holdout: final 20% ({len(holdout):,} rows), not used for selection)",
+        f"- SHA-256: `{dataset_sha256}`", "",
         "## Common assumptions",
-        f"- Capital: {config.initial_capital:,.0f}",
-        f"- Risk/trade: {config.risk_per_trade:.2%}",
-        f"- Stop/target: {config.stop_loss_pct:.2%} / {config.take_profit_pct:.2%}",
-        f"- Fee: {config.fee_bps_per_side:.1f} bps/side",
-        f"- Slippage: {config.slippage_bps:.1f} bps/side",
-        "",
-        "## Development leaderboard",
-        development_leaderboard.to_markdown(index=False),
-        "",
-        "## Development long/short/combined",
-        directional_table.to_markdown(index=False),
-        "",
-        f"## Candidate selected without holdout: **{winner}**",
-        "Selection uses only development combined net P&L, with no future-holdout information.",
-        "The holdout table is retained only as a locked reference for later validation.",
-        "",
-        "## Reproducibility",
-        "Run `python scripts/run_stage3_research.py --days 365` after installing requirements.",
+        f"- Capital: {config.initial_capital:,.0f}", f"- Risk/trade: {config.risk_per_trade:.2%}", f"- Stop/target: {config.stop_loss_pct:.2%} / {config.take_profit_pct:.2%}", f"- Fee: {config.fee_bps_per_side:.1f} bps/side", f"- Slippage: {config.slippage_bps:.1f} bps/side", "",
+        "## Development leaderboard", development_leaderboard.to_markdown(index=False), "",
+        "## Raw signal quality before costs/exits", signal_quality.to_markdown(index=False), "",
+        "## Development long/short/combined", directional_table.to_markdown(index=False), "",
+        f"## Candidate selected without holdout: **{winner}**", "Selection uses only development combined net P&L, with no future-holdout information.", "The holdout table is retained only as a locked reference for later validation.", "",
+        "## Reproducibility", "Run `python scripts/run_stage3_research.py --days 365` after installing requirements.",
     ]
     (out / "STAGE3_REPORT.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(f"Stage 3 complete: {winner}; rows={len(bars):,}; sha256={dataset_sha256}")
