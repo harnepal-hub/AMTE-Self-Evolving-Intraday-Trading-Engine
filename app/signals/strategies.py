@@ -149,6 +149,63 @@ def momentum_regime(row: pd.Series) -> int:
     return 0
 
 
+def connors_rsi2(row: pd.Series) -> int:
+    """Intraday adaptation of Connors/Alvarez RSI(2) mean reversion.
+
+    The original book system is a daily strategy. This adaptation uses a
+    200-bar trend filter and RSI(2) extremes on the execution timeframe; it
+    must be validated independently and is not claimed to reproduce the
+    book's published results.
+    """
+    names = ("close", "ema_200", "ema_5", "rsi_2")
+    if not _ready(row, names):
+        return 0
+    if row.close > row.ema_200 and row.rsi_2 <= 5:
+        return 1
+    if row.close < row.ema_200 and row.rsi_2 >= 95:
+        return -1
+    return 0
+
+
+def brooks_first_pullback(row: pd.Series) -> int:
+    """Al Brooks-inspired first pullback continuation trigger.
+
+    Requires trend alignment, a shallow pullback toward the fast EMA and a
+    directional trigger bar. It intentionally avoids claiming a fixed win
+    rate; Brooks' method is probabilistic rather than a 60% guarantee.
+    """
+    names = ("open", "high", "low", "close", "ema_fast", "ema_slow", "atr")
+    if not _ready(row, names) or row.atr <= 0:
+        return 0
+    bull = row.ema_fast > row.ema_slow
+    bear = row.ema_fast < row.ema_slow
+    pullback = abs(row.close - row.ema_fast) <= 0.50 * row.atr
+    bull_trigger = row.close > row.open and row.close >= row.high - 0.25 * (row.high - row.low)
+    bear_trigger = row.close < row.open and row.close <= row.low + 0.25 * (row.high - row.low)
+    if bull and pullback and bull_trigger:
+        return 1
+    if bear and pullback and bear_trigger:
+        return -1
+    return 0
+
+
+def elder_triple_screen_proxy(row: pd.Series) -> int:
+    """Intraday proxy for Elder's tide/pullback/entry framework.
+
+    A true Triple Screen implementation should construct higher-timeframe
+    bars explicitly. This row-level proxy is therefore a research candidate,
+    not a claim of faithful reproduction of Elder's full system.
+    """
+    names = ("close", "ema_200", "rsi_14", "prior_high", "prior_low")
+    if not _ready(row, names):
+        return 0
+    if row.close > row.ema_200 and row.rsi_14 < 40 and row.close > row.prior_high:
+        return 1
+    if row.close < row.ema_200 and row.rsi_14 > 60 and row.close < row.prior_low:
+        return -1
+    return 0
+
+
 STRATEGIES = {
     "ema_trend": ema_trend,
     "momentum_breakout": momentum_breakout,
@@ -160,4 +217,7 @@ STRATEGIES = {
     "regime_vwap_reversion": regime_vwap_reversion,
     "momentum_regime": momentum_regime,
     "orb_breakout": or_breakout,
+    "connors_rsi2": connors_rsi2,
+    "brooks_first_pullback": brooks_first_pullback,
+    "elder_triple_screen_proxy": elder_triple_screen_proxy,
 }
