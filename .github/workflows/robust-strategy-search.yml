@@ -1,0 +1,50 @@
+name: AMTE Robust Strategy Search
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'app/backtest/**'
+      - 'app/signals/**'
+      - 'app/features/**'
+      - 'app/analytics/**'
+      - 'app/research/**'
+      - 'scripts/run_robust_strategy_search.py'
+      - '.github/workflows/robust-strategy-search.yml'
+      - 'requirements.txt'
+    branches: [main]
+
+jobs:
+  robust-search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt tabulate
+
+      - name: Unit tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: pytest -q
+
+      - name: Run robust strategy search
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python scripts/run_robust_strategy_search.py --days 365
+
+      - name: Upload robust-search artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: amte-robust-strategy-search
+          path: research_artifacts/robust_search/
+          if-no-files-found: warn
