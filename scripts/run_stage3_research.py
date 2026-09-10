@@ -49,7 +49,7 @@ def fetch_history(days: int) -> pd.DataFrame:
         raise RuntimeError("CoinDCX returned no candles")
     frame["time"] = pd.to_datetime(frame["time"], unit="ms", utc=True)
     frame = frame.rename(columns={"time": "timestamp"})
-    frame = frame.set_index("timestamp")["open high low close volume".split()]
+    frame = frame.set_index("timestamp")["open", "high", "low", "close", "volume"]
     frame = frame.apply(pd.to_numeric, errors="raise").sort_index()
     frame = frame[~frame.index.duplicated(keep="last")]
     frame = frame.loc[(frame.index >= pd.Timestamp(start)) & (frame.index <= pd.Timestamp(end))]
@@ -86,8 +86,7 @@ def main() -> None:
     holdout_leaderboard = evaluate_candidates(holdout, config)
     directional_rows: list[pd.DataFrame] = []
     for strategy in CANDIDATES:
-        directional = evaluate_directional(development, config, strategy)
-        directional_rows.append(directional)
+        directional_rows.append(evaluate_directional(development, config, strategy))
     directional_table = pd.concat(directional_rows, ignore_index=True)
 
     development_leaderboard.to_csv(out / "development_leaderboard.csv", index=False)
