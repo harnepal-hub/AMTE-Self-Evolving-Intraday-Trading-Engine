@@ -44,6 +44,33 @@ def vwap_reversion(row: pd.Series, z: float = 0.0025) -> int:
     return 0
 
 
+def volatility_breakout(row: pd.Series) -> int:
+    """Breakout after a low-volatility contraction, using only prior bars."""
+    if not _ready(row, ("close", "prior_high", "prior_low", "atr_pct", "atr_pct_mean")):
+        return 0
+    if row.atr_pct_mean <= 0 or row.atr_pct > row.atr_pct_mean * 0.85:
+        return 0
+    if row.close > row.prior_high:
+        return 1
+    if row.close < row.prior_low:
+        return -1
+    return 0
+
+
+def trend_pullback(row: pd.Series) -> int:
+    """Trend continuation after a pullback toward the fast EMA."""
+    if not _ready(row, ("close", "ema_fast", "ema_slow", "atr")) or row.atr <= 0:
+        return 0
+    distance = abs(row.close - row.ema_fast) / row.atr
+    if distance > 0.75:
+        return 0
+    if row.ema_fast > row.ema_slow and row.close > row.ema_slow:
+        return 1
+    if row.ema_fast < row.ema_slow and row.close < row.ema_slow:
+        return -1
+    return 0
+
+
 def or_breakout(frame: pd.DataFrame, opening_bars: int = 6) -> pd.Series:
     """Opening-range breakout using only completed opening-range bars per day."""
     if opening_bars <= 0:
@@ -53,7 +80,6 @@ def or_breakout(frame: pd.DataFrame, opening_bars: int = 6) -> pd.Series:
     position = days.groupby(days).cumcount()
     opening_high = df["high"].where(position < opening_bars).groupby(days).transform("max").shift(1)
     opening_low = df["low"].where(position < opening_bars).groupby(days).transform("min").shift(1)
-    # Reset ranges at the start of each session and suppress signals inside OR.
     result = pd.Series(0, index=df.index, dtype=int)
     active = position >= opening_bars
     result.loc[active & (df["close"] > opening_high)] = 1
@@ -65,4 +91,6 @@ STRATEGIES = {
     "ema_trend": ema_trend,
     "momentum_breakout": momentum_breakout,
     "vwap_reversion": vwap_reversion,
+    "volatility_breakout": volatility_breakout,
+    "trend_pullback": trend_pullback,
 }
