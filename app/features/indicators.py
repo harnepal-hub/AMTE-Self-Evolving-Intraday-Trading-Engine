@@ -42,4 +42,13 @@ def add_features(bars: pd.DataFrame, *, fast: int = 20, slow: int = 50, atr_wind
 
     df["prior_high"] = high.shift(1).rolling(20, min_periods=20).max()
     df["prior_low"] = low.shift(1).rolling(20, min_periods=20).min()
+
+    # Additional causal regime features. Every rolling statistic is shifted when
+    # it is used as a baseline so the current bar cannot define its own regime.
+    df["trend_strength"] = (df["ema_fast"] - df["ema_slow"]).abs() / df["atr"].replace(0, np.nan)
+    df["range_pct"] = (high - low) / close.replace(0, np.nan)
+    df["range_mean"] = df["range_pct"].shift(1).rolling(20, min_periods=20).mean()
+    df["volume_ratio_mean"] = df["volume_ratio"].shift(1).rolling(20, min_periods=20).mean()
+    df["momentum_mean"] = df["momentum"].shift(1).rolling(20, min_periods=20).mean()
+    df["breakout_buffer"] = df["atr"] * 0.10
     return df
