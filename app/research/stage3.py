@@ -12,6 +12,9 @@ from app.analytics.performance import summarize_performance
 from app.backtest.engine import BacktestConfig, run_backtest
 from app.signals.runner import generate_signals
 
+# Keep the original baselines while adding a small, pre-specified redesign set.
+# The redesign uses regime confirmation rather than optimizing parameters on the
+# locked holdout.
 CANDIDATES = (
     "ema_trend",
     "momentum_breakout",
@@ -19,6 +22,10 @@ CANDIDATES = (
     "volatility_breakout",
     "trend_pullback",
     "orb_breakout",
+    "regime_breakout",
+    "pullback_continuation",
+    "regime_vwap_reversion",
+    "momentum_regime",
 )
 
 
