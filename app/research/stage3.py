@@ -18,6 +18,9 @@ CANDIDATES = (
     "pullback_continuation",
     "regime_vwap_reversion",
     "momentum_regime",
+    "connors_rsi2",
+    "brooks_first_pullback",
+    "elder_triple_screen_proxy",
 )
 
 
@@ -36,13 +39,7 @@ def evaluate_candidates(bars: pd.DataFrame, base_config: BacktestConfig, *, stra
 
 
 def evaluate_signal_quality(bars: pd.DataFrame, *, strategies: tuple[str, ...] = CANDIDATES) -> pd.DataFrame:
-    """Measure raw next-bar directional edge before fees, slippage and exits.
-
-    The signal is formed on bar t and the next tradable price is bar t+1 open,
-    matching the production backtest's execution convention. This diagnostic is
-    deliberately independent of the stop/target model so it can expose whether
-    losses originate in signal direction or execution/exit assumptions.
-    """
+    """Measure raw next-bar directional edge before fees, slippage and exits."""
     next_open = bars["open"].shift(-1)
     forward_return = next_open / bars["close"] - 1.0
     rows: list[dict] = []
