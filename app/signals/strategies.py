@@ -32,7 +32,6 @@ def momentum_breakout(row: pd.Series) -> int:
 
 
 def vwap_reversion(row: pd.Series, z: float = 0.0025) -> int:
-    """Mean-reversion signal around session VWAP; symmetric long/short."""
     if not _ready(row, ("close", "vwap", "atr_pct")) or row.atr_pct <= 0:
         return 0
     distance = row.close / row.vwap - 1.0
@@ -45,7 +44,6 @@ def vwap_reversion(row: pd.Series, z: float = 0.0025) -> int:
 
 
 def volatility_breakout(row: pd.Series) -> int:
-    """Breakout after a low-volatility contraction, using only prior bars."""
     if not _ready(row, ("close", "prior_high", "prior_low", "atr_pct", "atr_pct_mean")):
         return 0
     if row.atr_pct_mean <= 0 or row.atr_pct > row.atr_pct_mean * 0.85:
@@ -58,7 +56,6 @@ def volatility_breakout(row: pd.Series) -> int:
 
 
 def trend_pullback(row: pd.Series) -> int:
-    """Trend continuation after a pullback toward the fast EMA."""
     if not _ready(row, ("close", "ema_fast", "ema_slow", "atr")) or row.atr <= 0:
         return 0
     distance = abs(row.close - row.ema_fast) / row.atr
@@ -93,4 +90,5 @@ STRATEGIES = {
     "vwap_reversion": vwap_reversion,
     "volatility_breakout": volatility_breakout,
     "trend_pullback": trend_pullback,
+    "orb_breakout": or_breakout,
 }
