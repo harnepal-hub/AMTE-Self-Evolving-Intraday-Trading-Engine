@@ -3,6 +3,11 @@ name: AMTE Stage 3 Research
 on:
   push:
     branches: [main]
+    paths:
+      - "app/**"
+      - "scripts/run_stage3_research.py"
+      - "requirements.txt"
+      - ".github/workflows/stage3-research.yml"
   workflow_dispatch:
 
 jobs:
@@ -25,7 +30,7 @@ jobs:
       - name: Run unit tests
         run: python -m pytest -q
 
-      - name: Run CoinDCX historical research
+      - name: Run CoinDCX strategy research
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: python scripts/run_stage3_research.py --days 365
