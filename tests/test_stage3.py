@@ -1,7 +1,8 @@
 import pandas as pd
 
 from app.backtest.engine import BacktestConfig
-from app.research.stage3 import CANDIDATES, evaluate_candidates, evaluate_directional, realistic_config
+from app.research.stage3 import CANDIDATES, evaluate_candidates, evaluate_directional, evaluate_signal_quality, realistic_config
+from app.signals.runner import generate_signals
 
 
 def _bars(periods=220):
@@ -29,3 +30,17 @@ def test_realistic_config_has_nonzero_execution_costs():
     assert config.fee_bps_per_side > 0
     assert config.slippage_bps > 0
     assert config.risk_per_trade == 0.005
+
+
+def test_redesigned_strategies_are_registered_and_causal_shape_is_preserved():
+    bars = _bars()
+    for strategy in ("regime_breakout", "pullback_continuation", "regime_vwap_reversion", "momentum_regime"):
+        signals = generate_signals(bars, strategy)
+        assert signals.index.equals(bars.index)
+        assert set(signals.dropna().unique()).issubset({-1, 0, 1})
+
+
+def test_signal_quality_has_expected_diagnostic_columns():
+    result = evaluate_signal_quality(_bars(), strategies=("ema_trend", "regime_breakout"))
+    assert set(result["strategy"]) == {"ema_trend", "regime_breakout"}
+    assert {"signals", "mean_next_bar_edge_bps", "edge_win_rate"}.issubset(result.columns)
