@@ -1,19 +1,25 @@
 """Stage 3 strategy research utilities.
 
 Runs deterministic candidate strategies through the production backtester and
-returns a comparable leaderboard. No parameter fitting or holdout selection is
-performed here; those belong to later validation stages.
+returns comparable development/holdout leaderboards. The holdout is never used
+for candidate selection.
 """
 from __future__ import annotations
 
-from dataclasses import replace
 import pandas as pd
 
 from app.analytics.performance import summarize_performance
 from app.backtest.engine import BacktestConfig, run_backtest
 from app.signals.runner import generate_signals
 
-CANDIDATES = ("ema_trend", "momentum_breakout", "vwap_reversion", "orb_breakout")
+CANDIDATES = (
+    "ema_trend",
+    "momentum_breakout",
+    "vwap_reversion",
+    "volatility_breakout",
+    "trend_pullback",
+    "orb_breakout",
+)
 
 
 def evaluate_candidates(
@@ -32,7 +38,7 @@ def evaluate_candidates(
         rows.append(metrics)
     return pd.DataFrame(rows).sort_values(
         ["net_pnl", "profit_factor", "max_drawdown_pct"],
-        ascending=[False, False, False],
+        ascending=[False, False, True],
         ignore_index=True,
     )
 
@@ -42,7 +48,7 @@ def evaluate_directional(
     base_config: BacktestConfig,
     strategy: str,
 ) -> pd.DataFrame:
-    """Evaluate the same strategy long-only and short-only."""
+    """Evaluate the same strategy long-only, short-only and combined."""
     signals = generate_signals(bars, strategy)
     rows = []
     for direction, value in (("long_only", 1), ("short_only", -1), ("combined", None)):
@@ -63,7 +69,7 @@ def realistic_config(
     fee_bps_per_side: float = 5.0,
     slippage_bps: float = 2.0,
 ) -> BacktestConfig:
-    """Conservative research assumptions; replace with venue-specific costs later."""
+    """Conservative common assumptions for research comparisons."""
     return BacktestConfig(
         initial_capital=initial_capital,
         risk_per_trade=risk_per_trade,
