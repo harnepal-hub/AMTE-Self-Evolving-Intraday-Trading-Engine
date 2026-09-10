@@ -30,6 +30,7 @@ def add_features(bars: pd.DataFrame, *, fast: int = 20, slow: int = 50, atr_wind
     tr = pd.concat([(high - low), (high - prev_close).abs(), (low - prev_close).abs()], axis=1).max(axis=1)
     df["atr"] = tr.rolling(atr_window, min_periods=atr_window).mean()
     df["atr_pct"] = df["atr"] / close
+    df["atr_pct_mean"] = df["atr_pct"].shift(1).rolling(50, min_periods=50).mean()
     df["momentum"] = close.pct_change(momentum_window)
 
     typical = (high + low + close) / 3.0
@@ -39,7 +40,6 @@ def add_features(bars: pd.DataFrame, *, fast: int = 20, slow: int = 50, atr_wind
     df["volume_mean"] = volume.rolling(20, min_periods=20).mean()
     df["volume_ratio"] = volume / df["volume_mean"]
 
-    # Prior-bar ranges prevent look-ahead in breakout signals.
     df["prior_high"] = high.shift(1).rolling(20, min_periods=20).max()
     df["prior_low"] = low.shift(1).rolling(20, min_periods=20).min()
     return df
