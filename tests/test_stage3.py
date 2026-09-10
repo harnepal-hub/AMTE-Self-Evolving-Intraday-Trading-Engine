@@ -14,8 +14,8 @@ def test_stage3_leaderboard_is_deterministic_and_sorted():
     bars = _bars()
     config = BacktestConfig(initial_capital=100000, risk_per_trade=0.005)
     result = evaluate_candidates(bars, config)
-    assert list(result["strategy"]) == ["ema_trend", "momentum_breakout", "vwap_reversion", "orb_breakout"] or len(result) == 4
     assert len(result) == 4
+    assert set(result["strategy"]) == {"ema_trend", "momentum_breakout", "vwap_reversion", "orb_breakout"}
     assert result["net_pnl"].is_monotonic_decreasing
 
 
