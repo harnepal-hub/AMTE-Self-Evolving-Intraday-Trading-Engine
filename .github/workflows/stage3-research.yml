@@ -23,9 +23,12 @@ jobs:
         run: python -m pip install -r requirements.txt tabulate
 
       - name: Run CoinDCX historical research
+        env:
+          PYTHONPATH: ${{ github.workspace }}
         run: python scripts/run_stage3_research.py --days 365
 
       - name: Upload Stage 3 research artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: amte-stage3-research
