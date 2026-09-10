@@ -167,13 +167,9 @@ def run_backtest(
             exit_price = None
             reason = None
 
-            # Once the bar reaches/passes the configured session close, the
-            # position must be squared off rather than allowing a same-bar
-            # stop/target to win the classification.
             if _session_close_hit(ts, cfg):
                 exit_price, reason = float(row.close), "SESSION_END"
             elif side == "LONG":
-                # An open beyond a protective level is a gap fill at the open.
                 if row.open < sl:
                     exit_price, reason = float(row.open), "STOP_LOSS_GAP"
                 elif row.open > tp:
@@ -199,8 +195,8 @@ def run_backtest(
                 exit_cost = _transaction_cost(fill, qty, cfg)
                 entry_cost = position["entry_cost"]
                 costs = entry_cost + exit_cost
-                net = gross - exit_cost
-                capital += net
+                net = gross - costs
+                capital += gross - exit_cost
                 trades.append(Trade(
                     position["entry_time"], ts, side,
                     position["entry_price"], fill, qty,
@@ -251,8 +247,8 @@ def run_backtest(
             gross = _gross_pnl(position["side"], position["entry_price"], fill, qty, cfg.contract_multiplier)
             exit_cost = _transaction_cost(fill, qty, cfg)
             costs = position["entry_cost"] + exit_cost
-            net = gross - exit_cost
-            capital += net
+            net = gross - costs
+            capital += gross - exit_cost
             trades.append(Trade(
                 position["entry_time"], ts, position["side"],
                 position["entry_price"], fill, qty,
@@ -273,8 +269,8 @@ def run_backtest(
         gross = _gross_pnl(side, position["entry_price"], fill, qty, cfg.contract_multiplier)
         exit_cost = _transaction_cost(fill, qty, cfg)
         costs = position["entry_cost"] + exit_cost
-        net = gross - exit_cost
-        capital += net
+        net = gross - costs
+        capital += gross - exit_cost
         trades.append(Trade(
             position["entry_time"], df.index[-1], side,
             position["entry_price"], fill, qty,
