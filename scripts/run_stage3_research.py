@@ -1,4 +1,4 @@
-"""Fetch CoinDCX BTC 5m history and run the holdout-safe Stage 3 study."""
+"""Fetch CoinDCX BTC 5m futures history and run the holdout-safe Stage 3 study."""
 from __future__ import annotations
 
 import argparse
@@ -13,36 +13,44 @@ import requests
 
 from app.research.stage3 import CANDIDATES, evaluate_candidates, evaluate_directional, realistic_config
 
-BASE_URL = "https://public.coindcx.com/market_data/candles"
+BASE_URL = "https://public.coindcx.com/market_data/candlesticks"
 PAIR = "B-BTC_USDT"
-INTERVAL = "5m"
-LIMIT = 1000
+RESOLUTION = "5"
+PCODE = "f"
+CHUNK_DAYS = 7
 
 
 def fetch_history(days: int) -> pd.DataFrame:
+    """Fetch CoinDCX futures 5-minute candles in bounded chronological chunks."""
     end = datetime.now(timezone.utc)
     start = end - timedelta(days=days)
-    end_ms = int(end.timestamp() * 1000)
-    start_ms = int(start.timestamp() * 1000)
     rows: list[dict] = []
     session = requests.Session()
-    cursor = end_ms
-    while cursor > start_ms:
-        params = {"pair": PAIR, "interval": INTERVAL, "startTime": start_ms, "endTime": cursor, "limit": LIMIT}
+    cursor = start
+    while cursor < end:
+        chunk_end = min(cursor + timedelta(days=CHUNK_DAYS), end)
+        params = {
+            "pair": PAIR,
+            "from": int(cursor.timestamp()),
+            "to": int(chunk_end.timestamp()),
+            "resolution": RESOLUTION,
+            "pcode": PCODE,
+        }
         response = session.get(BASE_URL, params=params, timeout=30)
         response.raise_for_status()
-        batch = response.json()
+        payload = response.json()
+        if isinstance(payload, dict):
+            if payload.get("s") not in {None, "ok"}:
+                raise RuntimeError(f"CoinDCX returned status {payload.get('s')!r}: {payload}")
+            batch = payload.get("data", [])
+        else:
+            batch = payload
         if not batch:
-            break
+            cursor = chunk_end
+            continue
         rows.extend(batch)
-        oldest = min(int(item["time"]) for item in batch)
-        next_cursor = oldest - 1
-        if next_cursor >= cursor:
-            break
-        cursor = next_cursor
-        if len(batch) < LIMIT:
-            break
-        time.sleep(0.05)
+        cursor = chunk_end
+        time.sleep(0.08)
 
     frame = pd.DataFrame(rows)
     if frame.empty:
@@ -98,9 +106,9 @@ def main() -> None:
         "stage": "Stage 3 strategy research",
         "status": "completed",
         "dataset": {
-            "source": "CoinDCX public candles API",
+            "source": "CoinDCX public futures candlesticks API",
             "pair": PAIR,
-            "interval": INTERVAL,
+            "interval": "5m",
             "rows": len(bars),
             "start": bars.index.min().isoformat(),
             "end": bars.index.max().isoformat(),
@@ -130,7 +138,7 @@ def main() -> None:
         "# AMTE Stage 3 Strategy Research",
         "",
         "## Dataset",
-        f"- Source: CoinDCX public candles API ({PAIR}, {INTERVAL})",
+        f"- Source: CoinDCX public futures candlesticks API ({PAIR}, 5m)",
         f"- Rows: {len(bars):,}",
         f"- Period: {bars.index.min().isoformat()} to {bars.index.max().isoformat()}",
         f"- Development: first 80% ({len(development):,} rows)",
