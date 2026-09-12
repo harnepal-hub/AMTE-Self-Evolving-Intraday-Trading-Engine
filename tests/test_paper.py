@@ -28,10 +28,9 @@ def test_daily_trade_cap_is_hard():
 def test_daily_loss_lock_blocks_new_entries():
     b = PaperBroker(PaperConfig(fee_bps_per_side=0, slippage_bps=0, max_daily_loss_pct=0.01))
     ts = pd.Timestamp("2026-09-12T10:00:00Z")
-    assert b.enter(ts, 1, 100.0, 100.0)
-    # Force a sufficiently adverse paper exit through a wide temporary price move.
-    b.position.stop_price = 200.0
-    b.exit(ts + pd.Timedelta(seconds=1), 0.0, 0.0, "LOSS")
+    assert b.enter(ts, 1, 100.0, 100.1)
+    row = b.exit(ts + pd.Timedelta(seconds=1), 90.0, 90.1, "LOSS")
+    assert row is not None and row["net_pnl"] < 0
     assert b.locked
     assert not b.enter(ts + pd.Timedelta(minutes=1), 1, 100.0, 100.1)
 
