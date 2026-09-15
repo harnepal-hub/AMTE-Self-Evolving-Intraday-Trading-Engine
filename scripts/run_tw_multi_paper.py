@@ -1,9 +1,9 @@
 """Multi-coin TW All in One paper trader for CoinDCX futures.
 
 This runner uses the selected historical filter configuration when available,
-subscribes to 5m candles plus executable order books, and uses one shared
-₹100,000 paper account with a hard five-trade/day limit across all coins.
-No authenticated exchange API and no order placement are used.
+subscribes to live 5m candles, refreshes executable order books for fills, and
+uses one shared ₹100,000 paper account with a hard five-trade/day limit across
+all coins. No authenticated exchange API and no order placement are used.
 """
 from __future__ import annotations
 
@@ -14,6 +14,7 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+import pandas as pd
 import requests
 import socketio
 
@@ -21,6 +22,7 @@ from app.execution.paper import PaperBroker, PaperConfig
 from app.signals.tw_all_in_one_filtered import filtered_signals
 
 ACTIVE = "https://api.coindcx.com/exchange/v1/derivatives/futures/data/active_instruments?margin_currency_short_name[]=USDT"
+BOOK = "https://public.coindcx.com/market_data/v3/orderbook/{pair}-futures/50"
 
 
 def active_pairs() -> list[str]:
@@ -54,62 +56,51 @@ class MultiPaper:
         with self.journal.open("a", encoding="utf-8") as f:
             f.write(json.dumps(row, default=str) + "\n")
 
-    @staticmethod
-    def levels(levels):
-        if isinstance(levels, dict):
-            vals = [(float(p), float(q)) for p, q in levels.items()]
-        else:
-            vals = [(float(x[0]), float(x[1])) for x in levels if isinstance(x, (list, tuple)) and len(x) >= 2]
-        return vals
-
-    def on_depth(self, response):
-        data = response.get("data", response) if isinstance(response, dict) else {}
-        pair = data.get("s") or data.get("pair")
-        if pair not in self.pairs:
-            # Some socket payloads omit the symbol; caller sets current pair before dispatch.
-            pair = getattr(self, "dispatch_pair", None)
-        if not pair: return
-        bids = self.levels(data.get("bids", {})); asks = self.levels(data.get("asks", {}))
-        if not bids or not asks: return
-        bid, bq = max(bids, key=lambda x: x[0]); ask, aq = min(asks, key=lambda x: x[0])
-        if bid <= 0 or ask <= bid: return
-        self.books[pair] = (bid, ask, bq, aq)
-        self.events += 1
-        if self.active_pair == pair:
-            self.broker.check_risk_exits(datetime.now(timezone.utc), bid, ask)
+    def refresh_book(self, pair: str):
+        try:
+            r = requests.get(BOOK.format(pair=pair), timeout=5); r.raise_for_status()
+            data = r.json()
+            bids = data.get("bids", {}); asks = data.get("asks", {})
+            if not bids or not asks: return None
+            bid, bq = max((float(p), float(q)) for p, q in bids.items())
+            ask, aq = min((float(p), float(q)) for p, q in asks.items())
+            if bid <= 0 or ask <= bid: return None
+            self.books[pair] = (bid, ask, bq, aq)
+            return self.books[pair]
+        except Exception:
+            return None
 
     def on_candle(self, pair: str, response):
         data = response.get("data", response) if isinstance(response, dict) else {}
         try:
+            op = float(data.get("open", data.get("o")))
+            hi = float(data.get("high", data.get("h")))
+            lo = float(data.get("low", data.get("l")))
             close = float(data.get("close", data.get("c")))
             volume = float(data.get("volume", data.get("v", 0)))
             ts_ms = int(data.get("Ets") or data.get("time") or data.get("T") or time.time() * 1000)
         except (TypeError, ValueError):
             return
-        # Ignore duplicate/current open candle updates; only act on a new completed 5m bar.
         bucket = (ts_ms // 300000) * 300000
         hist = self.bars[pair]
         if hist and hist[-1][0] == bucket:
-            hist[-1] = (bucket, close, volume)
+            hist[-1] = (bucket, op, hi, lo, close, volume)
             return
-        hist.append((bucket, close, volume))
+        hist.append((bucket, op, hi, lo, close, volume))
         if len(hist) < 250:
             return
         self.events += 1
-        import pandas as pd
         idx = pd.to_datetime([x[0] for x in hist], unit="ms", utc=True)
-        df = pd.DataFrame({"open": [x[1] for x in hist], "high": [x[1] for x in hist],
-                           "low": [x[1] for x in hist], "close": [x[1] for x in hist],
-                           "volume": [x[2] for x in hist]}, index=idx)
+        df = pd.DataFrame({"open": [x[1] for x in hist], "high": [x[2] for x in hist],
+                           "low": [x[3] for x in hist], "close": [x[4] for x in hist],
+                           "volume": [x[5] for x in hist]}, index=idx)
         sig = int(filtered_signals(df, **self.cfg).iloc[-1])
-        if sig == self.last_signal[pair]:
-            return
+        if sig == self.last_signal[pair]: return
         self.last_signal[pair] = sig
-        if sig == 0:
-            return
+        if sig == 0: return
         self.signals += 1
         now = datetime.fromtimestamp(ts_ms / 1000, tz=timezone.utc)
-        book = self.books.get(pair)
+        book = self.refresh_book(pair)
         if not book: return
         bid, ask, _, _ = book
         if self.broker.position is not None:
@@ -119,10 +110,9 @@ class MultiPaper:
                     self.broker.exit(now, bid, ask, "TW_OPPOSITE")
                     self.log({"event": "EXIT", "pair": pair, "reason": "TW_OPPOSITE", "time": now.isoformat()})
             return
-        if self.broker.can_enter(now, bid, ask):
-            if self.broker.enter(now, sig, bid, ask):
-                self.active_pair = pair
-                self.log({"event": "ENTRY", "pair": pair, "time": now.isoformat(), "signal": sig})
+        if self.broker.can_enter(now, bid, ask) and self.broker.enter(now, sig, bid, ask):
+            self.active_pair = pair
+            self.log({"event": "ENTRY", "pair": pair, "time": now.isoformat(), "signal": sig})
 
     def summary(self):
         rows = self.broker.journal
@@ -169,14 +159,9 @@ def main():
     @sio.event
     def connect():
         for pair in pairs:
-            sio.emit("join", {"channelName": f"{pair}@orderbook@50-futures"})
             sio.emit("join", {"channelName": f"{pair}_5m-futures"})
         runner.log({"event": "CONNECTED", "time": datetime.now(timezone.utc).isoformat(), "pairs": len(pairs)})
         print(f"CONNECTED: {len(pairs)} pairs | TW PAPER ONLY", flush=True)
-
-    @sio.on("depth-snapshot")
-    def depth(data):
-        runner.on_depth(data)
 
     @sio.on("candlestick")
     def candle(data):
@@ -189,12 +174,16 @@ def main():
     sio.connect("https://stream.coindcx.com", transports=["websocket"], wait_timeout=15)
     try:
         while time.monotonic() - runner.start < args.seconds:
-            time.sleep(10)
+            if runner.active_pair:
+                book = runner.refresh_book(runner.active_pair)
+                if book:
+                    runner.broker.check_risk_exits(datetime.now(timezone.utc), book[0], book[1])
+            time.sleep(5)
             print(json.dumps(runner.summary(), default=str), flush=True)
     finally:
-        if runner.broker.position is not None and runner.active_pair in runner.books:
-            bid, ask, _, _ = runner.books[runner.active_pair]
-            runner.broker.exit(datetime.now(timezone.utc), bid, ask, "SESSION_END")
+        if runner.broker.position is not None and runner.active_pair:
+            book = runner.refresh_book(runner.active_pair)
+            if book: runner.broker.exit(datetime.now(timezone.utc), book[0], book[1], "SESSION_END")
         if sio.connected: sio.disconnect()
         summary = runner.summary()
         Path(args.out).mkdir(parents=True, exist_ok=True)
