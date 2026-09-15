@@ -1,0 +1,33 @@
+name: TW Cross-Coin Research
+
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: Historical days per coin
+        required: false
+        default: '90'
+      max_coins:
+        description: Maximum coins (0 = all active USDT futures)
+        required: false
+        default: '0'
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: python -m pip install -r requirements.txt
+      - name: Run cross-coin TW research
+        run: python scripts/run_tw_all_coins_research.py --days "${{ inputs.days }}" --max-coins "${{ inputs.max_coins }}"
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: tw-all-coins-results
+          path: research_artifacts/tw_all_coins/
+          if-no-files-found: error
