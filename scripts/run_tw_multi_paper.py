@@ -20,8 +20,33 @@ BOOK = "https://public.coindcx.com/market_data/v3/orderbook/{pair}-futures/50"
 
 
 def active_pairs() -> list[str]:
-    r = requests.get(ACTIVE, timeout=20); r.raise_for_status()
+    r = requests.get(ACTIVE, timeout=20)
+    r.raise_for_status()
     return sorted({x for x in r.json() if isinstance(x, str) and x.endswith("_USDT")})
+
+
+def _rows_from_candle_response(response: dict, allowed_pairs: set[str]) -> list[dict]:
+    """Normalize CoinDCX futures candlestick payloads.
+
+    The API has returned candle data both as a list and as a single object in
+    different examples. Pair identity may also be available only in channel.
+    """
+    if not isinstance(response, dict):
+        return []
+    raw = response.get("data", [])
+    rows = raw if isinstance(raw, list) else [raw]
+    channel = str(response.get("channel", ""))
+    channel_pair = channel.split("_5m-futures", 1)[0] if "_5m-futures" in channel else ""
+    out: list[dict] = []
+    for data in rows:
+        if not isinstance(data, dict):
+            continue
+        row = dict(data)
+        pair = row.get("pair") or row.get("s") or row.get("symbol") or channel_pair
+        if pair in allowed_pairs:
+            row["pair"] = pair
+            out.append(row)
+    return out
 
 
 class MultiPaper:
@@ -36,48 +61,62 @@ class MultiPaper:
         self.journal = self.out / "tw_multi_paper.jsonl"
 
     def log(self, row):
-        with self.journal.open("a", encoding="utf-8") as f: f.write(json.dumps(row, default=str) + "\n")
+        with self.journal.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(row, default=str) + "\n")
 
     def refresh_book(self, pair):
         try:
             data = requests.get(BOOK.format(pair=pair), timeout=5).json()
             bids, asks = data.get("bids", {}), data.get("asks", {})
-            if not bids or not asks: return None
+            if not bids or not asks:
+                return None
             bid, bq = max((float(p), float(q)) for p, q in bids.items())
             ask, aq = min((float(p), float(q)) for p, q in asks.items())
-            if bid <= 0 or ask <= bid: return None
-            self.books[pair] = (bid, ask, bq, aq); return self.books[pair]
-        except Exception: return None
+            if bid <= 0 or ask <= bid:
+                return None
+            self.books[pair] = (bid, ask, bq, aq)
+            return self.books[pair]
+        except Exception:
+            return None
 
     def on_candle(self, response):
-        if not isinstance(response, dict): return
-        raw = response.get("data", [])
-        rows = raw if isinstance(raw, list) else [raw]
-        for data in rows:
-            pair = data.get("pair") or data.get("s")
-            if pair not in self.pairs: continue
+        for data in _rows_from_candle_response(response, set(self.pairs)):
             try:
-                op, hi, lo = float(data["open"]), float(data["high"]), float(data["low"])
-                close, volume = float(data["close"]), float(data["volume"])
+                op = float(data.get("open", data.get("o")))
+                hi = float(data.get("high", data.get("h")))
+                lo = float(data.get("low", data.get("l")))
+                close = float(data.get("close", data.get("c")))
+                volume = float(data.get("volume", data.get("v")))
                 ts_ms = int(data.get("open_time", data.get("t", 0)))
-                if ts_ms < 10_000_000_000: ts_ms *= 1000
-            except (TypeError, ValueError, KeyError): continue
-            bucket = (ts_ms // 300000) * 300000; hist = self.bars[pair]
+                if ts_ms < 10_000_000_000:
+                    ts_ms *= 1000
+            except (TypeError, ValueError):
+                continue
+            pair = data["pair"]
+            bucket = (ts_ms // 300000) * 300000
+            hist = self.bars[pair]
             row = (bucket, op, hi, lo, close, volume)
-            if hist and hist[-1][0] == bucket: hist[-1] = row; continue
+            if hist and hist[-1][0] == bucket:
+                hist[-1] = row
+                continue
             hist.append(row)
-            if len(hist) < 250: continue
+            if len(hist) < 250:
+                continue
             self.events += 1
             idx = pd.to_datetime([x[0] for x in hist], unit="ms", utc=True)
             df = pd.DataFrame({"open":[x[1] for x in hist],"high":[x[2] for x in hist],
                 "low":[x[3] for x in hist],"close":[x[4] for x in hist],"volume":[x[5] for x in hist]}, index=idx)
             sig = int(filtered_signals(df, **self.cfg).iloc[-1])
-            if sig == self.last_signal[pair]: continue
+            if sig == self.last_signal[pair]:
+                continue
             self.last_signal[pair] = sig
-            if not sig: continue
-            self.signals += 1; now = datetime.fromtimestamp(ts_ms/1000, tz=timezone.utc)
+            if not sig:
+                continue
+            self.signals += 1
+            now = datetime.fromtimestamp(ts_ms/1000, tz=timezone.utc)
             book = self.refresh_book(pair)
-            if not book: continue
+            if not book:
+                continue
             bid, ask, _, _ = book
             if self.broker.position is not None:
                 if self.active_pair == pair:
@@ -85,9 +124,11 @@ class MultiPaper:
                     if (sig == 1 and pos.side == "SHORT") or (sig == -1 and pos.side == "LONG"):
                         self.broker.exit(now, bid, ask, "TW_OPPOSITE")
                         self.log({"event":"EXIT","pair":pair,"reason":"TW_OPPOSITE","time":now.isoformat()})
+                        self.active_pair = None
                 continue
             if self.broker.can_enter(now, bid, ask) and self.broker.enter(now, sig, bid, ask):
-                self.active_pair = pair; self.log({"event":"ENTRY","pair":pair,"time":now.isoformat(),"signal":sig})
+                self.active_pair = pair
+                self.log({"event":"ENTRY","pair":pair,"time":now.isoformat(),"signal":sig})
 
     def summary(self):
         rows = self.broker.journal
