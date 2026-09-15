@@ -1,0 +1,23 @@
+strategy: tw_all_in_one_filtered
+market: coindcx_btc_usdt_futures
+bar_timeframe: 5m
+signal:
+  hull_length: 8
+  ema_length: 200
+  ema_filter: true
+  slope_filter: true
+filters:
+  volume_ratio_min: 2.0
+  atr_expansion_min: 1.2
+  ema_distance_min: 0.01
+risk:
+  initial_capital: 100000
+  risk_per_trade: 0.0025
+  stop_pct: 0.005
+  target_pct: 0.01
+  fee_bps_per_side: 5.0
+  slippage_bps: 2.0
+  max_trades_per_day: 5
+  max_daily_loss_pct: 0.02
+status: experimental_not_validated
+live_orders: false
