@@ -1,6 +1,11 @@
 name: Dashboard Market Cache
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/update_dashboard_cache.py'
+      - '.github/workflows/dashboard_market_cache.yml'
   schedule:
     - cron: '*/10 * * * *'
   workflow_dispatch:
