@@ -5,10 +5,18 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/paper_now.yml'
+      - 'scripts/run_tw_realtime_capture.py'
+      - 'scripts/run_tw_multi_paper.py'
+      - 'app/signals/tw_all_in_one_filtered.py'
+      - 'app/execution/paper.py'
   workflow_dispatch:
 
 permissions:
   contents: write
+
+concurrency:
+  group: immediate-paper-capture
+  cancel-in-progress: false
 
 jobs:
   capture:
@@ -23,20 +31,20 @@ jobs:
           python-version: '3.12'
       - name: Dependencies
         run: python -m pip install -r requirements.txt
-      - name: Run current live paper session
-        run: python scripts/run_tw_multi_paper.py --seconds 300 --max-pairs 30 --out data/tw_multi_paper
+      - name: Run current live intrabar paper session
+        run: python scripts/run_tw_realtime_capture.py --seconds 300 --max-pairs 30 --out data/tw_realtime_paper
       - name: Publish result
         if: always()
         run: |
           mkdir -p data/paper_daily
           ts=$(date -u +%Y%m%dT%H%M%SZ)
-          if [ -f data/tw_multi_paper/summary.json ]; then
-            cp data/tw_multi_paper/summary.json "data/paper_daily/${ts}.json"
+          if [ -f data/tw_realtime_paper/summary.json ]; then
+            cp data/tw_realtime_paper/summary.json "data/paper_daily/${ts}.json"
           else
             printf '{"status":"NO_SUMMARY","timestamp":"%s"}\n' "$ts" > "data/paper_daily/${ts}.json"
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/paper_daily
-          git diff --cached --quiet || git commit -m "data: capture current paper session"
+          git diff --cached --quiet || git commit -m "data: capture current realtime paper session"
           git push
