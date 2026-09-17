@@ -1,12 +1,23 @@
-"""Multi-coin TW All in One paper trader for CoinDCX futures."""
+"""Multi-coin TW All in One paper trader for CoinDCX futures.
+
+Research-only: public CoinDCX data in, simulated fills out. No exchange order
+placement is implemented. The runner warms each pair with recent 5m candles,
+then listens to live futures candlesticks and shares one ₹100k paper account
+with a hard five-trade daily cap.
+"""
 from __future__ import annotations
 
 import argparse
 import json
 import signal
+import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 import pandas as pd
 import requests
@@ -16,21 +27,48 @@ from app.execution.paper import PaperBroker, PaperConfig
 from app.signals.tw_all_in_one_filtered import filtered_signals
 
 ACTIVE = "https://api.coindcx.com/exchange/v1/derivatives/futures/data/active_instruments?margin_currency_short_name[]=USDT"
+PRICES = "https://public.coindcx.com/market_data/v3/current_prices/futures/rt"
 BOOK = "https://public.coindcx.com/market_data/v3/orderbook/{pair}-futures/50"
+CANDLES = "https://public.coindcx.com/market_data/candlesticks"
 
 
-def active_pairs() -> list[str]:
+def active_pairs(max_pairs: int = 25) -> list[str]:
+    """Return active USDT futures, prioritising liquid instruments by 24h volume."""
     r = requests.get(ACTIVE, timeout=20)
     r.raise_for_status()
-    return sorted({x for x in r.json() if isinstance(x, str) and x.endswith("_USDT")})
+    active = {x for x in r.json() if isinstance(x, str) and x.endswith("_USDT")}
+    try:
+        prices = requests.get(PRICES, timeout=20).json()
+        ranked = sorted(
+            ((p, float(v.get("v", 0.0))) for p, v in prices.items() if p in active and isinstance(v, dict)),
+            key=lambda x: x[1], reverse=True,
+        )
+        if ranked:
+            return [p for p, _ in ranked[:max_pairs]]
+    except Exception:
+        pass
+    return sorted(active)[:max_pairs]
+
+
+def warmup_pair(pair: str, bars: int = 260) -> list[tuple[int, float, float, float, float, float]]:
+    """Load recent 5m futures bars so the causal indicators are ready immediately."""
+    now = int(time.time())
+    span = bars * 300 + 600
+    r = requests.get(CANDLES, params={"pair": pair, "from": now - span, "to": now,
+                                      "resolution": "5", "pcode": "f"}, timeout=20)
+    r.raise_for_status()
+    raw = r.json().get("data", [])
+    rows = []
+    for x in raw:
+        try:
+            rows.append((int(x["time"]), float(x["open"]), float(x["high"]), float(x["low"]),
+                         float(x["close"]), float(x["volume"])))
+        except (KeyError, TypeError, ValueError):
+            continue
+    return sorted(rows)[-bars:]
 
 
 def _rows_from_candle_response(response: dict, allowed_pairs: set[str]) -> list[dict]:
-    """Normalize CoinDCX futures candlestick payloads.
-
-    The API has returned candle data both as a list and as a single object in
-    different examples. Pair identity may also be available only in channel.
-    """
     if not isinstance(response, dict):
         return []
     raw = response.get("data", [])
@@ -59,6 +97,22 @@ class MultiPaper:
         self.last_signal = {p: 0 for p in pairs}; self.start = time.monotonic()
         self.events = 0; self.signals = 0; self.out.mkdir(parents=True, exist_ok=True)
         self.journal = self.out / "tw_multi_paper.jsonl"
+        self._warmup()
+
+    def _warmup(self):
+        for pair in self.pairs:
+            try:
+                rows = warmup_pair(pair)
+                self.bars[pair] = rows
+                if rows:
+                    # Process the latest completed warm-up bar only to establish state.
+                    df = pd.DataFrame(rows, columns=["time","open","high","low","close","volume"])
+                    idx = pd.to_datetime(df.pop("time"), unit="ms", utc=True)
+                    df.index = idx
+                    sig = int(filtered_signals(df, **self.cfg).iloc[-1])
+                    self.last_signal[pair] = sig
+            except Exception as exc:
+                self.log({"event":"WARMUP_ERROR","pair":pair,"error":str(exc)})
 
     def log(self, row):
         with self.journal.open("a", encoding="utf-8") as f:
@@ -100,6 +154,8 @@ class MultiPaper:
                 hist[-1] = row
                 continue
             hist.append(row)
+            if len(hist) > 300:
+                del hist[:-300]
             if len(hist) < 250:
                 continue
             self.events += 1
@@ -132,20 +188,20 @@ class MultiPaper:
 
     def summary(self):
         rows = self.broker.journal
-        return {"mode":"MULTI_COIN_TW_LIVE_DATA_PAPER","pairs":len(self.pairs),"capital":100000.0,
-            "risk_per_trade":0.0025,"max_trades_per_day":5,"events":self.events,"signals":self.signals,
+        return {"mode":"MULTI_COIN_TW_LIVE_DATA_PAPER","pairs":len(self.pairs),"pair_list":self.pairs,
+            "capital":100000.0,"risk_per_trade":0.0025,"max_trades_per_day":5,"events":self.events,"signals":self.signals,
             "trades_entered":sum(r.get("event")=="ENTRY" for r in rows),"trades_closed":sum(r.get("event")=="EXIT" for r in rows),
             "realized_pnl":self.broker.realized_pnl,"ending_cash":self.broker.cash,"active_pair":self.active_pair,"config":self.cfg}
 
 
 def main():
-    ap=argparse.ArgumentParser(); ap.add_argument("--seconds",type=int,default=3600); ap.add_argument("--pairs",default="")
-    ap.add_argument("--max-pairs",type=int,default=0); ap.add_argument("--config",default="research_artifacts/tw_all_coins/TW_ALL_COINS_RESULT.json")
+    ap=argparse.ArgumentParser(); ap.add_argument("--seconds",type=int,default=3300); ap.add_argument("--pairs",default="")
+    ap.add_argument("--max-pairs",type=int,default=25); ap.add_argument("--config",default="research_artifacts/tw_all_coins/TW_ALL_COINS_RESULT.json")
     ap.add_argument("--out",default="data/tw_multi_paper"); a=ap.parse_args()
     raw=json.loads(Path(a.config).read_text()) if Path(a.config).exists() else {}; cfg=raw.get("winner",{})
     if not cfg: cfg={"hull_length":8,"ema_length":200,"ema_filter":True,"slope_filter":True,"volume_ratio_min":1.2,"atr_expansion_min":1.1,"ema_distance_min":0.003,"rsi_filter":False,"cooldown_bars":3}
     keys={"hull_length","ema_length","ema_filter","slope_filter","volume_ratio_min","atr_expansion_min","ema_distance_min","rsi_filter","cooldown_bars"}; cfg={k:cfg[k] for k in keys}
-    pairs=[x.strip() for x in a.pairs.split(",") if x.strip()] if a.pairs else active_pairs()
+    pairs=[x.strip() for x in a.pairs.split(",") if x.strip()] if a.pairs else active_pairs(a.max_pairs)
     if a.max_pairs>0: pairs=pairs[:a.max_pairs]
     r=MultiPaper(pairs,cfg,a.seconds,Path(a.out)); sio=socketio.Client(reconnection=True,logger=False,engineio_logger=False)
     @sio.event
