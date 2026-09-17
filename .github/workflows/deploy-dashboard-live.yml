@@ -1,0 +1,43 @@
+name: Deploy AMTE Dashboard Live
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Verify dashboard entrypoint
+        run: |
+          test -f docs/index.html
+          grep -q "AI Scalping Agent" docs/index.html
+          echo "Dashboard entrypoint verified: docs/index.html"
+
+      - name: Upload dashboard artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./docs
+
+      - name: Deploy dashboard
+        id: deployment
+        uses: actions/deploy-pages@v4
