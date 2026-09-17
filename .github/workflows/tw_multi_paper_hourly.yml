@@ -1,6 +1,13 @@
 name: TW Multi-Coin Paper Trading
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/tw_multi_paper_hourly.yml'
+      - 'scripts/run_tw_multi_paper.py'
+      - 'app/execution/paper.py'
+      - 'app/signals/tw_all_in_one_filtered.py'
   schedule:
     - cron: '7 * * * *'
   workflow_dispatch:
