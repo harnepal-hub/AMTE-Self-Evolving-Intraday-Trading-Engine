@@ -8,11 +8,17 @@ from __future__ import annotations
 import argparse
 import json
 import signal
+import sys
 import time
 from collections import deque
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
+
+# Allow `python scripts/run_paper_trading.py` from the repository root.
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 import socketio
 
@@ -111,7 +117,6 @@ class TWPaperRunner:
         if bid <= 0 or ask <= bid: return
         self.book = Book(bid, ask, bq, aq)
         self.events += 1
-        # Risk exits are checked against executable bid/ask on every book update.
         self.broker.check_risk_exits(datetime.now(timezone.utc), bid, ask)
 
     def on_trade(self, response):
@@ -126,8 +131,6 @@ class TWPaperRunner:
         _, _, _, _, close, volume = finished
         self.bar_index += 1
         sig = self.signal.update(close)
-        # If a position exists, an opposite confirmed TW signal closes it; risk
-        # exits remain authoritative and are checked on every book update.
         now = datetime.fromtimestamp(ts / 1000, tz=timezone.utc)
         if sig and self.bar_index - self.last_signal_bar >= 1:
             self.signals += 1
