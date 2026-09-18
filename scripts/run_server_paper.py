@@ -1,13 +1,17 @@
-"""Server-side 5-minute multi-coin paper engine.
+"""Server-side multi-coin paper engine for AMTE training.
 
-Runs on GitHub Actions, so the paper engine continues when the dashboard/browser
-is closed. Uses public CoinDCX futures REST data only. No real exchange orders.
+Public CoinDCX futures data only. No real exchange orders.
+Training mode intentionally has no trade-count cap; the 2% daily loss lock
+remains active. Every candidate signal is logged before any entry decision,
+including rejected signals. Trades include MFE/MAE for later self-evolution.
 """
 from __future__ import annotations
-import argparse, json, time
+
+import argparse, csv, json, time, uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
+
 import pandas as pd
 import requests
 
@@ -15,6 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 import sys
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
+
 from app.signals.tw_all_in_one_filtered import filtered_signals
 
 ACTIVE = "https://api.coindcx.com/exchange/v1/derivatives/futures/data/active_instruments?margin_currency_short_name[]=USDT"
@@ -22,174 +27,444 @@ PRICES = "https://public.coindcx.com/market_data/v3/current_prices/futures/rt"
 CANDLES = "https://public.coindcx.com/market_data/candlesticks"
 BOOK = "https://public.coindcx.com/market_data/v3/orderbook/{pair}-futures/50"
 IST = ZoneInfo("Asia/Kolkata")
-CFG = {"hull_length":8,"ema_length":200,"ema_filter":True,"slope_filter":True,
-       "volume_ratio_min":1.2,"atr_expansion_min":1.1,"ema_distance_min":0.003,
-       "rsi_filter":False,"cooldown_bars":3}
+
+# Frozen paper configuration for this training phase.
+RISK_PER_TRADE = 0.0025
+STOP_PCT = 0.005
+TARGET_PCT = 0.01
+FEE_BPS = 5.0
+SLIPPAGE_BPS = 2.0
+MAX_DAILY_LOSS_PCT = 0.02
+MAX_TRADES_PER_DAY = 0  # 0 = unlimited during paper training.
+CFG = {
+    "hull_length": 8, "ema_length": 200, "ema_filter": True,
+    "slope_filter": True, "volume_ratio_min": 1.2,
+    "atr_expansion_min": 1.1, "ema_distance_min": 0.003,
+    "rsi_filter": False, "cooldown_bars": 3,
+}
+
+DATA = ROOT / "data" / "paper_live"
+STATE_PATH = DATA / "state.json"
+SUMMARY_PATH = DATA / "summary.json"
+MARKET_PATH = DATA / "market.json"
+TRADE_CSV = DATA / "trade_journal.csv"
+SIGNAL_CSV = DATA / "signal_journal.csv"
+
+TRADE_FIELDS = [
+    "trade_id","signal_id","pair","side","entry_time","exit_time",
+    "entry_price","exit_price","stop_price","target_price","quantity",
+    "entry_fee","exit_fee","fees","gross_pnl","net_pnl","reason",
+    "hold_seconds","mfe_price","mae_price","mfe_pct","mae_pct",
+    "mfe_r","mae_r","signal_source","ai_confidence",
+]
+SIGNAL_FIELDS = [
+    "signal_id","time","bar_time","pair","side","tw_signal","ai_side",
+    "ai_confidence","decision","reject_reason","entry_price","bid","ask",
+    "spread_bps","signal_source","filter_config",
+]
+
 
 def get_json(url, params=None, timeout=12):
-    r=requests.get(url,params=params,timeout=timeout); r.raise_for_status(); return r.json()
+    r = requests.get(url, params=params, timeout=timeout)
+    r.raise_for_status()
+    return r.json()
+
 
 def active_pairs(n):
-    active={x for x in get_json(ACTIVE) if isinstance(x,str) and x.endswith("_USDT")}
-    prices=get_json(PRICES)
-    ranked=sorted(((p,float(v.get("v",0))) for p,v in prices.items()
-                   if p in active and isinstance(v,dict)),key=lambda x:x[1],reverse=True)
-    return [p for p,_ in ranked[:n]] if ranked else sorted(active)[:n]
+    active = {x for x in get_json(ACTIVE) if isinstance(x, str) and x.endswith("_USDT")}
+    prices = get_json(PRICES).get("prices", {})
+    ranked = sorted(
+        ((p, float(v.get("v", 0))) for p, v in prices.items()
+         if p in active and isinstance(v, dict)),
+        key=lambda x: x[1], reverse=True,
+    )
+    return [p for p, _ in ranked[:n]] if ranked else sorted(active)[:n]
 
-def fetch_bars(pair,bars=260):
-    now=int(time.time())
-    j=get_json(CANDLES,{"pair":pair,"from":now-bars*300-900,"to":now,"resolution":5,"pcode":"f"})
-    out=[]
-    for x in j.get("data",[]):
-        try: out.append({"time":int(x["time"]),"open":float(x["open"]),"high":float(x["high"]),
-                         "low":float(x["low"]),"close":float(x["close"]),"volume":float(x["volume"])})
-        except (KeyError,TypeError,ValueError): pass
-    return sorted(out,key=lambda x:x["time"])[-bars:]
+
+def fetch_bars(pair, bars=260):
+    now = int(time.time())
+    j = get_json(CANDLES, {
+        "pair": pair, "from": now - bars * 300 - 900, "to": now,
+        "resolution": 5, "pcode": "f",
+    })
+    out = []
+    for x in j.get("data", []):
+        try:
+            out.append({
+                "time": int(x["time"]), "open": float(x["open"]),
+                "high": float(x["high"]), "low": float(x["low"]),
+                "close": float(x["close"]), "volume": float(x["volume"]),
+            })
+        except (KeyError, TypeError, ValueError):
+            pass
+    return sorted(out, key=lambda x: x["time"])[-bars:]
+
 
 def frame(rows):
-    return pd.DataFrame({"open":[x["open"] for x in rows],"high":[x["high"] for x in rows],
-                         "low":[x["low"] for x in rows],"close":[x["close"] for x in rows],
-                         "volume":[x["volume"] for x in rows]},
-                        index=pd.to_datetime([x["time"] for x in rows],unit="ms",utc=True))
+    return pd.DataFrame(
+        {
+            "open": [x["open"] for x in rows], "high": [x["high"] for x in rows],
+            "low": [x["low"] for x in rows], "close": [x["close"] for x in rows],
+            "volume": [x["volume"] for x in rows],
+        },
+        index=pd.to_datetime([x["time"] for x in rows], unit="ms", utc=True),
+    )
+
 
 def book(pair):
     try:
-        d=get_json(BOOK.format(pair=pair),timeout=5); bids=d.get("bids",{}); asks=d.get("asks",{})
-        if not bids or not asks:return None
-        bid=max(float(p) for p in bids); ask=min(float(p) for p in asks)
-        return (bid,ask) if 0<bid<ask else None
-    except Exception:return None
+        d = get_json(BOOK.format(pair=pair), timeout=5)
+        bids, asks = d.get("bids", {}), d.get("asks", {})
+        if not bids or not asks:
+            return None
+        bid = max(float(p) for p in bids)
+        ask = min(float(p) for p in asks)
+        return (bid, ask) if 0 < bid < ask else None
+    except Exception:
+        return None
 
-def ema(v,n):
-    return float(pd.Series(v,dtype=float).ewm(span=n,adjust=False).mean().iloc[-1])
 
-def rsi(v,n=14):
-    s=pd.Series(v,dtype=float); d=s.diff(); up=d.clip(lower=0); dn=-d.clip(upper=0)
-    au=up.ewm(alpha=1/n,adjust=False,min_periods=n).mean()
-    ad=dn.ewm(alpha=1/n,adjust=False,min_periods=n).mean()
-    z=100-100/(1+au/ad.replace(0,pd.NA))
+def ema(v, n):
+    return float(pd.Series(v, dtype=float).ewm(span=n, adjust=False).mean().iloc[-1])
+
+
+def rsi(v, n=14):
+    s = pd.Series(v, dtype=float)
+    d = s.diff()
+    up, dn = d.clip(lower=0), -d.clip(upper=0)
+    au = up.ewm(alpha=1/n, adjust=False, min_periods=n).mean()
+    ad = dn.ewm(alpha=1/n, adjust=False, min_periods=n).mean()
+    z = 100 - 100 / (1 + au / ad.replace(0, pd.NA))
     return float(z.iloc[-1]) if pd.notna(z.iloc[-1]) else 50.0
 
+
 def ai_proxy(rows):
-    if len(rows)<60:return "NO TRADE",50.0
-    c=[x["close"] for x in rows]; v=[x["volume"] for x in rows]
-    last,e20,e50=c[-1],ema(c,20),ema(c,50); rr=rsi(c); vr=v[-1]/(sum(v[-20:])/20 or 1)
-    score=50+(12 if last>e20 else -12)+(12 if e20>e50 else -12)
-    if 50<rr<70:score+=10
-    if 30<rr<50:score-=10
-    if vr>1.2:score+=8
-    return ("LONG" if score>=62 else "SHORT" if score<=38 else "NO TRADE"),float(max(0,min(100,score)))
+    if len(rows) < 60:
+        return "NO TRADE", 50.0
+    c = [x["close"] for x in rows]
+    v = [x["volume"] for x in rows]
+    last, e20, e50 = c[-1], ema(c, 20), ema(c, 50)
+    rr = rsi(c)
+    vr = v[-1] / (sum(v[-20:]) / 20 or 1)
+    score = 50 + (12 if last > e20 else -12) + (12 if e20 > e50 else -12)
+    if 50 < rr < 70:
+        score += 10
+    if 30 < rr < 50:
+        score -= 10
+    if vr > 1.2:
+        score += 8
+    return ("LONG" if score >= 62 else "SHORT" if score <= 38 else "NO TRADE",
+            float(max(0, min(100, score))))
+
 
 def default_state():
-    return {"version":2,"day_ist":"","cash":100000.0,"realized_pnl":0.0,"trades_today":0,
-            "locked":False,"position":None,"last_signal":{},"journal":[],"pairs":[],"events":0,
-            "signals":0,"errors":0,"updated_at":None,"status":"STARTING"}
+    return {
+        "version": 4, "day_ist": "", "cash": 100000.0, "realized_pnl": 0.0,
+        "trades_today": 0, "locked": False, "position": None,
+        "last_signal": {}, "pairs": [], "events": 0, "signals": 0,
+        "rejected_signals": 0, "accepted_signals": 0, "errors": 0,
+        "updated_at": None, "status": "STARTING", "journal": [],
+    }
+
 
 def load_state(path):
-    if not path.exists():return default_state()
+    if not path.exists():
+        return default_state()
     try:
-        s=default_state();s.update(json.loads(path.read_text()));return s
-    except Exception:return default_state()
+        s = default_state()
+        s.update(json.loads(path.read_text()))
+        return s
+    except Exception:
+        return default_state()
 
-def save_state(path,s):
-    path.parent.mkdir(parents=True,exist_ok=True)
-    path.write_text(json.dumps(s,indent=2,default=str))
 
-def log(s,row):
-    row["time"]=datetime.now(timezone.utc).isoformat();s["journal"].insert(0,row);s["journal"]=s["journal"][:500]
+def save_state(path, s):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(s, indent=2, default=str))
+
+
+def append_csv(path, fields, row):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    new = not path.exists() or path.stat().st_size == 0
+    with path.open("a", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=fields, extrasaction="ignore")
+        if new:
+            w.writeheader()
+        w.writerow({k: row.get(k, "") for k in fields})
+
+
+def event(s, row):
+    row = dict(row)
+    row["time"] = datetime.now(timezone.utc).isoformat()
+    s["journal"].insert(0, row)
+    s["journal"] = s["journal"][:1000]
+
 
 def roll_day(s):
-    d=datetime.now(IST).date().isoformat()
-    if s["day_ist"]!=d:
-        s["day_ist"]=d;s["trades_today"]=0;s["locked"]=False;s["realized_pnl"]=0.0
+    d = datetime.now(IST).date().isoformat()
+    if s["day_ist"] != d:
+        s["day_ist"] = d
+        s["trades_today"] = 0
+        s["locked"] = False
+        s["realized_pnl"] = 0.0
 
-def enter(s,pair,side,bid,ask,kind,score):
-    if s["position"] or s["trades_today"]>=5 or s["locked"]:return False
-    px0=ask if side==1 else bid; px=px0*(1+0.0002 if side==1 else 1-0.0002)
-    risk=s["cash"]*0.0025; qty=risk/(px*0.005); fee=px*qty*0.0005
-    if qty<=0 or s["cash"]<=fee:return False
-    s["cash"]-=fee;s["trades_today"]+=1
-    s["position"]={"pair":pair,"side":"LONG" if side==1 else "SHORT","entry_price":px,
-                   "quantity":qty,"entry_fee":fee,"stop_price":px*(0.995 if side==1 else 1.005),
-                   "target_price":px*(1.01 if side==1 else .99),
-                   "opened_at":datetime.now(timezone.utc).isoformat(),"kind":kind,"ai_score":score}
-    log(s,{"event":"ENTRY","pair":pair,"side":s["position"]["side"],"entry_price":px,
-           "quantity":qty,"stop_price":s["position"]["stop_price"],"target_price":s["position"]["target_price"],
-           "kind":kind,"ai_score":score})
+
+def can_enter(s):
+    return not s["position"] and not s["locked"]
+
+
+def enter(s, pair, side, bid, ask, signal_id, signal_source, ai_score):
+    if not can_enter(s):
+        return False
+    px0 = ask if side == 1 else bid
+    impact = SLIPPAGE_BPS / 10000
+    px = px0 * (1 + impact if side == 1 else 1 - impact)
+    risk = s["cash"] * RISK_PER_TRADE
+    qty = risk / (px * STOP_PCT)
+    fee = px * qty * FEE_BPS / 10000
+    if qty <= 0 or s["cash"] <= fee:
+        return False
+    side_name = "LONG" if side == 1 else "SHORT"
+    s["cash"] -= fee
+    trade_id = uuid.uuid4().hex
+    s["trades_today"] += 1
+    s["accepted_signals"] += 1
+    s["position"] = {
+        "trade_id": trade_id, "signal_id": signal_id, "pair": pair,
+        "side": side_name, "entry_price": px, "quantity": qty,
+        "entry_fee": fee, "stop_price": px * (0.995 if side == 1 else 1.005),
+        "target_price": px * (1.01 if side == 1 else .99),
+        "opened_at": datetime.now(timezone.utc).isoformat(),
+        "kind": signal_source, "ai_score": ai_score,
+        "mfe_price": px, "mae_price": px,
+    }
+    event(s, {"event": "ENTRY", "trade_id": trade_id, "signal_id": signal_id,
+              "pair": pair, "side": side_name, "entry_price": px, "quantity": qty,
+              "stop_price": s["position"]["stop_price"],
+              "target_price": s["position"]["target_price"],
+              "signal_source": signal_source, "ai_confidence": ai_score})
     return True
 
-def exit_position(s,bid,ask,reason):
-    p=s["position"]
-    if not p:return
-    side=1 if p["side"]=="LONG" else -1; px0=bid if side==1 else ask
-    px=px0*(1-0.0002 if side==1 else 1+0.0002)
-    gross=(px-p["entry_price"])*p["quantity"]*side; fee=px*p["quantity"]*0.0005
-    net=gross-p["entry_fee"]-fee;s["cash"]+=gross-fee;s["realized_pnl"]+=net
-    log(s,{"event":"EXIT","pair":p["pair"],"side":p["side"],"entry_price":p["entry_price"],
-           "exit_price":px,"quantity":p["quantity"],"gross_pnl":gross,"fees":p["entry_fee"]+fee,
-           "net_pnl":net,"reason":reason});s["position"]=None
-    if s["realized_pnl"]<=-2000:s["locked"]=True
+
+def update_excursion(s, rows):
+    p = s["position"]
+    if not p or not rows:
+        return
+    side = 1 if p["side"] == "LONG" else -1
+    for x in rows[-3:]:
+        if side == 1:
+            p["mfe_price"] = max(p["mfe_price"], x["high"])
+            p["mae_price"] = min(p["mae_price"], x["low"])
+        else:
+            p["mfe_price"] = max(p["mfe_price"], 2*p["entry_price"] - x["low"])
+            p["mae_price"] = min(p["mae_price"], 2*p["entry_price"] - x["high"])
+
+
+def exit_position(s, bid, ask, reason):
+    p = s["position"]
+    if not p:
+        return
+    side = 1 if p["side"] == "LONG" else -1
+    px0 = bid if side == 1 else ask
+    impact = SLIPPAGE_BPS / 10000
+    px = px0 * (1 - impact if side == 1 else 1 + impact)
+    gross = (px - p["entry_price"]) * p["quantity"] * side
+    fee = px * p["quantity"] * FEE_BPS / 10000
+    net = gross - p["entry_fee"] - fee
+    s["cash"] += gross - fee
+    s["realized_pnl"] += net
+    hold = (datetime.now(timezone.utc) -
+            datetime.fromisoformat(p["opened_at"])).total_seconds()
+    mfe_pct = abs(p["mfe_price"] - p["entry_price"]) / p["entry_price"]
+    mae_pct = abs(p["mae_price"] - p["entry_price"]) / p["entry_price"]
+    trade = {
+        "event": "EXIT", "trade_id": p["trade_id"], "signal_id": p["signal_id"],
+        "pair": p["pair"], "side": p["side"], "entry_time": p["opened_at"],
+        "exit_time": datetime.now(timezone.utc).isoformat(),
+        "entry_price": p["entry_price"], "exit_price": px,
+        "stop_price": p["stop_price"], "target_price": p["target_price"],
+        "quantity": p["quantity"], "entry_fee": p["entry_fee"], "exit_fee": fee,
+        "fees": p["entry_fee"] + fee, "gross_pnl": gross, "net_pnl": net,
+        "reason": reason, "hold_seconds": hold,
+        "mfe_price": p["mfe_price"], "mae_price": p["mae_price"],
+        "mfe_pct": mfe_pct, "mae_pct": mae_pct,
+        "mfe_r": mfe_pct / STOP_PCT, "mae_r": mae_pct / STOP_PCT,
+        "signal_source": p["kind"], "ai_confidence": p["ai_score"],
+    }
+    event(s, trade)
+    append_csv(TRADE_CSV, TRADE_FIELDS, trade)
+    s["position"] = None
+    if s["realized_pnl"] <= -100000 * MAX_DAILY_LOSS_PCT:
+        s["locked"] = True
+
 
 def risk_check(s):
-    p=s["position"]
-    if not p:return
-    q=book(p["pair"])
-    if not q:return
-    bid,ask=q
-    if p["side"]=="LONG":
-        if bid<=p["stop_price"]:exit_position(s,bid,ask,"STOP_LOSS")
-        elif bid>=p["target_price"]:exit_position(s,bid,ask,"TAKE_PROFIT")
+    p = s["position"]
+    if not p:
+        return
+    q = book(p["pair"])
+    if not q:
+        return
+    bid, ask = q
+    if p["side"] == "LONG":
+        if bid <= p["stop_price"]:
+            exit_position(s, bid, ask, "STOP_LOSS")
+        elif bid >= p["target_price"]:
+            exit_position(s, bid, ask, "TAKE_PROFIT")
     else:
-        if ask>=p["stop_price"]:exit_position(s,bid,ask,"STOP_LOSS")
-        elif ask<=p["target_price"]:exit_position(s,bid,ask,"TAKE_PROFIT")
+        if ask >= p["stop_price"]:
+            exit_position(s, bid, ask, "STOP_LOSS")
+        elif ask <= p["target_price"]:
+            exit_position(s, bid, ask, "TAKE_PROFIT")
 
-def process(s,pair):
+
+def process(s, pair):
     try:
-        rows=fetch_bars(pair)
-        if len(rows)<210:return
-        bucket=(int(time.time())//300)*300000
-        closed=[r for r in rows if r["time"]<bucket]
-        if len(closed)<210:return
-        s["events"]+=1
-        for label,data in (("CLOSED",closed),("INTRABAR",rows[-250:])):
-            sig=int(filtered_signals(frame(data),**CFG).iloc[-1])
-            if not sig:continue
-            key=f'{data[-1]["time"]}:{sig}:{label}'
-            if s["last_signal"].get(pair)==key:continue
-            s["last_signal"][pair]=key
-            ai_side,score=ai_proxy(data);wanted="LONG" if sig==1 else "SHORT"
-            if ai_side!=wanted or score<62:
-                log(s,{"event":"SIGNAL_REJECTED","pair":pair,"side":wanted,"ai_side":ai_side,
-                       "ai_score":score,"kind":label});continue
-            s["signals"]+=1;q=book(pair)
-            if not q:
-                log(s,{"event":"SIGNAL_NO_BOOK","pair":pair,"side":wanted,"ai_score":score,"kind":label});continue
-            bid,ask=q
-            if s["position"]:
-                if s["position"]["pair"]==pair and s["position"]["side"]!=wanted:exit_position(s,bid,ask,"TW_OPPOSITE")
-                continue
-            enter(s,pair,sig,bid,ask,label,score)
+        rows = fetch_bars(pair)
+        if len(rows) < 210:
+            return
+        if s["position"] and s["position"]["pair"] == pair:
+            update_excursion(s, rows)
+
+        bucket = (int(time.time()) // 300) * 300000
+        closed = [r for r in rows if r["time"] < bucket]
+        if len(closed) < 210:
+            return
+        s["events"] += 1
+
+        sig = int(filtered_signals(frame(closed), **CFG).iloc[-1])
+        if not sig:
+            return
+
+        bar_time = closed[-1]["time"]
+        signal_id = f"{pair}-{bar_time}-{sig}"
+        if s["last_signal"].get(pair) == signal_id:
+            return
+        s["last_signal"][pair] = signal_id
+
+        wanted = "LONG" if sig == 1 else "SHORT"
+        ai_side, score = ai_proxy(closed)
+        q = book(pair)
+        bid, ask = q if q else (None, None)
+        spread_bps = ((ask - bid) / ((ask + bid) / 2) * 10000
+                      if bid and ask else None)
+
+        # This row is deliberately written BEFORE the entry decision.
+        decision, reject = "ACCEPTED", ""
+        if not q:
+            decision, reject = "REJECTED", "NO_LIVE_ORDERBOOK"
+        elif s["position"]:
+            decision, reject = "REJECTED", "POSITION_ALREADY_OPEN"
+        elif s["locked"]:
+            decision, reject = "REJECTED", "DAILY_LOSS_LOCK"
+        elif ai_side != wanted:
+            decision, reject = "REJECTED", "AI_CONFLICT"
+        elif (wanted == "LONG" and score < 62) or (wanted == "SHORT" and score > 38):
+            decision, reject = "REJECTED", "AI_LOW_CONFIDENCE"
+
+        candidate = {
+            "signal_id": signal_id, "time": datetime.now(timezone.utc).isoformat(),
+            "bar_time": datetime.fromtimestamp(bar_time/1000, timezone.utc).isoformat(),
+            "pair": pair, "side": wanted, "tw_signal": sig, "ai_side": ai_side,
+            "ai_confidence": score, "decision": decision,
+            "reject_reason": reject, "entry_price": (ask if sig == 1 else bid),
+            "bid": bid, "ask": ask, "spread_bps": spread_bps,
+            "signal_source": "TW_FILTERED_PLUS_AI",
+            "filter_config": json.dumps(CFG, sort_keys=True),
+        }
+        append_csv(SIGNAL_CSV, SIGNAL_FIELDS, candidate)
+        s["signals"] += 1
+        if decision != "ACCEPTED":
+            s["rejected_signals"] += 1
+            event(s, {"event": "SIGNAL_REJECTED", **candidate})
+            return
+
+        entered = enter(s, pair, sig, bid, ask, signal_id, "TW_FILTERED_PLUS_AI", score)
+        if not entered:
+            s["rejected_signals"] += 1
+            candidate["decision"] = "REJECTED"
+            candidate["reject_reason"] = "ENTRY_GUARD"
+            append_csv(SIGNAL_CSV, SIGNAL_FIELDS, candidate)
+            event(s, {"event": "SIGNAL_REJECTED", **candidate})
     except Exception as exc:
-        s["errors"]+=1;log(s,{"event":"PAIR_ERROR","pair":pair,"error":str(exc)})
+        s["errors"] += 1
+        event(s, {"event": "PAIR_ERROR", "pair": pair, "error": str(exc)})
+
+
+def write_market_snapshot(s, pairs):
+    try:
+        prices = get_json(PRICES).get("prices", {})
+        signal_map = {}
+        for p in pairs:
+            rows = fetch_bars(p, 80)
+            if len(rows) >= 60:
+                tw = int(filtered_signals(frame(rows), **CFG).iloc[-1]) if len(rows) >= 60 else 0
+                ai_side, ai_score = ai_proxy(rows)
+                signal_map[p] = {"tw": tw, "ai": ai_side, "confidence": ai_score,
+                                 "bar_time": rows[-1]["time"]}
+        snapshot = {
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "prices": {p: prices[p] for p in pairs if p in prices},
+            "signals": signal_map,
+            "source": "CoinDCX public futures REST",
+        }
+        MARKET_PATH.write_text(json.dumps(snapshot, separators=(",", ":")))
+    except Exception as exc:
+        event(s, {"event": "MARKET_SNAPSHOT_ERROR", "error": str(exc)})
+
 
 def main():
-    ap=argparse.ArgumentParser();ap.add_argument("--minutes",type=float,default=4.0)
-    ap.add_argument("--max-pairs",type=int,default=30);ap.add_argument("--state",default="data/paper_live/state.json")
-    ap.add_argument("--summary",default="data/paper_live/summary.json");a=ap.parse_args()
-    sp,mp=Path(a.state),Path(a.summary);s=load_state(sp);roll_day(s)
-    try:pairs=active_pairs(a.max_pairs)
-    except Exception as exc:
-        pairs=s.get("pairs",[])[:a.max_pairs];s["errors"]+=1;log(s,{"event":"ACTIVE_PAIRS_ERROR","error":str(exc)})
-    s["pairs"]=pairs;end=time.monotonic()+a.minutes*60
-    while time.monotonic()<end:
-        for p in pairs:process(s,p)
-        risk_check(s);s["updated_at"]=datetime.now(timezone.utc).isoformat();s["status"]="LIVE_PAPER"
-        save_state(sp,s);time.sleep(20)
-    summary={"mode":"SERVER_SIDE_MULTI_COIN_TW_AI_PAPER","status":s["status"],"updated_at":s["updated_at"],
-             "day_ist":s["day_ist"],"capital":100000.0,"cash":s["cash"],"realized_pnl":s["realized_pnl"],
-             "trades_today":s["trades_today"],"max_trades_per_day":5,"pairs":len(pairs),"pair_list":pairs,
-             "events":s["events"],"signals":s["signals"],"errors":s["errors"],"position":s["position"],
-             "browser_required":False,"real_orders":False,"config":CFG}
-    save_state(sp,s);save_state(mp,summary);print(json.dumps(summary,indent=2),flush=True)
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--minutes", type=float, default=4.0)
+    ap.add_argument("--max-pairs", type=int, default=30)
+    a = ap.parse_args()
 
-if __name__=="__main__":main()
+    DATA.mkdir(parents=True, exist_ok=True)
+    s = load_state(STATE_PATH)
+    roll_day(s)
+
+    try:
+        pairs = active_pairs(a.max_pairs)
+    except Exception as exc:
+        pairs = s.get("pairs", [])[:a.max_pairs]
+        s["errors"] += 1
+        event(s, {"event": "ACTIVE_PAIRS_ERROR", "error": str(exc)})
+
+    s["pairs"] = pairs
+    end = time.monotonic() + a.minutes * 60
+
+    while time.monotonic() < end:
+        for p in pairs:
+            process(s, p)
+        risk_check(s)
+        s["updated_at"] = datetime.now(timezone.utc).isoformat()
+        s["status"] = "LIVE_PAPER"
+        save_state(STATE_PATH, s)
+        time.sleep(20)
+
+    if s["position"]:
+        q = book(s["position"]["pair"])
+        if q:
+            exit_position(s, q[0], q[1], "SESSION_END")
+
+    write_market_snapshot(s, pairs)
+
+    summary = {
+        "mode": "SERVER_SIDE_MULTI_COIN_TW_AI_PAPER_TRAINING",
+        "status": s["status"], "updated_at": s["updated_at"],
+        "day_ist": s["day_ist"], "capital": 100000.0, "cash": s["cash"],
+        "realized_pnl": s["realized_pnl"], "trades_today": s["trades_today"],
+        "max_trades_per_day": MAX_TRADES_PER_DAY,
+        "pairs": len(pairs), "pair_list": pairs, "events": s["events"],
+        "signals": s["signals"], "accepted_signals": s["accepted_signals"],
+        "rejected_signals": s["rejected_signals"], "errors": s["errors"],
+        "position": s["position"], "browser_required": False,
+        "real_orders": False, "config": CFG,
+    }
+    save_state(STATE_PATH, s)
+    save_state(SUMMARY_PATH, summary)
+    print(json.dumps(summary, indent=2), flush=True)
+
+
+if __name__ == "__main__":
+    main()
