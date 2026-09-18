@@ -56,7 +56,13 @@ jobs:
           mkdir -p data/paper_live
           cp -a /tmp/amte-paper-state/. data/paper_live/ 2>/dev/null || true
 
-          git add data/paper_live
+          # Mirror the server state into the Pages source tree. This makes the
+          # dashboard data same-origin and avoids browser/CORS/raw-GitHub failures.
+          rm -rf docs/live_data
+          mkdir -p docs/live_data
+          cp -a data/paper_live/state.json docs/live_data/state.json 2>/dev/null || true
+          cp -a data/paper_live/market.json docs/live_data/market.json 2>/dev/null || true
+          git add data/paper_live docs/live_data
           if git diff --cached --quiet; then
             exit 0
           fi
