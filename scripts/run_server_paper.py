@@ -8,6 +8,7 @@ including rejected signals. Trades include MFE/MAE for later self-evolution.
 from __future__ import annotations
 
 import argparse, csv, json, time, uuid
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -35,7 +36,7 @@ TARGET_PCT = 0.01
 FEE_BPS = 5.0
 SLIPPAGE_BPS = 2.0
 MAX_DAILY_LOSS_PCT = 0.02
-MAX_TRADES_PER_DAY = 0  # 0 = unlimited during paper training.
+MAX_TRADES_PER_DAY = 5
 CFG = {
     "hull_length": 8, "ema_length": 200, "ema_filter": True,
     "slope_filter": True, "volume_ratio_min": 1.2,
@@ -210,7 +211,8 @@ def roll_day(s):
 
 
 def can_enter(s):
-    return not s["position"] and not s["locked"]
+    return (not s["position"] and not s["locked"]
+            and s["trades_today"] < MAX_TRADES_PER_DAY)
 
 
 def enter(s, pair, side, bid, ask, signal_id, signal_source, ai_score):
@@ -318,9 +320,9 @@ def risk_check(s):
             exit_position(s, bid, ask, "TAKE_PROFIT")
 
 
-def process(s, pair, bars_cache=None):
+def process(s, pair, bars_cache=None, rows=None):
     try:
-        rows = fetch_bars(pair)
+        rows = fetch_bars(pair) if rows is None else rows
         if bars_cache is not None:
             bars_cache[pair] = rows[-80:]
         if len(rows) < 210:
@@ -431,14 +433,27 @@ def main():
     end = time.monotonic() + a.minutes * 60
     bars_cache = {}
 
+    # Fetch candle histories concurrently so all 30 coins are evaluated within
+    # the 5-minute cadence. State mutation and signal decisions remain sequential.
+    workers = min(12, max(1, len(pairs)))
     while time.monotonic() < end:
+        fetched = {}
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futures = {pool.submit(fetch_bars, p): p for p in pairs}
+            for fut in as_completed(futures):
+                p = futures[fut]
+                try:
+                    fetched[p] = fut.result()
+                except Exception as exc:
+                    s["errors"] += 1
+                    event(s, {"event": "FETCH_ERROR", "pair": p, "error": str(exc)})
         for p in pairs:
-            process(s, p, bars_cache)
-        risk_check(s)
+            process(s, p, bars_cache, fetched.get(p, []))
+            risk_check(s)
         s["updated_at"] = datetime.now(timezone.utc).isoformat()
         s["status"] = "LIVE_PAPER"
         save_state(STATE_PATH, s)
-        time.sleep(20)
+        time.sleep(15)
 
     if s["position"]:
         q = book(s["position"]["pair"])
