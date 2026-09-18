@@ -3,6 +3,9 @@ name: Deploy AMTE Dashboard Live
 on:
   push:
     branches: [main]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/deploy-dashboard-live.yml'
   workflow_dispatch:
 
 permissions:
@@ -23,21 +26,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
-
       - name: Verify dashboard entrypoint
         run: |
           test -f docs/index.html
+          test -f docs/app.js
           grep -q "AI Scalping Agent" docs/index.html
-          echo "Dashboard entrypoint verified: docs/index.html"
-
       - name: Upload dashboard artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./docs
-
       - name: Deploy dashboard
         id: deployment
         uses: actions/deploy-pages@v4
