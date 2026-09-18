@@ -163,7 +163,7 @@ def default_state():
         "trades_today": 0, "locked": False, "position": None,
         "last_signal": {}, "pairs": [], "events": 0, "signals": 0,
         "rejected_signals": 0, "accepted_signals": 0, "errors": 0,
-        "updated_at": None, "status": "STARTING", "journal": [],
+        "updated_at": None, "status": "STARTING", "journal": [], "signal_map": {},
     }
 
 
@@ -318,9 +318,11 @@ def risk_check(s):
             exit_position(s, bid, ask, "TAKE_PROFIT")
 
 
-def process(s, pair):
+def process(s, pair, bars_cache=None):
     try:
         rows = fetch_bars(pair)
+        if bars_cache is not None:
+            bars_cache[pair] = rows[-80:]
         if len(rows) < 210:
             return
         if s["position"] and s["position"]["pair"] == pair:
@@ -344,6 +346,7 @@ def process(s, pair):
 
         wanted = "LONG" if sig == 1 else "SHORT"
         ai_side, score = ai_proxy(closed)
+        s["signal_map"][pair] = {"tw": sig, "ai": ai_side, "confidence": score, "bar_time": bar_time}
         q = book(pair)
         bid, ask = q if q else (None, None)
         spread_bps = ((ask - bid) / ((ask + bid) / 2) * 10000
@@ -391,21 +394,15 @@ def process(s, pair):
         event(s, {"event": "PAIR_ERROR", "pair": pair, "error": str(exc)})
 
 
-def write_market_snapshot(s, pairs):
+def write_market_snapshot(s, pairs, bars_cache):
     try:
         prices = get_json(PRICES).get("prices", {})
-        signal_map = {}
-        for p in pairs:
-            rows = fetch_bars(p, 80)
-            if len(rows) >= 60:
-                tw = int(filtered_signals(frame(rows), **CFG).iloc[-1]) if len(rows) >= 60 else 0
-                ai_side, ai_score = ai_proxy(rows)
-                signal_map[p] = {"tw": tw, "ai": ai_side, "confidence": ai_score,
-                                 "bar_time": rows[-1]["time"]}
+        btc = bars_cache.get("B-BTC_USDT", [])[-60:]
         snapshot = {
             "updated_at": datetime.now(timezone.utc).isoformat(),
             "prices": {p: prices[p] for p in pairs if p in prices},
-            "signals": signal_map,
+            "signals": s.get("signal_map", {}),
+            "candles": {"B-BTC_USDT": btc} if btc else {},
             "source": "CoinDCX public futures REST",
         }
         MARKET_PATH.write_text(json.dumps(snapshot, separators=(",", ":")))
@@ -432,10 +429,11 @@ def main():
 
     s["pairs"] = pairs
     end = time.monotonic() + a.minutes * 60
+    bars_cache = {}
 
     while time.monotonic() < end:
         for p in pairs:
-            process(s, p)
+            process(s, p, bars_cache)
         risk_check(s)
         s["updated_at"] = datetime.now(timezone.utc).isoformat()
         s["status"] = "LIVE_PAPER"
@@ -447,7 +445,7 @@ def main():
         if q:
             exit_position(s, q[0], q[1], "SESSION_END")
 
-    write_market_snapshot(s, pairs)
+    write_market_snapshot(s, pairs, bars_cache)
 
     summary = {
         "mode": "SERVER_SIDE_MULTI_COIN_TW_AI_PAPER_TRAINING",
