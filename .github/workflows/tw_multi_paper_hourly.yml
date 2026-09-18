@@ -1,63 +1,13 @@
-name: TW Multi-Coin Paper Trading
+name: Legacy TW Multi-Coin Paper Diagnostics
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/tw_multi_paper_hourly.yml'
-      - 'scripts/run_tw_multi_paper.py'
-      - 'app/execution/paper.py'
-      - 'app/signals/tw_all_in_one_filtered.py'
-  schedule:
-    # Run five-minute sessions every ten minutes.
-    - cron: '*/10 * * * *'
   workflow_dispatch:
 
 permissions:
-  contents: write
-
-concurrency:
-  group: tw-multi-paper
-  cancel-in-progress: true
+  contents: read
 
 jobs:
-  paper:
+  disabled:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-          cache: pip
-      - name: Dependencies
-        run: python -m pip install -r requirements.txt
-      - name: Run live multi-coin paper session
-        run: python scripts/run_tw_multi_paper.py --seconds 300 --max-pairs 30 --out data/tw_multi_paper
-      - name: Save timestamped result
-        if: always()
-        run: |
-          mkdir -p data/paper_daily
-          ts=$(date -u +%Y%m%dT%H%M%SZ)
-          if [ -f data/tw_multi_paper/summary.json ]; then
-            cp data/tw_multi_paper/summary.json "data/paper_daily/${ts}.json"
-          else
-            printf '{"status":"NO_SUMMARY","timestamp":"%s"}\n' "$ts" > "data/paper_daily/${ts}.json"
-          fi
-      - name: Commit paper result
-        if: always()
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/paper_daily
-          git diff --cached --quiet || git commit -m "data: record live multi-coin paper result"
-          git push
-      - name: Upload session artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: tw-multi-paper-${{ github.run_id }}
-          path: data/tw_multi_paper/
-          retention-days: 14
+      - run: echo "Legacy workflow retained for manual diagnostics. Server-side paper engine is now the active runner."
