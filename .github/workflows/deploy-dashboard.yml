@@ -1,12 +1,8 @@
 name: Deploy AMTE Dashboard
 
+# Single Pages deployment is maintained by deploy-dashboard-live.yml.
+# Keep this legacy workflow manual-only to prevent competing deployments.
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'docs/**'
-      - 'index.html'
-      - '.github/workflows/deploy-dashboard.yml'
   workflow_dispatch:
 
 permissions:
@@ -14,25 +10,8 @@ permissions:
   pages: write
   id-token: write
 
-concurrency:
-  group: pages
-  cancel-in-progress: true
-
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  disabled:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-      - name: Upload site
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./docs
-      - name: Deploy
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - run: echo "Legacy dashboard deployment disabled; use Deploy AMTE Dashboard Live."
