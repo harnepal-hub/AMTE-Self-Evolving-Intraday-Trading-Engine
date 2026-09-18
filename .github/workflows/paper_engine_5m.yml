@@ -1,8 +1,9 @@
 name: AMTE Server Paper Engine
+# Runs every five minutes; each session monitors the live CoinDCX futures feed server-side.
 
 on:
   schedule:
-    - cron: '2-59/5 * * * *'
+    - cron: '*/5 * * * *'
   workflow_dispatch:
   push:
     branches: [main]
@@ -21,7 +22,7 @@ concurrency:
 jobs:
   paper:
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 9
     steps:
       - uses: actions/checkout@v4
 
@@ -35,7 +36,7 @@ jobs:
       - name: Run server-side paper engine
         run: python scripts/run_server_paper.py --minutes 4 --max-pairs 30
 
-      - name: Publish state safely
+      - name: Publish live paper state safely
         if: always()
         run: |
           set -e
