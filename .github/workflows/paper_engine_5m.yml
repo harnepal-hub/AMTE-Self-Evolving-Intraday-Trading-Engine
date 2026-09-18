@@ -40,8 +40,7 @@ jobs:
         run: |
           set -e
           mkdir -p /tmp/amte-paper-state
-          cp -f data/paper_live/state.json /tmp/amte-paper-state/state.json 2>/dev/null || true
-          cp -f data/paper_live/summary.json /tmp/amte-paper-state/summary.json 2>/dev/null || true
+          cp -a data/paper_live/. /tmp/amte-paper-state/ 2>/dev/null || true
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -52,8 +51,7 @@ jobs:
           git reset --hard origin/main
 
           mkdir -p data/paper_live
-          cp -f /tmp/amte-paper-state/state.json data/paper_live/state.json 2>/dev/null || true
-          cp -f /tmp/amte-paper-state/summary.json data/paper_live/summary.json 2>/dev/null || true
+          cp -a /tmp/amte-paper-state/. data/paper_live/ 2>/dev/null || true
 
           git add data/paper_live
           if git diff --cached --quiet; then
@@ -67,8 +65,7 @@ jobs:
             fi
             git fetch origin main
             git reset --hard origin/main
-            cp -f /tmp/amte-paper-state/state.json data/paper_live/state.json 2>/dev/null || true
-            cp -f /tmp/amte-paper-state/summary.json data/paper_live/summary.json 2>/dev/null || true
+            cp -a /tmp/amte-paper-state/. data/paper_live/ 2>/dev/null || true
             git add data/paper_live
             git commit -m "data: update server paper state" || true
           done
