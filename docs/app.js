@@ -1,214 +1,46 @@
 const PUB='https://public.coindcx.com';
 const WS='https://stream.coindcx.com';
-const RAW='https://raw.githubusercontent.com/harnepal-hub/AMTE-Self-Evolving-Intraday-Trading-Engine/main/data/paper_live/state.json';
+const BASE='https://raw.githubusercontent.com/harnepal-hub/AMTE-Self-Evolving-Intraday-Trading-Engine/main/data/paper_live/';
+const RAW_STATE=BASE+'state.json';
+const RAW_MARKET=BASE+'market.json';
 const $=id=>document.getElementById(id);
 const fmt=x=>Number(x||0).toLocaleString('en-IN',{maximumFractionDigits:8});
 const CFG={hull:8,ema:200,vol:1.2,atr:1.1,dist:.003};
-const TF={
-  '1m':{sec:60,bars:180,res:'1'},
-  '5m':{sec:300,bars:180,res:'5'},
-  '15m':{sec:900,bars:180,res:'15'}
-};
-let pairs=[],prices={},histories={},selected='B-BTC_USDT',server={},lastPriceAt=0,timeframe='5m',socket=null,subscribed='';
-let restFailures=0;
+const TF={'1m':{sec:60,bars:180,res:'1'},'5m':{sec:300,bars:180,res:'5'},'15m':{sec:900,bars:180,res:'15'}};
+let pairs=[],prices={},histories={},selected='B-BTC_USDT',server={},snapshot={},lastPriceAt=0,timeframe='5m',socket=null,subscribed='',source='waiting';
 
 async function get(url,params={}){
-  const u=new URL(url);
-  Object.entries(params).forEach(([k,v])=>u.searchParams.set(k,v));
-  const r=await fetch(u,{cache:'no-store',mode:'cors'});
-  if(!r.ok)throw Error(String(r.status));
-  return r.json();
+  const u=new URL(url); Object.entries(params).forEach(([k,v])=>u.searchParams.set(k,v));
+  const r=await fetch(u,{cache:'no-store',mode:'cors'}); if(!r.ok)throw Error(String(r.status)); return r.json();
 }
 function ema(a,n){if(!a.length)return[];const k=2/(n+1),o=[];let x=a[0];for(const z of a){x=z*k+x*(1-k);o.push(x)}return o}
 function ehma(a,n){if(!a.length)return[];const h=Math.max(1,Math.floor(n/2)),r=Math.max(1,Math.round(Math.sqrt(n))),a1=ema(a,h),a2=ema(a,n);return ema(a1.map((x,i)=>2*x-a2[i]),r)}
 function rsiSeries(a,n=14){const out=Array(a.length).fill(null);if(a.length<=n)return out;let g=0,l=0;for(let i=1;i<=n;i++){const d=a[i]-a[i-1];g+=Math.max(d,0);l+=Math.max(-d,0)}g/=n;l/=n;out[n]=100-100/(1+g/(l||1e-12));for(let i=n+1;i<a.length;i++){const d=a[i]-a[i-1];g=(g*(n-1)+Math.max(d,0))/n;l=(l*(n-1)+Math.max(-d,0))/n;out[i]=100-100/(1+g/(l||1e-12))}return out}
 function rsi(a,n=14){const s=rsiSeries(a,n);return s.at(-1)??50}
 function atrSeries(rows,n=14){const out=Array(rows.length).fill(null);if(!rows.length)return out;let tr=[];for(let i=0;i<rows.length;i++){const prev=i?+rows[i-1].close:+rows[i].open;tr.push(Math.max(+rows[i].high-+rows[i].low,Math.abs(+rows[i].high-prev),Math.abs(+rows[i].low-prev)))}let a=tr.slice(0,n).reduce((x,y)=>x+y,0)/Math.min(n,tr.length);if(rows.length>=n)out[n-1]=a;for(let i=n;i<tr.length;i++){a=(a*(n-1)+tr[i])/n;out[i]=a}return out}
-function tw(rows){
-  if(rows.length<210)return 0;
-  const c=rows.map(x=>+x.close),h=ehma(c,CFG.hull),sh=h.map((x,i)=>i>1?h[i-2]:NaN),i=c.length-1;
-  let s=sh[i-1]>=h[i-1]&&sh[i]<h[i]?1:sh[i-1]<=h[i-1]&&sh[i]>h[i]?-1:0;
-  if(!s)return 0;
-  const e=ema(c,CFG.ema).at(-1),v=rows.map(x=>+x.volume),vr=v.at(-1)/(v.slice(-20).reduce((a,b)=>a+b,0)/20||1);
-  const at=atrSeries(rows,14).at(-1)||0,ap=at/(c.at(-1)||1),base=atrSeries(rows,70).slice(-64,-14).filter(Boolean),am=base.reduce((a,b)=>a+b,0)/(base.length||1);
-  if((s===1&&c.at(-1)<=e)||(s===-1&&c.at(-1)>=e))return 0;
-  if((s===1&&h.at(-1)<=h.at(-2))||(s===-1&&h.at(-1)>=h.at(-2)))return 0;
-  if(vr<CFG.vol||!am||ap/am<CFG.atr)return 0;
-  if(Math.abs(c.at(-1)-e)/c.at(-1)<CFG.dist)return 0;
-  return s;
-}
-function ai(rows){
-  if(rows.length<60)return{side:'NO TRADE',score:50};
-  const c=rows.map(x=>+x.close),v=rows.map(x=>+x.volume),last=c.at(-1),e20=ema(c,20).at(-1),e50=ema(c,50).at(-1),rr=rsi(c),vr=v.at(-1)/(v.slice(-20).reduce((a,b)=>a+b,0)/20||1);
-  let s=50;s+=last>e20?12:-12;s+=e20>e50?12:-12;if(rr>50&&rr<70)s+=10;if(rr<50&&rr>30)s-=10;if(vr>1.2)s+=8;
-  return{side:s>=62?'LONG':s<=38?'SHORT':'NO TRADE',score:Math.max(0,Math.min(100,s)),r:rr};
-}
-function normalizeCandle(x){
-  const d=x?.data||x||{},t=+(d.t??d.time??d.open_time??0);if(!t)return null;
-  const o=+(d.o??d.open),h=+(d.h??d.high),l=+(d.l??d.low),c=+(d.c??d.close),v=+(d.v??d.volume??0);
-  if(![o,h,l,c].every(Number.isFinite)||c<=0)return null;
-  return{time:t<1e12?t*1000:t,open:o,high:h,low:l,close:c,volume:Number.isFinite(v)?v:0};
-}
-function aggregate15(rows){
-  const m=new Map();
-  for(const x of rows){
-    const k=Math.floor(x.time/900000)*900000;
-    let b=m.get(k);
-    if(!b)b={time:k,open:x.open,high:x.high,low:x.low,close:x.close,volume:x.volume};
-    else{b.high=Math.max(b.high,x.high);b.low=Math.min(b.low,x.low);b.close=x.close;b.volume+=x.volume}
-    m.set(k,b);
-  }
-  return [...m.values()].sort((a,b)=>a.time-b.time).slice(-TF['15m'].bars);
-}
-async function fetchCandles(p,tf){
-  const cfg=TF[tf],now=Math.floor(Date.now()/1000);
-  let resolution=cfg.res,bars=cfg.bars,from=now-bars*cfg.sec-2*cfg.sec;
-  if(tf==='15m'){resolution='5';bars=600;from=now-bars*300-300}
-  const j=await get(PUB+'/market_data/candlesticks',{pair:p,from,to:now,resolution,pcode:'f'});
-  let rows=(j.data||j||[]).map(normalizeCandle).filter(Boolean).sort((a,b)=>a.time-b.time);
-  if(tf==='15m')rows=aggregate15(rows);else rows=rows.slice(-cfg.bars);
-  if(rows.length<2)throw Error('empty candle response');
-  return rows;
-}
-async function candles(p,tf=timeframe){
-  try{const rows=await fetchCandles(p,tf);restFailures=0;histories[p]=rows;return rows}
-  catch(e){
-    restFailures++;
-    if(tf==='15m'&&histories[p]?.length)return histories[p];
-    return histories[p]||[];
-  }
-}
-function setStatus(label,ok){
-  if($('dot'))$('dot').className='dot '+(ok?'ok':'');
-  if($('statusText'))$('statusText').textContent=label;
-  if($('engine')&&label!=='PAPER ENGINE LIVE'){$('engine').textContent=label;$('engine').className='value '+(ok?'green':'yellow')}
-}
-function renderServer(){
-  const s=server||{},p=s.position;
-  if($('cash'))$('cash').textContent='₹'+fmt(s.cash??100000);
-  if($('pnl')){$('pnl').textContent='₹'+fmt(s.realized_pnl??0);$('pnl').className='value '+((s.realized_pnl||0)>=0?'green':'red')}
-  if($('trades'))$('trades').textContent=(s.trades_today??0)+' / 5';
-  if($('signals'))$('signals').textContent=s.signals??0;
-  if($('pairs'))$('pairs').textContent=Array.isArray(s.pairs)?s.pairs.length:(s.pairs??pairs.length);
-  if($('events'))$('events').textContent=s.events??'—';
-  if($('psignals'))$('psignals').textContent=s.signals??'—';
-  if($('entered'))$('entered').textContent=(s.journal||[]).filter(x=>x.event==='ENTRY').length;
-  if($('closed'))$('closed').textContent=(s.journal||[]).filter(x=>x.event==='EXIT').length;
-  if($('lastsession'))$('lastsession').textContent=s.updated_at?new Date(s.updated_at).toLocaleString('en-IN',{hour12:false}):'waiting';
-  if($('position')){
-    if(p){
-      const side=p.side==='LONG',px=+(prices[p.pair]?.ls||prices[p.pair]?.mp||0),up=px?(px-p.entry_price)*p.quantity*(side?1:-1):0;
-      $('position').innerHTML='<div class="bigpos '+(side?'green':'red')+'">'+p.pair.replace('B-','').replace('_USDT','/USDT')+' · '+p.side+'</div><div class="metricrow"><span>Entry</span><b>'+fmt(p.entry_price)+'</b></div><div class="metricrow"><span>Current</span><b>'+fmt(px)+'</b></div><div class="metricrow"><span>TP</span><b>'+fmt(p.target_price)+'</b></div><div class="metricrow"><span>SL</span><b>'+fmt(p.stop_price)+'</b></div><div class="metricrow"><span>Open P&amp;L</span><b class="'+(up>=0?'green':'red')+'">₹'+fmt(up)+'</b></div><p class="label">Server-side paper engine. Browser can be closed.</p>';
-    }else $('position').innerHTML='<div class="bigpos">No open paper position</div><p class="label">Server-side paper engine runs independently of this browser.</p>';
-  }
-  if(s.status==='LIVE_PAPER'){if($('dot'))$('dot').className='dot ok';if($('statusText'))$('statusText').textContent='PAPER ENGINE LIVE';if($('engine')){$('engine').textContent='PAPER ENGINE LIVE';$('engine').className='value green'}}
-}
-async function loadServer(){try{server=await get(RAW+'?t='+Date.now());renderServer()}catch(e){if($('statusText'))$('statusText').textContent='PAPER STATE STALE'}}
+function tw(rows){if(rows.length<60)return 0;const c=rows.map(x=>+x.close),h=ehma(c,CFG.hull),sh=h.map((x,i)=>i>1?h[i-2]:NaN),i=c.length-1;let s=sh[i-1]>=h[i-1]&&sh[i]<h[i]?1:sh[i-1]<=h[i-1]&&sh[i]>h[i]?-1:0;if(!s)return 0;const e=ema(c,CFG.ema).at(-1),v=rows.map(x=>+x.volume),vr=v.at(-1)/(v.slice(-20).reduce((a,b)=>a+b,0)/20||1),at=atrSeries(rows,14).at(-1)||0,ap=at/(c.at(-1)||1),base=atrSeries(rows,70).slice(-64,-14).filter(Boolean),am=base.reduce((a,b)=>a+b,0)/(base.length||1);if((s===1&&c.at(-1)<=e)||(s===-1&&c.at(-1)>=e))return 0;if((s===1&&h.at(-1)<=h.at(-2))||(s===-1&&h.at(-1)>=h.at(-2)))return 0;if(vr<CFG.vol||!am||ap/am<CFG.atr)return 0;if(Math.abs(c.at(-1)-e)/c.at(-1)<CFG.dist)return 0;return s}
+function ai(rows){if(rows.length<60)return{side:'NO TRADE',score:50};const c=rows.map(x=>+x.close),v=rows.map(x=>+x.volume),last=c.at(-1),e20=ema(c,20).at(-1),e50=ema(c,50).at(-1),rr=rsi(c),vr=v.at(-1)/(v.slice(-20).reduce((a,b)=>a+b,0)/20||1);let s=50;s+=last>e20?12:-12;s+=e20>e50?12:-12;if(rr>50&&rr<70)s+=10;if(rr<50&&rr>30)s-=10;if(vr>1.2)s+=8;return{side:s>=62?'LONG':s<=38?'SHORT':'NO TRADE',score:Math.max(0,Math.min(100,s)),r:rr}}
+function normalizeCandle(x){const d=x?.data||x||{},t=+(d.t??d.time??d.open_time??0);if(!t)return null;const o=+(d.o??d.open),h=+(d.h??d.high),l=+(d.l??d.low),c=+(d.c??d.close),v=+(d.v??d.volume??0);if(![o,h,l,c].every(Number.isFinite)||c<=0)return null;return{time:t<1e12?t*1000:t,open:o,high:h,low:l,close:c,volume:Number.isFinite(v)?v:0}}
+function aggregate15(rows){const m=new Map();for(const x of rows){const k=Math.floor(x.time/900000)*900000;let b=m.get(k);if(!b)b={time:k,open:x.open,high:x.high,low:x.low,close:x.close,volume:x.volume};else{b.high=Math.max(b.high,x.high);b.low=Math.min(b.low,x.low);b.close=x.close;b.volume+=x.volume}m.set(k,b)}return[...m.values()].sort((a,b)=>a.time-b.time).slice(-TF['15m'].bars)}
+async function fetchCandles(p,tf){const cfg=TF[tf],now=Math.floor(Date.now()/1000);let resolution=cfg.res,bars=cfg.bars,from=now-bars*cfg.sec-2*cfg.sec;if(tf==='15m'){resolution='5';bars=600;from=now-bars*300-300}const j=await get(PUB+'/market_data/candlesticks',{pair:p,from,to:now,resolution,pcode:'f'});let rows=(j.data||j||[]).map(normalizeCandle).filter(Boolean).sort((a,b)=>a.time-b.time);if(tf==='15m')rows=aggregate15(rows);else rows=rows.slice(-cfg.bars);if(rows.length<2)throw Error('empty candle response');return rows}
+async function loadHistory(p){try{const rows=await fetchCandles(p,timeframe);histories[p]=rows;source='live-rest';lastPriceAt=Date.now();return rows}catch(e){const c=snapshot.candles?.[p];if(c?.length){histories[p]=c;source='server-snapshot';lastPriceAt=Date.parse(snapshot.updated_at)||lastPriceAt;return c}return histories[p]||[]}}
+function setStatus(label,ok){if($('dot'))$('dot').className='dot '+(ok?'ok':'');if($('statusText'))$('statusText').textContent=label;if($('engine')&&label!=='PAPER ENGINE LIVE'){$('engine').textContent=label;$('engine').className='value '+(ok?'green':'yellow')}}
+function renderServer(){const s=server||{},p=s.position;if($('cash'))$('cash').textContent='₹'+fmt(s.cash??100000);if($('pnl')){$('pnl').textContent='₹'+fmt(s.realized_pnl??0);$('pnl').className='value '+((s.realized_pnl||0)>=0?'green':'red')}if($('trades'))$('trades').textContent=(s.trades_today??0)+' / '+((s.max_trades_per_day??0)||'∞');if($('signals'))$('signals').textContent=s.signals??0;if($('rejected'))$('rejected').textContent=s.rejected_signals??0;if($('pairs'))$('pairs').textContent=Array.isArray(s.pairs)?s.pairs.length:(s.pairs??pairs.length);if($('events'))$('events').textContent=s.events??'—';if($('psignals'))$('psignals').textContent=s.signals??'—';if($('entered'))$('entered').textContent=(s.journal||[]).filter(x=>x.event==='ENTRY').length;if($('closed'))$('closed').textContent=(s.journal||[]).filter(x=>x.event==='EXIT').length;if($('lastsession'))$('lastsession').textContent=s.updated_at?new Date(s.updated_at).toLocaleString('en-IN',{hour12:false}):'waiting';if(p&&$('position')){const side=p.side==='LONG',px=+(prices[p.pair]?.ls||prices[p.pair]?.mp||0),up=px?(px-p.entry_price)*p.quantity*(side?1:-1):0;$('position').innerHTML='<div class="bigpos '+(side?'green':'red')+'">'+p.pair.replace('B-','').replace('_USDT','/USDT')+' · '+p.side+'</div><div class="metricrow"><span>Entry</span><b>'+fmt(p.entry_price)+'</b></div><div class="metricrow"><span>Current</span><b>'+fmt(px)+'</b></div><div class="metricrow"><span>TP</span><b>'+fmt(p.target_price)+'</b></div><div class="metricrow"><span>SL</span><b>'+fmt(p.stop_price)+'</b></div><div class="metricrow"><span>Open P&amp;L</span><b class="'+(up>=0?'green':'red')+'">₹'+fmt(up)+'</b></div><p class="label">Server-side paper engine. Browser can be closed.</p>'}else if($('position'))$('position').innerHTML='<div class="bigpos">No open paper position</div><p class="label">Server-side paper engine runs independently of this browser.</p>';if(s.status==='LIVE_PAPER'){if($('dot'))$('dot').className='dot ok';if($('statusText'))$('statusText').textContent='PAPER ENGINE LIVE';if($('engine')){$('engine').textContent='PAPER ENGINE LIVE';$('engine').className='value green'}}}
+async function loadServer(){try{server=await get(RAW_STATE+'?t='+Date.now());if(Array.isArray(server.pairs))pairs=server.pairs.filter(p=>typeof p==='string'&&p.endsWith('_USDT'));renderServer()}catch(e){if($('statusText'))$('statusText').textContent='PAPER STATE STALE'}}
+async function loadSnapshot(){try{snapshot=await get(RAW_MARKET+'?t='+Date.now());Object.assign(prices,snapshot.prices||{});if(!pairs.length)pairs=Object.keys(prices);if(source!=='live-rest'){source='server-snapshot';lastPriceAt=Date.parse(snapshot.updated_at)||lastPriceAt}renderScanner();selectedUI()}catch(e){}}
 function nameOf(p){return p.replace(/^B-/,'').replace(/_USDT$/,'')}
-function renderScanner(){
-  const q=($('search')?.value||'').toUpperCase().replace('/USDT','');
-  const list=pairs.filter(p=>p.includes(q)).sort((a,b)=>(+(prices[b]?.v||0))-(+(prices[a]?.v||0))).slice(0,30);
-  if($('pairs')&&!Array.isArray(server?.pairs))$('pairs').textContent=list.length;
-  if($('coins'))$('coins').innerHTML=list.map(p=>{
-    const r=histories[p]||[],s=tw(r),a=ai(r),z=prices[p]||{};
-    return '<tr class="coin" onclick="selectCoin(\''+p+'\')"><td><b>'+nameOf(p)+'</b></td><td>'+fmt(z.ls||z.mp||r.at(-1)?.close||0)+'</td><td class="'+(+(z.pc||0)>=0?'green':'red')+'">'+(+(z.pc||0)).toFixed(2)+'%</td><td><span class="pill '+(s===1?'buy':s===-1?'sell':'neutral')+'">'+(s===1?'BUY':s===-1?'SELL':'—')+'</span></td><td><span class="pill '+(a.side==='LONG'?'buy':a.side==='SHORT'?'sell':'neutral')+'">'+(a.side==='NO TRADE'?'—':a.side)+'</span></td></tr>';
-  }).join('');
-}
-function draw(rows){
-  const cv=$('chart');if(!cv)return;
-  const ctx=cv.getContext('2d'),d=devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;
-  if(w<10||h<10)return;cv.width=w*d;cv.height=h*d;ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,w,h);
-  const r=rows.slice(-100);
-  if(r.length<2){ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--muted');ctx.font='14px system-ui';ctx.fillText('Waiting for live CoinDCX futures candles…',24,40);return}
-  const muted=getComputedStyle(document.body).getPropertyValue('--muted'),linec=getComputedStyle(document.body).getPropertyValue('--line');
-  const textc=getComputedStyle(document.body).getPropertyValue('--text'),green='#059669',red='#dc2626',blue='#2563eb',gold='#b7791f';
-  const pad={l:52,r:12,t:24,b:20},pw=w-pad.l-pad.r,ph=h-pad.t-pad.b,priceH=ph*.70,volTop=pad.t+priceH+8,volH=ph*.10,rsiTop=volTop+volH+12,rsiH=ph*.20;
-  const hi=Math.max(...r.map(x=>x.high)),lo=Math.min(...r.map(x=>x.low)),step=pw/r.length,y=p=>pad.t+(hi-p)/(hi-lo||1)*priceH;
-  ctx.strokeStyle=linec;ctx.lineWidth=1;for(let i=0;i<5;i++){const yy=pad.t+i*priceH/4;ctx.beginPath();ctx.moveTo(pad.l,yy);ctx.lineTo(w-pad.r,yy);ctx.stroke()}
-  ctx.font='10px system-ui';ctx.fillStyle=muted;for(let i=0;i<5;i++){const val=hi-(hi-lo)*i/4;ctx.fillText(fmt(val),3,pad.t+i*priceH/4+3)}
-  const maxVol=Math.max(...r.map(x=>x.volume),1);
-  r.forEach((x,i)=>{const xx=pad.l+i*step+step/2,up=x.close>=x.open,col=up?green:red;ctx.strokeStyle=col;ctx.beginPath();ctx.moveTo(xx,y(x.high));ctx.lineTo(xx,y(x.low));ctx.stroke();ctx.fillStyle=col;const top=y(Math.max(x.open,x.close)),bh=Math.max(1,Math.abs(y(x.open)-y(x.close)));ctx.fillRect(xx-Math.max(1,step*.28),top,Math.max(2,step*.56),bh);ctx.globalAlpha=.35;ctx.fillRect(xx-Math.max(1,step*.28),volTop+volH-(x.volume/maxVol)*volH,Math.max(2,step*.56),(x.volume/maxVol)*volH);ctx.globalAlpha=1});
-  const c=r.map(x=>x.close),h1=ehma(c,CFG.hull),e=ema(c,CFG.ema),rs=rsiSeries(c),line=(vals,color,width,mapper)=>{ctx.lineWidth=width;ctx.strokeStyle=color;ctx.beginPath();let started=false;vals.forEach((v,i)=>{if(v==null)return;const xx=pad.l+i*step+step/2,yy=mapper(v);if(!started){ctx.moveTo(xx,yy);started=true}else ctx.lineTo(xx,yy)});ctx.stroke()};
-  line(h1,blue,2,y);line(e,gold,2,y);
-  ctx.fillStyle=muted;ctx.font='10px system-ui';ctx.fillText('EHMA 8',pad.l,12);ctx.fillText('EMA 200',pad.l+60,12);ctx.fillText('VOLUME',pad.l+125,volTop+9);ctx.fillText('RSI 14',pad.l+185,rsiTop+9);
-  ctx.strokeStyle=linec;ctx.beginPath();ctx.moveTo(pad.l,rsiTop);ctx.lineTo(w-pad.r,rsiTop);ctx.stroke();
-  const ry=v=>rsiTop+(100-v)/100*rsiH;ctx.strokeStyle=linec;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(pad.l,ry(70));ctx.lineTo(w-pad.r,ry(70));ctx.moveTo(pad.l,ry(30));ctx.lineTo(w-pad.r,ry(30));ctx.stroke();ctx.setLineDash([]);line(rs,blue,1.5,ry);ctx.fillStyle=muted;ctx.fillText('70',pad.l-20,ry(70)+3);ctx.fillText('30',pad.l-20,ry(30)+3);ctx.fillStyle=textc;ctx.font='11px system-ui';ctx.fillText('Latest '+fmt(c.at(-1)),w-105,12);
-}
-function selectedUI(){
-  const r=histories[selected]||[],z=prices[selected]||{},s=tw(r),a=ai(r),c=r.map(x=>x.close),h=ehma(c,CFG.hull),e=ema(c,CFG.ema);
-  if($('selected'))$('selected').textContent=nameOf(selected)+'/USDT';
-  if($('liveprice'))$('liveprice').textContent=fmt(z.ls||z.mp||c.at(-1)||0);
-  if($('snapprice'))$('snapprice').textContent=fmt(z.ls||z.mp||c.at(-1)||0);
-  if($('snapchange'))$('snapchange').textContent=(+(z.pc||0)).toFixed(2)+'%';
-  if($('tw')){$('tw').textContent=s===1?'BUY':s===-1?'SELL':'NEUTRAL';$('tw').className='bigpos '+(s===1?'green':s===-1?'red':'')}
-  if($('ehma'))$('ehma').textContent=h.length?fmt(h.at(-1)):'—';if($('ema'))$('ema').textContent=e.length?fmt(e.at(-1)):'—';if($('rsi'))$('rsi').textContent=r.length?rsi(c).toFixed(1):'—';
-  if($('ai')){$('ai').textContent=a.side;$('ai').className='bigpos '+(a.side==='LONG'?'green':a.side==='SHORT'?'red':'')}
-  if($('conf'))$('conf').textContent=a.score+'%';if($('score'))$('score').style.width=a.score+'%';
-  if($('align'))$('align').textContent=(s===1&&a.side==='LONG')||(s===-1&&a.side==='SHORT')?'AGREE':s===0?'NEUTRAL':'CONFLICT';
-  draw(r);if($('chartState'))$('chartState').textContent=r.length>=2?'LIVE · '+timeframe+' · CoinDCX':'Waiting for candle history…';
-}
+function renderScanner(){const q=($('search')?.value||'').toUpperCase().replace('/USDT','');const list=pairs.filter(p=>p.includes(q)).sort((a,b)=>(+(prices[b]?.v||0))-(+(prices[a]?.v||0))).slice(0,30);if($('pairs')&&!Array.isArray(server?.pairs))$('pairs').textContent=list.length;$('coins').innerHTML=list.map(p=>{const r=histories[p]||[],ss=snapshot.signals?.[p],s=r.length?tw(r):(ss?.tw||0),a=r.length?ai(r):{side:ss?.ai||'NO TRADE',score:ss?.confidence??50},z=prices[p]||{};return '<tr class="coin" onclick="selectCoin(\\''+p+'\\')"><td><b>'+nameOf(p)+'</b></td><td>'+fmt(z.ls||z.mp||r.at(-1)?.close||0)+'</td><td class="'+(+(z.pc||0)>=0?'green':'red')+'">'+(+(z.pc||0)).toFixed(2)+'%</td><td><span class="pill '+(s===1?'buy':s===-1?'sell':'neutral')+'">'+(s===1?'BUY':s===-1?'SELL':'—')+'</span></td><td><span class="pill '+(a.side==='LONG'?'buy':a.side==='SHORT'?'sell':'neutral')+'">'+(a.side==='NO TRADE'?'—':a.side)+'</span></td></tr>'}).join('')}
+function draw(rows){const cv=$('chart');if(!cv)return;const ctx=cv.getContext('2d'),d=devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;if(w<10||h<10)return;cv.width=w*d;cv.height=h*d;ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,w,h);const r=rows.slice(-100);if(r.length<2){ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--muted');ctx.font='14px system-ui';ctx.fillText('Waiting for live CoinDCX futures candles…',24,40);return}const muted=getComputedStyle(document.body).getPropertyValue('--muted'),linec=getComputedStyle(document.body).getPropertyValue('--line'),textc=getComputedStyle(document.body).getPropertyValue('--text'),green='#059669',red='#dc2626',blue='#2563eb',gold='#b7791f',pad={l:52,r:12,t:24,b:20},pw=w-pad.l-pad.r,ph=h-pad.t-pad.b,priceH=ph*.70,volTop=pad.t+priceH+8,volH=ph*.10,rsiTop=volTop+volH+12,rsiH=ph*.20,hi=Math.max(...r.map(x=>x.high)),lo=Math.min(...r.map(x=>x.low)),step=pw/r.length,y=p=>pad.t+(hi-p)/(hi-lo||1)*priceH;ctx.strokeStyle=linec;ctx.lineWidth=1;for(let i=0;i<5;i++){const yy=pad.t+i*priceH/4;ctx.beginPath();ctx.moveTo(pad.l,yy);ctx.lineTo(w-pad.r,yy);ctx.stroke()}ctx.font='10px system-ui';ctx.fillStyle=muted;for(let i=0;i<5;i++)ctx.fillText(fmt(hi-(hi-lo)*i/4),3,pad.t+i*priceH/4+3);const maxVol=Math.max(...r.map(x=>x.volume),1);r.forEach((x,i)=>{const xx=pad.l+i*step+step/2,up=x.close>=x.open,col=up?green:red;ctx.strokeStyle=col;ctx.beginPath();ctx.moveTo(xx,y(x.high));ctx.lineTo(xx,y(x.low));ctx.stroke();ctx.fillStyle=col;const top=y(Math.max(x.open,x.close)),bh=Math.max(1,Math.abs(y(x.open)-y(x.close)));ctx.fillRect(xx-Math.max(1,step*.28),top,Math.max(2,step*.56),bh);ctx.globalAlpha=.35;ctx.fillRect(xx-Math.max(1,step*.28),volTop+volH-(x.volume/maxVol)*volH,Math.max(2,step*.56),(x.volume/maxVol)*volH);ctx.globalAlpha=1});const c=r.map(x=>x.close),h1=ehma(c,CFG.hull),e=ema(c,CFG.ema),rs=rsiSeries(c),line=(vals,color,width,mapper)=>{ctx.lineWidth=width;ctx.strokeStyle=color;ctx.beginPath();let started=false;vals.forEach((v,i)=>{if(v==null)return;const xx=pad.l+i*step+step/2,yy=mapper(v);if(!started){ctx.moveTo(xx,yy);started=true}else ctx.lineTo(xx,yy)});ctx.stroke()};line(h1,blue,2,y);line(e,gold,2,y);ctx.fillStyle=muted;ctx.font='10px system-ui';ctx.fillText('EHMA 8',pad.l,12);ctx.fillText('EMA 200',pad.l+60,12);ctx.fillText('VOLUME',pad.l+125,volTop+9);ctx.fillText('RSI 14',pad.l+185,rsiTop+9);ctx.strokeStyle=linec;ctx.beginPath();ctx.moveTo(pad.l,rsiTop);ctx.lineTo(w-pad.r,rsiTop);ctx.stroke();const ry=v=>rsiTop+(100-v)/100*rsiH;ctx.strokeStyle=linec;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(pad.l,ry(70));ctx.lineTo(w-pad.r,ry(70));ctx.moveTo(pad.l,ry(30));ctx.lineTo(w-pad.r,ry(30));ctx.stroke();ctx.setLineDash([]);line(rs,blue,1.5,ry);ctx.fillStyle=muted;ctx.fillText('70',pad.l-20,ry(70)+3);ctx.fillText('30',pad.l-20,ry(30)+3);ctx.fillStyle=textc;ctx.font='11px system-ui';ctx.fillText('Latest '+fmt(c.at(-1)),w-105,12)}
+function selectedUI(){const r=histories[selected]||[],z=prices[selected]||{},ss=snapshot.signals?.[selected],s=r.length?tw(r):(ss?.tw||0),a=r.length?ai(r):{side:ss?.ai||'NO TRADE',score:ss?.confidence??50},c=r.map(x=>x.close),h=ehma(c,CFG.hull),e=ema(c,CFG.ema);if($('selected'))$('selected').textContent=nameOf(selected)+'/USDT';if($('liveprice'))$('liveprice').textContent=fmt(z.ls||z.mp||c.at(-1)||0);if($('snapprice'))$('snapprice').textContent=fmt(z.ls||z.mp||c.at(-1)||0);if($('snapchange'))$('snapchange').textContent=(+(z.pc||0)).toFixed(2)+'%';if($('tw')){$('tw').textContent=s===1?'BUY':s===-1?'SELL':'NEUTRAL';$('tw').className='bigpos '+(s===1?'green':s===-1?'red':'')}if($('ehma'))$('ehma').textContent=h.length?fmt(h.at(-1)):'—';if($('ema'))$('ema').textContent=e.length?fmt(e.at(-1)):'—';if($('rsi'))$('rsi').textContent=r.length?rsi(c).toFixed(1):'—';if($('ai')){$('ai').textContent=a.side;$('ai').className='bigpos '+(a.side==='LONG'?'green':a.side==='SHORT'?'red':'')}if($('conf'))$('conf').textContent=a.score+'%';if($('score'))$('score').style.width=a.score+'%';if($('align'))$('align').textContent=(s===1&&a.side==='LONG')||(s===-1&&a.side==='SHORT')?'AGREE':s===0?'NEUTRAL':'CONFLICT';draw(r);if($('chartState'))$('chartState').textContent=r.length>=2?(source==='server-snapshot'?'SERVER SNAPSHOT':'LIVE')+' · '+timeframe+' · CoinDCX':'Waiting for candle history…'}
 function selectCoin(p){selected=p;histories[p]=[];subscribeCandle();loadHistory(p).then(selectedUI)}
-async function loadHistory(p){const rows=await candles(p,timeframe);if(p===selected)selectedUI();renderScanner();return rows}
-function mergeCandle(raw){
-  const x=normalizeCandle(raw);if(!x||x.close<=0)return;
-  const channel=raw?.data?.channel||raw?.channel||'';if(channel&&!channel.includes(selected+'_'+timeframe))return;
-  if(timeframe==='15m'){loadHistory(selected);return}
-  const arr=histories[selected]||[],last=arr.at(-1);
-  if(last&&last.time===x.time)arr[arr.length-1]=x;else arr.push(x);
-  histories[selected]=arr.slice(-TF[timeframe].bars);prices[selected]=Object.assign({},prices[selected],{ls:x.close,mp:x.close});
-  lastPriceAt=Date.now();selectedUI();renderScanner();
-}
+function mergeCandle(raw){const x=normalizeCandle(raw);if(!x)return;const channel=raw?.data?.channel||raw?.channel||'';if(channel&&!channel.includes(selected+'_'+timeframe))return;const arr=histories[selected]||[],last=arr.at(-1);if(last&&last.time===x.time)arr[arr.length-1]=x;else arr.push(x);histories[selected]=arr.slice(-TF[timeframe].bars);prices[selected]=Object.assign({},prices[selected],{ls:x.close,mp:x.close});lastPriceAt=Date.now();source='live-ws';selectedUI();renderScanner()}
 function join(channel){if(socket?.connected)socket.emit('join',{channelName:channel})}
 function leave(channel){if(socket?.connected)socket.emit('leave',{channelName:channel})}
 function subscribeCandle(){const ch=selected+'_'+timeframe+'-futures';if(subscribed&&subscribed!==ch)leave(subscribed);subscribed=ch;join(ch)}
-function connectWS(){
-  try{
-    if(typeof io!=='function'){if($('chartState'))$('chartState').textContent='Socket.IO unavailable · REST mode';return}
-    socket=io(WS,{transports:['websocket'],reconnection:true,reconnectionAttempts:Infinity,reconnectionDelay:1000});
-    socket.on('connect',()=>{join('currentPrices@futures@rt');subscribeCandle();setStatus('LIVE MARKET',true)});
-    socket.on('disconnect',()=>{setStatus('RECONNECTING',false)});
-    socket.on('connect_error',()=>{setStatus('REST FALLBACK',false)});
-    socket.on('currentPrices@futures#update',msg=>{
-      const d=msg?.data||msg||{};if(d.pr&&d.pr!=='futures'&&d.pr!=='f')return;
-      Object.assign(prices,d.prices||{});lastPriceAt=Date.now();renderScanner();selectedUI();
-    });
-    socket.on('candlestick',msg=>mergeCandle(msg));
-    socket.on('price-change',msg=>{const d=msg?.data||msg||{};if(d.pr==='f'||d.pr==='futures'){const p=d.s||selected;if(prices[p])prices[p].ls=+d.p;lastPriceAt=Date.now();selectedUI()}});
-  }catch(e){setStatus('REST FALLBACK',false)}
-}
-async function market(){
-  try{
-    const cp=await get(PUB+'/market_data/v3/current_prices/futures/rt');
-    prices=cp.prices||{};
-    lastPriceAt=Date.now();
-    if(!pairs.length)pairs=Object.keys(prices).filter(p=>p.endsWith('_USDT')).sort((a,b)=>(+(prices[b]?.v||0))-(+(prices[a]?.v||0)));
-    renderScanner();selectedUI();
-    if($('chartState')&&histories[selected]?.length)$('chartState').textContent='LIVE · '+timeframe+' · CoinDCX';
-  }catch(e){if($('chartState'))$('chartState').textContent='CoinDCX REST unavailable · retrying…'}
-}
-function setTimeframe(tf){
-  if(!TF[tf])return;timeframe=tf;
-  document.querySelectorAll('[data-tf]').forEach(b=>b.classList.toggle('on',b.dataset.tf===tf));
-  histories[selected]=[];subscribeCandle();loadHistory(selected);
-}
-function updateClock(){
-  const d=new Date(),o={timeZone:'Asia/Kolkata'};
-  if($('dateNow'))$('dateNow').textContent=d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric',...o})+' · '+d.toLocaleTimeString('en-IN',{hour12:false,...o})+' IST';
-  if($('marketDate'))$('marketDate').textContent=d.toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short',year:'numeric',...o});
-  if($('marketClock'))$('marketClock').textContent=d.toLocaleTimeString('en-IN',{hour12:false,...o});
-  if($('dataAge')){const age=lastPriceAt?Math.floor((Date.now()-lastPriceAt)/1000):-1;$('dataAge').textContent=age<0?'waiting':age<5?'live':age+'s'}
-}
+function connectWS(){try{if(typeof io!=='function'){setStatus('REST/SNAPSHOT',false);return}socket=io(WS,{transports:['websocket'],reconnection:true,reconnectionAttempts:Infinity,reconnectionDelay:1000});socket.on('connect',()=>{join('currentPrices@futures@rt');subscribeCandle();setStatus('LIVE MARKET',true)});socket.on('disconnect',()=>{if(source!=='live-rest')setStatus('RECONNECTING',false)});socket.on('connect_error',()=>{if(source!=='live-rest')setStatus('REST/SNAPSHOT',false)});socket.on('currentPrices@futures#update',msg=>{const d=msg?.data||msg||{};if(d.pr&&d.pr!=='futures'&&d.pr!=='f')return;Object.assign(prices,d.prices||{});lastPriceAt=Date.now();source='live-ws';renderScanner();selectedUI()});socket.on('candlestick',msg=>mergeCandle(msg))}catch(e){setStatus('REST/SNAPSHOT',false)}}
+async function market(){try{const cp=await get(PUB+'/market_data/v3/current_prices/futures/rt');const next=cp.prices||{};if(Object.keys(next).length){Object.assign(prices,next);lastPriceAt=Date.now();source='live-rest';if(!pairs.length)pairs=Object.keys(prices).filter(p=>p.endsWith('_USDT'));renderScanner();selectedUI();setStatus('LIVE REST',true);return}}catch(e){}await loadSnapshot();if(source==='server-snapshot')setStatus('SERVER SNAPSHOT',true)}
+function setTimeframe(tf){if(!TF[tf])return;timeframe=tf;document.querySelectorAll('[data-tf]').forEach(b=>b.classList.toggle('on',b.dataset.tf===tf));histories[selected]=[];subscribeCandle();loadHistory(selected).then(selectedUI)}
+function updateClock(){const d=new Date(),o={timeZone:'Asia/Kolkata'};if($('dateNow'))$('dateNow').textContent=d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric',...o})+' · '+d.toLocaleTimeString('en-IN',{hour12:false,...o})+' IST';if($('marketDate'))$('marketDate').textContent=d.toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short',year:'numeric',...o});if($('marketClock'))$('marketClock').textContent=d.toLocaleTimeString('en-IN',{hour12:false,...o});if($('dataAge')){const age=lastPriceAt?Math.floor((Date.now()-lastPriceAt)/1000):-1;$('dataAge').textContent=age<0?'waiting':age<5?'live':age+'s'}}
 function theme(){document.body.classList.toggle('dark',localStorage.theme==='dark')}
-function init(){
-  theme();
-  if($('theme'))$('theme').onclick=()=>{localStorage.theme=document.body.classList.contains('dark')?'light':'dark';theme();selectedUI()};
-  document.querySelectorAll('[data-tf]').forEach(b=>b.onclick=()=>setTimeframe(b.dataset.tf));
-  if($('search'))$('search').oninput=renderScanner;
-  updateClock();setInterval(updateClock,1000);
-  connectWS();
-  loadServer().then(()=>{if(Array.isArray(server?.pairs))pairs=server.pairs.filter(p=>typeof p==='string'&&p.endsWith('_USDT'));marketFromServer();market();loadHistory(selected).then(selectedUI)});
-  setInterval(loadServer,10000);setInterval(market,15000);setInterval(()=>loadHistory(selected),30000);
-  window.addEventListener('resize',selectedUI);
-}
-function marketFromServer(){if(pairs.length){renderScanner();return true}return false}
+function init(){theme();if($('theme'))$('theme').onclick=()=>{localStorage.theme=document.body.classList.contains('dark')?'light':'dark';theme();selectedUI()};document.querySelectorAll('[data-tf]').forEach(b=>b.onclick=()=>setTimeframe(b.dataset.tf));if($('search'))$('search').oninput=renderScanner;updateClock();setInterval(updateClock,1000);connectWS();loadServer().then(()=>{if(Array.isArray(server?.pairs))pairs=server.pairs.filter(p=>typeof p==='string'&&p.endsWith('_USDT'));loadSnapshot();market();loadHistory(selected).then(selectedUI)});setInterval(loadServer,10000);setInterval(market,10000);setInterval(()=>loadHistory(selected),20000);window.addEventListener('resize',selectedUI)}
 init();
