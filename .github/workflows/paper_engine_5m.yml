@@ -1,0 +1,41 @@
+name: AMTE Server Paper Engine
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/run_server_paper.py'
+      - 'app/signals/tw_all_in_one_filtered.py'
+      - '.github/workflows/paper_engine_5m.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: amte-server-paper
+  cancel-in-progress: false
+
+jobs:
+  paper:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: python -m pip install -r requirements.txt
+      - name: Run server-side paper engine
+        run: python scripts/run_server_paper.py --minutes 4 --max-pairs 30
+      - name: Publish state
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/paper_live
+          git diff --cached --quiet || git commit -m "data: update server paper state"
+          git push
