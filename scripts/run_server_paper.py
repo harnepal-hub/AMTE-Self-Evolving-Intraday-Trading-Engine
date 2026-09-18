@@ -160,7 +160,7 @@ def ai_proxy(rows):
 
 def default_state():
     return {
-        "version": 4, "day_ist": "", "cash": 100000.0, "realized_pnl": 0.0,
+        "version": 5, "day_ist": "", "cash": 100000.0, "realized_pnl": 0.0,
         "trades_today": 0, "locked": False, "position": None,
         "last_signal": {}, "pairs": [], "events": 0, "signals": 0,
         "rejected_signals": 0, "accepted_signals": 0, "errors": 0,
@@ -455,11 +455,8 @@ def main():
         save_state(STATE_PATH, s)
         time.sleep(15)
 
-    if s["position"]:
-        q = book(s["position"]["pair"])
-        if q:
-            exit_position(s, q[0], q[1], "SESSION_END")
-
+    # Do NOT flatten at the end of a GitHub Actions run. The paper position
+    # must persist across runs so TP/SL can be monitored continuously.
     write_market_snapshot(s, pairs, bars_cache)
 
     summary = {
