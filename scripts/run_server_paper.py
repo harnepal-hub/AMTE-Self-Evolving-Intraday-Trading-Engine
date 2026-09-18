@@ -335,18 +335,18 @@ def process(s, pair, bars_cache=None):
         s["events"] += 1
 
         sig = int(filtered_signals(frame(closed), **CFG).iloc[-1])
+        ai_side, score = ai_proxy(closed)
+        bar_time = closed[-1]["time"]
+        s["signal_map"][pair] = {"tw": sig, "ai": ai_side, "confidence": score, "bar_time": bar_time}
         if not sig:
             return
 
-        bar_time = closed[-1]["time"]
         signal_id = f"{pair}-{bar_time}-{sig}"
         if s["last_signal"].get(pair) == signal_id:
             return
         s["last_signal"][pair] = signal_id
 
         wanted = "LONG" if sig == 1 else "SHORT"
-        ai_side, score = ai_proxy(closed)
-        s["signal_map"][pair] = {"tw": sig, "ai": ai_side, "confidence": score, "bar_time": bar_time}
         q = book(pair)
         bid, ask = q if q else (None, None)
         spread_bps = ((ask - bid) / ((ask + bid) / 2) * 10000
