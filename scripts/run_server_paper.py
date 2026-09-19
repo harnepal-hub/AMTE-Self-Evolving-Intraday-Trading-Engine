@@ -36,7 +36,7 @@ TARGET_PCT = 0.01
 FEE_BPS = 5.0
 SLIPPAGE_BPS = 2.0
 MAX_DAILY_LOSS_PCT = 0.02
-MAX_TRADES_PER_DAY = None
+MAX_TRADES_PER_DAY = 5
 CFG = {
     "hull_length": 8, "ema_length": 200, "ema_filter": True,
     "slope_filter": True, "volume_ratio_min": 1.2,
@@ -211,7 +211,8 @@ def roll_day(s):
 
 
 def can_enter(s):
-    return not s["position"] and not s["locked"]
+    return (not s["position"] and not s["locked"] and
+            (MAX_TRADES_PER_DAY is None or s["trades_today"] < MAX_TRADES_PER_DAY))
 
 
 def enter(s, pair, side, bid, ask, signal_id, signal_source, ai_score):
@@ -361,6 +362,8 @@ def process(s, pair, bars_cache=None, rows=None):
             decision, reject = "REJECTED", "POSITION_ALREADY_OPEN"
         elif s["locked"]:
             decision, reject = "REJECTED", "DAILY_LOSS_LOCK"
+        elif MAX_TRADES_PER_DAY is not None and s["trades_today"] >= MAX_TRADES_PER_DAY:
+            decision, reject = "REJECTED", "DAILY_TRADE_CAP"
         elif ai_side != wanted:
             decision, reject = "REJECTED", "AI_CONFLICT"
         elif (wanted == "LONG" and score < 62) or (wanted == "SHORT" and score > 38):
@@ -463,7 +466,7 @@ def main():
         "status": s["status"], "updated_at": s["updated_at"],
         "day_ist": s["day_ist"], "capital": 100000.0, "cash": s["cash"],
         "realized_pnl": s["realized_pnl"], "trades_today": s["trades_today"],
-        "max_trades_per_day": None,
+        "max_trades_per_day": MAX_TRADES_PER_DAY,
         "pairs": len(pairs), "pair_list": pairs, "events": s["events"],
         "signals": s["signals"], "accepted_signals": s["accepted_signals"],
         "rejected_signals": s["rejected_signals"], "errors": s["errors"],
