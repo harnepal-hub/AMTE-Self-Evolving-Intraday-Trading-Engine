@@ -1,6 +1,7 @@
 name: AMTE Server Paper Engine
 # Runs every five minutes; each session monitors the live CoinDCX futures feed server-side.
 # Dashboard heartbeat fix: publish fresh paper state on every scheduled/manual run.
+# Paper training has no daily trade-count cap; the engine still enforces the 2% daily loss lock.
 
 on:
   schedule:
