@@ -13,8 +13,8 @@ class PaperConfig:
     target_pct: float = 0.01
     fee_bps_per_side: float = 5.0
     slippage_bps: float = 2.0
-    max_trades_per_day: int = 5
-    max_daily_loss_pct: float = 0.02
+    max_trades_per_day: int = 10
+    max_daily_loss_rs: float = 2000.0
 
 
 @dataclass
@@ -87,7 +87,7 @@ class PaperBroker:
         self._roll_day(ts)
         if self.position is not None or self.locked or self.trades_today >= self.cfg.max_trades_per_day:
             return False
-        if self.equity(bid, ask) <= self.day_start * (1 - self.cfg.max_daily_loss_pct):
+        if self.realized_pnl <= -self.cfg.max_daily_loss_rs:
             self.locked = True
             return False
         return True
@@ -124,7 +124,7 @@ class PaperBroker:
         row = {"event": "EXIT", "time": ts, "side": p.side, "entry_price": p.entry_price, "exit_price": px, "quantity": p.quantity, "gross_pnl": gross, "fees": p.entry_fee + fee, "net_pnl": net, "reason": reason}
         self.journal.append(row)
         self.position = None
-        if self.cash <= self.day_start * (1 - self.cfg.max_daily_loss_pct):
+        if self.realized_pnl <= -self.cfg.max_daily_loss_rs:
             self.locked = True
         return row
 
