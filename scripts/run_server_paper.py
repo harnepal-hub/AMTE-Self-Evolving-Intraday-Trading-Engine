@@ -160,11 +160,12 @@ def ai_proxy(rows):
 
 def default_state():
     return {
-        "version": 6, "day_ist": "", "cash": 100000.0, "realized_pnl": 0.0,
+        "version": 7, "day_ist": "", "cash": 100000.0, "realized_pnl": 0.0,
         "trades_today": 0, "locked": False, "position": None,
-        "last_signal": {}, "pairs": [], "events": 0, "signals": 0,
+        "last_signal": {}, "last_processed_bar": {}, "pairs": [], "events": 0, "signals": 0,
         "rejected_signals": 0, "accepted_signals": 0, "errors": 0,
-        "updated_at": None, "status": "STARTING", "journal": [], "signal_map": {},
+        "updated_at": None, "heartbeat_at": None, "run_started_at": None, "run_finished_at": None,
+        "status": "STARTING", "journal": [], "signal_map": {},
     }
 
 
@@ -334,11 +335,17 @@ def process(s, pair, bars_cache=None, rows=None):
         closed = [r for r in rows if r["time"] < bucket]
         if len(closed) < 210:
             return
+
+        # Count/process a 5m market event once per newly closed candle.
+        # Polling the same closed candle must not inflate the event counter.
+        bar_time = closed[-1]["time"]
+        if s["last_processed_bar"].get(pair) == bar_time:
+            return
+        s["last_processed_bar"][pair] = bar_time
         s["events"] += 1
 
         sig = int(filtered_signals(frame(closed), **CFG).iloc[-1])
         ai_side, score = ai_proxy(closed)
-        bar_time = closed[-1]["time"]
         s["signal_map"][pair] = {"tw": sig, "ai": ai_side, "confidence": score, "bar_time": bar_time}
         if not sig:
             return
@@ -432,6 +439,9 @@ def main():
         event(s, {"event": "ACTIVE_PAIRS_ERROR", "error": str(exc)})
 
     s["pairs"] = pairs
+    s["run_started_at"] = datetime.now(timezone.utc).isoformat()
+    s["run_finished_at"] = None
+    s["status"] = "STARTING"
     end = time.monotonic() + a.minutes * 60
     bars_cache = {}
 
@@ -453,6 +463,7 @@ def main():
             process(s, p, bars_cache, fetched.get(p, []))
             risk_check(s)
         s["updated_at"] = datetime.now(timezone.utc).isoformat()
+        s["heartbeat_at"] = s["updated_at"]
         s["status"] = "LIVE_PAPER"
         save_state(STATE_PATH, s)
         time.sleep(15)
@@ -460,10 +471,15 @@ def main():
     # Do NOT flatten at the end of a GitHub Actions run. The paper position
     # must persist across runs so TP/SL can be monitored continuously.
     write_market_snapshot(s, pairs, bars_cache)
+    s["run_finished_at"] = datetime.now(timezone.utc).isoformat()
+    s["updated_at"] = s["run_finished_at"]
+    s["heartbeat_at"] = s["run_finished_at"]
+    save_state(STATE_PATH, s)
 
     summary = {
         "mode": "SERVER_SIDE_MULTI_COIN_TW_AI_PAPER_TRAINING",
         "status": s["status"], "updated_at": s["updated_at"],
+        "run_started_at": s.get("run_started_at"), "run_finished_at": s.get("run_finished_at"),
         "day_ist": s["day_ist"], "capital": 100000.0, "cash": s["cash"],
         "realized_pnl": s["realized_pnl"], "trades_today": s["trades_today"],
         "max_trades_per_day": MAX_TRADES_PER_DAY,
