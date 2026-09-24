@@ -4,7 +4,7 @@ on:
   # Watchdog: if the self-dispatch chain ever stops, a scheduled run restarts it.
   # The 17-minute offset avoids the top-of-hour Actions load spike.
   schedule:
-    - cron: '17/15 * * * *'
+    - cron: '*/15 * * * *'
   workflow_dispatch:
   push:
     branches: [main]
