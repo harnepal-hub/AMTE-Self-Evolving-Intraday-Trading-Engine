@@ -40,23 +40,10 @@ jobs:
           set -euo pipefail
           SHOULD_RUN=true
           if [ "${{ github.event_name }}" = "schedule" ] && [ -f data/paper_live/state.json ]; then
-            last=$(python - <<'PY'
-import json
-from datetime import datetime, timezone
-p="data/paper_live/state.json"
-try:
-    s=json.load(open(p))
-    ts=s.get("updated_at")
-    print(int(datetime.fromisoformat(ts.replace("Z","+00:00")).timestamp()) if ts else 0)
-except Exception:
-    print(0)
-PY
-)
+            last=$(python -c 'import json; from datetime import datetime; s=json.load(open("data/paper_live/state.json")); ts=s.get("updated_at"); print(int(datetime.fromisoformat(ts.replace("Z","+00:00")).timestamp()) if ts else 0)')
             now=$(date +%s)
             age=$((now-last))
             echo "paper-state age: ${age}s"
-            # Scheduled watchdog only takes over when the normal self-dispatch
-            # chain has gone stale for more than 7 minutes.
             if [ "$last" -gt 0 ] && [ "$age" -lt 420 ]; then
               SHOULD_RUN=false
             fi
