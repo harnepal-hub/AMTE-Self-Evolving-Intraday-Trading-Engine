@@ -3,6 +3,8 @@
   const SITE=new URL('.',location.href);
   const STATE=new URL('live_data/state.json',SITE).href;
   const MARKET=new URL('live_data/market.json',SITE).href;
+  const RAW_STATE='https://raw.githubusercontent.com/harnepal-hub/AMTE-Self-Evolving-Intraday-Trading-Engine/main/data/paper_live/state.json';
+  const RAW_MARKET='https://raw.githubusercontent.com/harnepal-hub/AMTE-Self-Evolving-Intraday-Trading-Engine/main/data/paper_live/market.json';
   const PUB='https://public.coindcx.com';
   const H=(id)=>document.getElementById(id);
   const jf=async(u)=>{const r=await fetch(u+(u.includes('?')?'&':'?')+'t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error(r.status);return r.json()};
@@ -43,14 +45,14 @@
   }
   async function refresh(){
     try{
-      const s=await jf(STATE);
+      let s; try{s=await jf(STATE)}catch(e){s=await jf(RAW_STATE)}
       window.server=s;
       if(Array.isArray(s.pairs))window.pairs=s.pairs.filter(p=>typeof p==='string'&&p.endsWith('_USDT')).slice(0,30);
       renderAuthoritative();
       if(H('chartState'))H('chartState').textContent='Server signal + live CoinDCX REST';
     }catch(e){mark('PAPER STATE ERROR',false)}
     try{
-      const j=await Promise.race([jf(PUB+'/market_data/v3/current_prices/futures/rt'),new Promise((_,r)=>setTimeout(()=>r(Error('timeout')),5000))]);
+      let j; try{j=await Promise.race([jf(PUB+'/market_data/v3/current_prices/futures/rt'),new Promise((_,r)=>setTimeout(()=>r(Error('timeout')),5000))])}catch(e){j=await jf(RAW_MARKET)}
       window.prices=j.prices||j||{};
       if(H('engine') && window.server?.updated_at){
         const age=Date.now()-Date.parse(window.server.updated_at);
@@ -58,8 +60,14 @@
       }
       renderAuthoritative();
       const p=window.selected||'B-BTC_USDT', now=Math.floor(Date.now()/1000);
-      const c=await jf(PUB+'/market_data/candlesticks?pair='+encodeURIComponent(p)+'&from='+(now-260*300-900)+'&to='+now+'&resolution=5&pcode=f');
-      const rows=(c.data||[]).map(window.norm).filter(Boolean).sort((a,b)=>a.time-b.time).slice(-260);
+      let rows=[];
+      try{
+        const c=await jf(PUB+'/market_data/candlesticks?pair='+encodeURIComponent(p)+'&from='+(now-260*300-900)+'&to='+now+'&resolution=5&pcode=f');
+        rows=(c.data||[]).map(window.norm).filter(Boolean).sort((a,b)=>a.time-b.time).slice(-260);
+      }catch(e){}
+      if(!rows.length){
+        try{const m=await jf(MARKET);rows=(m.candles?.[p]||[]).map(window.norm).filter(Boolean).sort((a,b)=>a.time-b.time).slice(-260)}catch(e){}
+      }
       if(rows.length)window.histories[p]=rows;
       if(typeof window.selectedUI==='function')window.selectedUI();
       if(H('chartState'))H('chartState').textContent='Live CoinDCX REST · server signal authoritative';
