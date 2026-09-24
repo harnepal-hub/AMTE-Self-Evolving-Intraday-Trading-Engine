@@ -408,13 +408,18 @@ def process(s, pair, bars_cache=None, rows=None):
 def write_market_snapshot(s, pairs, bars_cache):
     try:
         prices = get_json(PRICES).get("prices", {})
-        btc = bars_cache.get("B-BTC_USDT", [])[-60:]
+        candles = {
+            p: bars_cache.get(p, [])[-120:]
+            for p in pairs
+            if bars_cache.get(p)
+        }
         snapshot = {
             "updated_at": datetime.now(timezone.utc).isoformat(),
             "prices": {p: prices[p] for p in pairs if p in prices},
             "signals": s.get("signal_map", {}),
-            "candles": {"B-BTC_USDT": btc} if btc else {},
+            "candles": candles,
             "source": "CoinDCX public futures REST",
+            "candle_resolution": 5,
         }
         MARKET_PATH.write_text(json.dumps(snapshot, separators=(",", ":")))
     except Exception as exc:
