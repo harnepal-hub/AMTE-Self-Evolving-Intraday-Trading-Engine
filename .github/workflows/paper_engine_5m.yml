@@ -11,6 +11,7 @@ on:
     paths:
       - 'scripts/run_server_paper.py'
       - 'app/signals/tw_all_in_one_filtered.py'
+      - 'app/execution/paper.py'
       - 'docs/app.js'
       - 'docs/live-hotfix.js'
       - '.github/workflows/paper_engine_5m.yml'
