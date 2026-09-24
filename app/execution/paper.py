@@ -15,6 +15,8 @@ class PaperConfig:
     slippage_bps: float = 2.0
     max_trades_per_day: int = 10
     max_daily_loss_rs: float = 2000.0
+    # Backward-compatible legacy override used by older tests/runners.
+    max_daily_loss_pct: float | None = None
 
 
 @dataclass
@@ -47,6 +49,11 @@ class PaperBroker:
         self.locked = False
         self.realized_pnl = 0.0
         self.journal: list[dict] = []
+
+    def _daily_loss_limit(self) -> float:
+        if self.cfg.max_daily_loss_pct is not None:
+            return self.day_start * self.cfg.max_daily_loss_pct
+        return self.cfg.max_daily_loss_rs
 
     def _roll_day(self, ts) -> None:
         d = ts.date() if hasattr(ts, "date") else ts
@@ -87,7 +94,7 @@ class PaperBroker:
         self._roll_day(ts)
         if self.position is not None or self.locked or self.trades_today >= self.cfg.max_trades_per_day:
             return False
-        if self.realized_pnl <= -self.cfg.max_daily_loss_rs:
+        if self.realized_pnl <= -self._daily_loss_limit():
             self.locked = True
             return False
         return True
