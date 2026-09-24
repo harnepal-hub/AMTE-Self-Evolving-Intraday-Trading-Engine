@@ -30,12 +30,12 @@ BOOK = "https://public.coindcx.com/market_data/v3/orderbook/{pair}-futures/50"
 IST = ZoneInfo("Asia/Kolkata")
 
 # Frozen paper configuration for this training phase.
-RISK_PER_TRADE = 0.0025
+RISK_PER_TRADE = 0.0010
 STOP_PCT = 0.005
 TARGET_PCT = 0.01
 FEE_BPS = 5.0
 SLIPPAGE_BPS = 2.0
-MAX_DAILY_LOSS_RS = 2000.0
+MAX_DAILY_LOSS_RS = 500.0
 MAX_TRADES_PER_DAY = 10
 CFG = {
     "hull_length": 8, "ema_length": 200, "ema_filter": True,
@@ -160,7 +160,7 @@ def ai_proxy(rows):
 
 def default_state():
     return {
-        "version": 7, "day_ist": "", "cash": 100000.0, "realized_pnl": 0.0,
+        "version": 7, "day_ist": "", "cash": 100000.0, "realized_pnl": 0.0, "peak_equity": 100000.0, "max_drawdown_rs": 0.0,
         "trades_today": 0, "locked": False, "position": None,
         "last_signal": {}, "last_processed_bar": {}, "pairs": [], "events": 0, "signals": 0,
         "rejected_signals": 0, "accepted_signals": 0, "errors": 0,
@@ -209,6 +209,26 @@ def roll_day(s):
         s["trades_today"] = 0
         s["locked"] = False
         s["realized_pnl"] = 0.0
+
+
+def equity_mark(s, bid=None, ask=None):
+    p = s.get("position")
+    if not p or bid is None or ask is None:
+        return float(s.get("cash", 0.0))
+    mark = (float(bid) + float(ask)) / 2.0
+    side = 1 if p["side"] == "LONG" else -1
+    return float(s.get("cash", 0.0)) + (mark - p["entry_price"]) * p["quantity"] * side
+
+
+def update_drawdown(s, bid=None, ask=None):
+    eq = equity_mark(s, bid, ask)
+    s["peak_equity"] = max(float(s.get("peak_equity", 100000.0)), eq)
+    dd = max(0.0, s["peak_equity"] - eq)
+    s["max_drawdown_rs"] = max(float(s.get("max_drawdown_rs", 0.0)), dd)
+    if dd >= 500.0:
+        s["locked"] = True
+        return bool(s.get("position"))
+    return False
 
 
 def can_enter(s):
@@ -467,6 +487,15 @@ def main():
         for p in pairs:
             process(s, p, bars_cache, fetched.get(p, []))
             risk_check(s)
+            if s.get("position") and s["position"].get("pair") == p:
+                q = book(p)
+                if q:
+                    bid, ask = q
+                    if update_drawdown(s, bid, ask) and s.get("position"):
+                        exit_position(s, bid, ask, "MAX_EQUITY_DRAWDOWN")
+                        s["locked"] = True
+            elif not s.get("position"):
+                update_drawdown(s)
         s["updated_at"] = datetime.now(timezone.utc).isoformat()
         s["heartbeat_at"] = s["updated_at"]
         s["status"] = "LIVE_PAPER"
@@ -487,7 +516,7 @@ def main():
         "run_started_at": s.get("run_started_at"), "run_finished_at": s.get("run_finished_at"),
         "day_ist": s["day_ist"], "capital": 100000.0, "cash": s["cash"],
         "realized_pnl": s["realized_pnl"], "trades_today": s["trades_today"],
-        "max_trades_per_day": MAX_TRADES_PER_DAY, "max_daily_loss_rs": MAX_DAILY_LOSS_RS,
+        "max_trades_per_day": MAX_TRADES_PER_DAY, "max_daily_loss_rs": MAX_DAILY_LOSS_RS, "max_equity_drawdown_rs": 500.0,
         "pairs": len(pairs), "pair_list": pairs, "events": s["events"],
         "signals": s["signals"], "accepted_signals": s["accepted_signals"],
         "rejected_signals": s["rejected_signals"], "errors": s["errors"],
