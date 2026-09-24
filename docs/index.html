@@ -24,7 +24,7 @@ body.dark{--bg:#07111f;--panel:#0d1a2b;--text:#edf4ff;--muted:#91a2b9;--line:#20
   <div class="card"><div class="label">Total Capital (Virtual)</div><div class="value">₹1,00,000</div></div>
   <div class="card"><div class="label">Current Balance</div><div id="cash" class="value">₹1,00,000</div><div id="cashDelta" class="smallValue green">Paper account</div></div>
   <div class="card"><div class="label">Today's P&amp;L</div><div id="pnl" class="value green">₹0</div><div id="pnlPct" class="smallValue">—</div></div>
-  <div class="card"><div class="label">Total Trades (Today)</div><div id="trades" class="value">0 / 5</div><div class="smallValue">Max 5 trades/day</div></div>
+  <div class="card"><div class="label">Total Trades (Today)</div><div id="trades" class="value">0 / 10</div><div class="smallValue">Max 10 trades/day</div></div>
   <div class="card"><div class="label">Win Rate (Today)</div><div id="todayWinRate" class="value">—</div><div id="todayWinDetail" class="smallValue">No completed trades</div></div>
   <div class="card"><div class="label">Open Positions</div><div id="openPositions" class="value">0</div><div class="smallValue">Paper only</div></div>
   <div class="card"><div class="label">System Status</div><div id="engine" class="value green">WAITING</div><div id="engineSub" class="smallValue">Initializing</div></div>
@@ -57,7 +57,7 @@ body.dark{--bg:#07111f;--panel:#0d1a2b;--text:#edf4ff;--muted:#91a2b9;--line:#20
 
 <section class="subgrid">
   <div class="panel"><div class="ph">Live Market Snapshot</div><div class="body"><div class="metricrow"><span>Selected price</span><b id="snapprice">—</b></div><div class="metricrow"><span>24h change</span><b id="snapchange">—</b></div><div class="metricrow"><span>AI / TW alignment</span><b id="align">—</b></div><div class="metricrow"><span>Data source</span><b>CoinDCX Futures public</b></div></div></div>
-  <div class="panel"><div class="ph">Risk Controls</div><div class="body"><div class="metricrow"><span>Capital</span><b>₹1,00,000</b></div><div class="metricrow"><span>Risk / trade</span><b>0.25%</b></div><div class="metricrow"><span>Daily trade cap</span><b>5</b></div><div class="metricrow"><span>Daily loss lock</span><b>2%</b></div><div class="metricrow"><span>Stop / target</span><b>0.5% / 1.0%</b></div><div class="metricrow"><span>Real orders</span><b class="green">DISABLED</b></div></div></div>
+  <div class="panel"><div class="ph">Risk Controls</div><div class="body"><div class="metricrow"><span>Capital</span><b>₹1,00,000</b></div><div class="metricrow"><span>Risk / trade</span><b>0.25%</b></div><div class="metricrow"><span>Daily trade cap</span><b>10</b></div><div class="metricrow"><span>Daily loss lock</span><b>₹2,000</b></div><div class="metricrow"><span>Stop / target</span><b>0.5% / 1.0%</b></div><div class="metricrow"><span>Real orders</span><b class="green">DISABLED</b></div></div></div>
 </section>
 
 <section class="bottomGrid">
@@ -75,6 +75,6 @@ body.dark{--bg:#07111f;--panel:#0d1a2b;--text:#edf4ff;--muted:#91a2b9;--line:#20
 <div class="footer">AMTE · CoinDCX Futures · Server-side paper trading · Real exchange orders remain disabled.</div>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/socket.io-client@2.4.0/dist/socket.io.js"></script>
-<script src="app.js?v=20260924-09"></script>
-<script src="live-hotfix.js?v=20260924-05"></script>
+<script src="app.js?v=20260924-11"></script>
+<script src="live-hotfix.js?v=20260924-07"></script>
 </body></html>
