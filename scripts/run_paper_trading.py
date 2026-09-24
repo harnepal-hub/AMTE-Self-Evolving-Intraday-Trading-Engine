@@ -73,7 +73,7 @@ class TWPaperRunner:
             initial_capital=100_000.0, risk_per_trade=0.0025,
             stop_pct=0.005, target_pct=0.01,
             fee_bps_per_side=5.0, slippage_bps=2.0,
-            max_trades_per_day=5, max_daily_loss_pct=0.02,
+            max_trades_per_day=10, max_daily_loss_rs=2000.0,
         ))
         self.book = Book()
         self.candles = CandleBuilder()
