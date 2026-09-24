@@ -35,8 +35,8 @@ STOP_PCT = 0.005
 TARGET_PCT = 0.01
 FEE_BPS = 5.0
 SLIPPAGE_BPS = 2.0
-MAX_DAILY_LOSS_PCT = 0.02
-MAX_TRADES_PER_DAY = 5
+MAX_DAILY_LOSS_RS = 2000.0
+MAX_TRADES_PER_DAY = 10
 CFG = {
     "hull_length": 8, "ema_length": 200, "ema_filter": True,
     "slope_filter": True, "volume_ratio_min": 1.2,
@@ -297,7 +297,7 @@ def exit_position(s, bid, ask, reason):
     event(s, trade)
     append_csv(TRADE_CSV, TRADE_FIELDS, trade)
     s["position"] = None
-    if s["realized_pnl"] <= -100000 * MAX_DAILY_LOSS_PCT:
+    if s["realized_pnl"] <= -MAX_DAILY_LOSS_RS:
         s["locked"] = True
 
 
@@ -482,7 +482,7 @@ def main():
         "run_started_at": s.get("run_started_at"), "run_finished_at": s.get("run_finished_at"),
         "day_ist": s["day_ist"], "capital": 100000.0, "cash": s["cash"],
         "realized_pnl": s["realized_pnl"], "trades_today": s["trades_today"],
-        "max_trades_per_day": MAX_TRADES_PER_DAY,
+        "max_trades_per_day": MAX_TRADES_PER_DAY, "max_daily_loss_rs": MAX_DAILY_LOSS_RS,
         "pairs": len(pairs), "pair_list": pairs, "events": s["events"],
         "signals": s["signals"], "accepted_signals": s["accepted_signals"],
         "rejected_signals": s["rejected_signals"], "errors": s["errors"],
