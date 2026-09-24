@@ -8,13 +8,13 @@ from datetime import date
 @dataclass(frozen=True)
 class PaperConfig:
     initial_capital: float = 100_000.0
-    risk_per_trade: float = 0.0025
+    risk_per_trade: float = 0.0010
     stop_pct: float = 0.005
     target_pct: float = 0.01
     fee_bps_per_side: float = 5.0
     slippage_bps: float = 2.0
     max_trades_per_day: int = 10
-    max_daily_loss_rs: float = 2000.0
+    max_daily_loss_rs: float = 500.0
     # Backward-compatible legacy override used by older tests/runners.
     max_daily_loss_pct: float | None = None
 
