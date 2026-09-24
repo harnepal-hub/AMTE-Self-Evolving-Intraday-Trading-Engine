@@ -1,12 +1,10 @@
 name: AMTE Server Paper Engine
-# Runs every five minutes; each session monitors the live CoinDCX futures feed server-side.
-# Dashboard heartbeat fix: publish fresh paper state on every scheduled/manual run.
-# Paper training has no daily trade-count cap; the engine still enforces the 2% daily loss lock.
 
 on:
+  # Watchdog: if the self-dispatch chain ever stops, a scheduled run restarts it.
+  # The 17-minute offset avoids the top-of-hour Actions load spike.
   schedule:
-    # Avoid the top of the hour, where GitHub warns scheduled jobs can be delayed or dropped.
-    - cron: '3-59/5 * * * *'
+    - cron: '17/15 * * * *'
   workflow_dispatch:
   push:
     branches: [main]
@@ -19,6 +17,9 @@ on:
 
 permissions:
   contents: write
+  actions: write
+  pages: write
+  id-token: write
 
 concurrency:
   group: amte-server-paper
@@ -28,57 +29,124 @@ jobs:
   paper:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+
     steps:
       - uses: actions/checkout@v4
 
+      - name: Decide whether this run should capture
+        id: guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          SHOULD_RUN=true
+          if [ "${{ github.event_name }}" = "schedule" ] && [ -f data/paper_live/state.json ]; then
+            last=$(python - <<'PY'
+import json
+from datetime import datetime, timezone
+p="data/paper_live/state.json"
+try:
+    s=json.load(open(p))
+    ts=s.get("updated_at")
+    print(int(datetime.fromisoformat(ts.replace("Z","+00:00")).timestamp()) if ts else 0)
+except Exception:
+    print(0)
+PY
+)
+            now=$(date +%s)
+            age=$((now-last))
+            echo "paper-state age: ${age}s"
+            # Scheduled watchdog only takes over when the normal self-dispatch
+            # chain has gone stale for more than 7 minutes.
+            if [ "$last" -gt 0 ] && [ "$age" -lt 420 ]; then
+              SHOULD_RUN=false
+            fi
+          fi
+          echo "should_run=$SHOULD_RUN" >> "$GITHUB_OUTPUT"
+
       - uses: actions/setup-python@v5
+        if: steps.guard.outputs.should_run == 'true'
         with:
           python-version: '3.12'
           cache: pip
 
-      - run: python -m pip install -r requirements.txt
+      - name: Install dependencies
+        if: steps.guard.outputs.should_run == 'true'
+        run: python -m pip install -r requirements.txt
 
-      - name: Run server-side paper engine
+      - name: Run server-side live paper engine
+        if: steps.guard.outputs.should_run == 'true'
         run: python scripts/run_server_paper.py --minutes 4.5 --max-pairs 30
 
-      - name: Publish live paper state safely
-        if: always()
+      - name: Publish live paper state
+        if: steps.guard.outputs.should_run == 'true'
+        shell: bash
         run: |
-          set -e
+          set -euo pipefail
           mkdir -p /tmp/amte-paper-state
-          cp -a data/paper_live/. /tmp/amte-paper-state/ 2>/dev/null || true
+          cp -a data/paper_live/. /tmp/amte-paper-state/
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Another workflow may have pushed while this 4-minute session was running.
-          # Rebase onto the current main before publishing the fresh paper state.
           git fetch origin main
           git reset --hard origin/main
 
-          mkdir -p data/paper_live
-          cp -a /tmp/amte-paper-state/. data/paper_live/ 2>/dev/null || true
-
-          # Mirror the server state into the Pages source tree. This makes the
-          # dashboard data same-origin and avoids browser/CORS/raw-GitHub failures.
+          mkdir -p data/paper_live docs/live_data
+          cp -a /tmp/amte-paper-state/. data/paper_live/
           rm -rf docs/live_data
           mkdir -p docs/live_data
-          cp -a data/paper_live/state.json docs/live_data/state.json 2>/dev/null || true
-          cp -a data/paper_live/market.json docs/live_data/market.json 2>/dev/null || true
+          cp data/paper_live/state.json docs/live_data/state.json
+          cp data/paper_live/market.json docs/live_data/market.json
+          printf '{"generated_at":"%s"}\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > docs/live_data/heartbeat.json
+
           git add data/paper_live docs/live_data
           if git diff --cached --quiet; then
+            echo "No state changes to commit."
             exit 0
           fi
-
           git commit -m "data: update server paper state"
+
           for attempt in 1 2 3; do
             if git push origin HEAD:main; then
               exit 0
             fi
             git fetch origin main
             git reset --hard origin/main
-            cp -a /tmp/amte-paper-state/. data/paper_live/ 2>/dev/null || true
-            git add data/paper_live
+            cp -a /tmp/amte-paper-state/. data/paper_live/
+            mkdir -p docs/live_data
+            cp data/paper_live/state.json docs/live_data/state.json
+            cp data/paper_live/market.json docs/live_data/market.json
+            printf '{"generated_at":"%s"}\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > docs/live_data/heartbeat.json
+            git add data/paper_live docs/live_data
             git commit -m "data: update server paper state" || true
           done
           exit 1
+
+      # Important: GITHUB_TOKEN-created pushes do not trigger a separate
+      # workflow/Pages build. Deploy the freshly generated docs in this run.
+      - name: Configure GitHub Pages
+        if: steps.guard.outputs.should_run == 'true'
+        uses: actions/configure-pages@v5
+
+      - name: Upload dashboard artifact
+        if: steps.guard.outputs.should_run == 'true'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./docs
+
+      - name: Deploy dashboard
+        if: steps.guard.outputs.should_run == 'true'
+        id: deployment
+        uses: actions/deploy-pages@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Start next capture cycle
+        if: steps.guard.outputs.should_run == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh workflow run paper_engine_5m.yml --repo "${GITHUB_REPOSITORY}" --ref main
+          echo "Next paper cycle dispatched via workflow_dispatch."
