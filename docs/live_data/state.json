@@ -4,7 +4,7 @@
   "cash": 100850.363670252,
   "realized_pnl": 0.0,
   "peak_equity": 101209.04052814496,
-  "max_drawdown_rs": 368.4771646411391,
+  "max_drawdown_rs": 437.67751042307646,
   "trades_today": 1,
   "locked": false,
   "position": {
@@ -49,42 +49,42 @@
     "B-TAO_USDT": "B-TAO_USDT-1790270100000-1"
   },
   "last_processed_bar": {
-    "B-BTC_USDT": 1790296500000,
-    "B-ETH_USDT": 1790296500000,
-    "B-ZEC_USDT": 1790296500000,
-    "B-SOL_USDT": 1790296500000,
-    "B-XRP_USDT": 1790296500000,
-    "B-XAU_USDT": 1790296500000,
-    "B-NEAR_USDT": 1790296500000,
-    "B-CL_USDT": 1790296500000,
-    "B-DOGE_USDT": 1790296500000,
-    "B-HYPE_USDT": 1790296500000,
-    "B-BCH_USDT": 1790296500000,
-    "B-UNI_USDT": 1790296500000,
-    "B-XAG_USDT": 1790296500000,
-    "B-BZ_USDT": 1790296500000,
-    "B-1000PEPE_USDT": 1790296500000,
-    "B-BNB_USDT": 1790296500000,
-    "B-SUI_USDT": 1790296500000,
-    "B-NIL_USDT": 1790296500000,
+    "B-BTC_USDT": 1790296800000,
+    "B-ETH_USDT": 1790296800000,
+    "B-ZEC_USDT": 1790296800000,
+    "B-SOL_USDT": 1790296800000,
+    "B-XRP_USDT": 1790296800000,
+    "B-XAU_USDT": 1790296800000,
+    "B-NEAR_USDT": 1790296800000,
+    "B-CL_USDT": 1790296800000,
+    "B-DOGE_USDT": 1790296800000,
+    "B-HYPE_USDT": 1790296800000,
+    "B-BCH_USDT": 1790296800000,
+    "B-UNI_USDT": 1790296800000,
+    "B-XAG_USDT": 1790296800000,
+    "B-BZ_USDT": 1790296800000,
+    "B-1000PEPE_USDT": 1790296800000,
+    "B-BNB_USDT": 1790296800000,
+    "B-SUI_USDT": 1790296800000,
+    "B-NIL_USDT": 1790296800000,
     "B-MUBARAK_USDT": 1790236800000,
-    "B-ADA_USDT": 1790296500000,
-    "B-LTC_USDT": 1790296500000,
-    "B-TAO_USDT": 1790296500000,
-    "B-WLD_USDT": 1790296500000,
-    "B-ENA_USDT": 1790296500000,
-    "B-AVAX_USDT": 1790296500000,
+    "B-ADA_USDT": 1790296800000,
+    "B-LTC_USDT": 1790296800000,
+    "B-TAO_USDT": 1790296800000,
+    "B-WLD_USDT": 1790296800000,
+    "B-ENA_USDT": 1790296800000,
+    "B-AVAX_USDT": 1790296800000,
     "B-PENGU_USDT": 1790262900000,
-    "B-LINK_USDT": 1790296500000,
+    "B-LINK_USDT": 1790296800000,
     "B-ARB_USDT": 1790283000000,
     "B-TRUMP_USDT": 1790258700000,
     "B-ONE_USDT": 1790277900000,
-    "B-LSK_USDT": 1790296500000,
-    "B-ONDO_USDT": 1790296500000,
+    "B-LSK_USDT": 1790296800000,
+    "B-ONDO_USDT": 1790296800000,
     "B-NOM_USDT": 1790295600000,
-    "B-ETC_USDT": 1790296500000,
-    "B-AKE_USDT": 1790296500000,
-    "B-SAGA_USDT": 1790296500000
+    "B-ETC_USDT": 1790296800000,
+    "B-AKE_USDT": 1790296800000,
+    "B-SAGA_USDT": 1790296800000
   },
   "pairs": [
     "B-BTC_USDT",
@@ -118,15 +118,15 @@
     "B-SAGA_USDT",
     "B-AKE_USDT"
   ],
-  "events": 30703,
+  "events": 30733,
   "signals": 34,
   "rejected_signals": 19,
   "accepted_signals": 14,
   "errors": 27,
-  "updated_at": "2026-09-25T00:41:31.518985+00:00",
-  "heartbeat_at": "2026-09-25T00:41:31.518985+00:00",
-  "run_started_at": "2026-09-25T00:36:44.244669+00:00",
-  "run_finished_at": "2026-09-25T00:41:31.518985+00:00",
+  "updated_at": "2026-09-25T00:46:53.723311+00:00",
+  "heartbeat_at": "2026-09-25T00:46:53.723311+00:00",
+  "run_started_at": "2026-09-25T00:42:19.687230+00:00",
+  "run_finished_at": "2026-09-25T00:46:53.723311+00:00",
   "status": "LIVE_PAPER",
   "journal": [
     {
@@ -1269,67 +1269,67 @@
       "tw": 0,
       "ai": "LONG",
       "confidence": 84.0,
-      "bar_time": 1790296500000
+      "bar_time": 1790296800000
     },
     "B-ETH_USDT": {
       "tw": 0,
       "ai": "LONG",
-      "confidence": 92.0,
-      "bar_time": 1790296500000
+      "confidence": 84.0,
+      "bar_time": 1790296800000
     },
     "B-ZEC_USDT": {
       "tw": 0,
-      "ai": "LONG",
-      "confidence": 84.0,
-      "bar_time": 1790296500000
+      "ai": "NO TRADE",
+      "confidence": 40.0,
+      "bar_time": 1790296800000
     },
     "B-SOL_USDT": {
       "tw": 0,
       "ai": "LONG",
-      "confidence": 84.0,
-      "bar_time": 1790296500000
+      "confidence": 92.0,
+      "bar_time": 1790296800000
     },
     "B-XAU_USDT": {
       "tw": 0,
-      "ai": "SHORT",
-      "confidence": 16.0,
-      "bar_time": 1790296500000
+      "ai": "NO TRADE",
+      "confidence": 60.0,
+      "bar_time": 1790296800000
     },
     "B-XRP_USDT": {
       "tw": 0,
       "ai": "LONG",
-      "confidence": 74.0,
-      "bar_time": 1790296500000
+      "confidence": 84.0,
+      "bar_time": 1790296800000
     },
     "B-UNI_USDT": {
       "tw": 0,
       "ai": "SHORT",
-      "confidence": 16.0,
-      "bar_time": 1790296500000
+      "confidence": 24.0,
+      "bar_time": 1790296800000
     },
     "B-CL_USDT": {
       "tw": 0,
       "ai": "SHORT",
-      "confidence": 26.0,
-      "bar_time": 1790296500000
+      "confidence": 34.0,
+      "bar_time": 1790296800000
     },
     "B-HYPE_USDT": {
       "tw": 0,
       "ai": "SHORT",
       "confidence": 34.0,
-      "bar_time": 1790296500000
+      "bar_time": 1790296800000
     },
     "B-NEAR_USDT": {
       "tw": 0,
-      "ai": "NO TRADE",
-      "confidence": 60.0,
-      "bar_time": 1790296500000
+      "ai": "SHORT",
+      "confidence": 16.0,
+      "bar_time": 1790296800000
     },
     "B-XAG_USDT": {
       "tw": 0,
       "ai": "SHORT",
       "confidence": 16.0,
-      "bar_time": 1790296500000
+      "bar_time": 1790296800000
     },
     "B-ONE_USDT": {
       "tw": 0,
@@ -1339,9 +1339,9 @@
     },
     "B-BNB_USDT": {
       "tw": 0,
-      "ai": "NO TRADE",
-      "confidence": 60.0,
-      "bar_time": 1790296500000
+      "ai": "SHORT",
+      "confidence": 16.0,
+      "bar_time": 1790296800000
     },
     "B-ARB_USDT": {
       "tw": 0,
@@ -1353,19 +1353,19 @@
       "tw": 0,
       "ai": "SHORT",
       "confidence": 26.0,
-      "bar_time": 1790296500000
+      "bar_time": 1790296800000
     },
     "B-DOGE_USDT": {
       "tw": 0,
       "ai": "LONG",
-      "confidence": 84.0,
-      "bar_time": 1790296500000
+      "confidence": 92.0,
+      "bar_time": 1790296800000
     },
     "B-LSK_USDT": {
       "tw": 0,
       "ai": "SHORT",
-      "confidence": 34.0,
-      "bar_time": 1790296500000
+      "confidence": 26.0,
+      "bar_time": 1790296800000
     },
     "B-AVA_USDT": {
       "tw": 0,
@@ -1376,14 +1376,14 @@
     "B-ENA_USDT": {
       "tw": 0,
       "ai": "LONG",
-      "confidence": 74.0,
-      "bar_time": 1790296500000
+      "confidence": 82.0,
+      "bar_time": 1790296800000
     },
     "B-SUI_USDT": {
       "tw": 0,
       "ai": "LONG",
       "confidence": 92.0,
-      "bar_time": 1790296500000
+      "bar_time": 1790296800000
     },
     "B-G_USDT": {
       "tw": 0,
@@ -1393,21 +1393,21 @@
     },
     "B-1000PEPE_USDT": {
       "tw": 0,
-      "ai": "NO TRADE",
-      "confidence": 60.0,
-      "bar_time": 1790296500000
+      "ai": "LONG",
+      "confidence": 68.0,
+      "bar_time": 1790296800000
     },
     "B-WLD_USDT": {
       "tw": 0,
       "ai": "SHORT",
-      "confidence": 16.0,
-      "bar_time": 1790296500000
+      "confidence": 24.0,
+      "bar_time": 1790296800000
     },
     "B-ADA_USDT": {
       "tw": 0,
       "ai": "LONG",
-      "confidence": 92.0,
-      "bar_time": 1790296500000
+      "confidence": 84.0,
+      "bar_time": 1790296800000
     },
     "B-BR_USDT": {
       "tw": 0,
@@ -1416,10 +1416,10 @@
       "bar_time": 1789996200000
     },
     "B-ONDO_USDT": {
-      "tw": 1,
+      "tw": 0,
       "ai": "LONG",
-      "confidence": 92.0,
-      "bar_time": 1790296500000
+      "confidence": 84.0,
+      "bar_time": 1790296800000
     },
     "B-PONS_USDT": {
       "tw": 0,
@@ -1441,9 +1441,9 @@
     },
     "B-LINK_USDT": {
       "tw": 0,
-      "ai": "LONG",
-      "confidence": 84.0,
-      "bar_time": 1790296500000
+      "ai": "NO TRADE",
+      "confidence": 60.0,
+      "bar_time": 1790296800000
     },
     "B-PUMP_USDT": {
       "tw": 0,
@@ -1461,19 +1461,19 @@
       "tw": 0,
       "ai": "SHORT",
       "confidence": 16.0,
-      "bar_time": 1790296500000
+      "bar_time": 1790296800000
     },
     "B-TAO_USDT": {
       "tw": 0,
       "ai": "LONG",
       "confidence": 84.0,
-      "bar_time": 1790296500000
+      "bar_time": 1790296800000
     },
     "B-BCH_USDT": {
       "tw": 0,
       "ai": "LONG",
       "confidence": 84.0,
-      "bar_time": 1790296500000
+      "bar_time": 1790296800000
     },
     "B-STRK_USDT": {
       "tw": 0,
@@ -1491,7 +1491,7 @@
       "tw": 0,
       "ai": "SHORT",
       "confidence": 16.0,
-      "bar_time": 1790296500000
+      "bar_time": 1790296800000
     },
     "B-MYX_USDT": {
       "tw": 0,
@@ -1537,9 +1537,9 @@
     },
     "B-SAGA_USDT": {
       "tw": 0,
-      "ai": "LONG",
-      "confidence": 84.0,
-      "bar_time": 1790296500000
+      "ai": "NO TRADE",
+      "confidence": 48.0,
+      "bar_time": 1790296800000
     },
     "B-ZETA_USDT": {
       "tw": 0,
@@ -1550,8 +1550,8 @@
     "B-LTC_USDT": {
       "tw": 0,
       "ai": "SHORT",
-      "confidence": 24.0,
-      "bar_time": 1790296500000
+      "confidence": 16.0,
+      "bar_time": 1790296800000
     },
     "B-MUBARAK_USDT": {
       "tw": 0,
@@ -1578,10 +1578,10 @@
       "bar_time": 1790145600000
     },
     "B-NIL_USDT": {
-      "tw": -1,
-      "ai": "SHORT",
-      "confidence": 24.0,
-      "bar_time": 1790296500000
+      "tw": 0,
+      "ai": "LONG",
+      "confidence": 68.0,
+      "bar_time": 1790296800000
     },
     "B-NOM_USDT": {
       "tw": 0,
@@ -1592,8 +1592,8 @@
     "B-ETC_USDT": {
       "tw": 0,
       "ai": "SHORT",
-      "confidence": 16.0,
-      "bar_time": 1790296500000
+      "confidence": 24.0,
+      "bar_time": 1790296800000
     }
   }
 }
