@@ -14,7 +14,7 @@ class PaperConfig:
     fee_bps_per_side: float = 5.0
     slippage_bps: float = 2.0
     max_trades_per_day: int = 10
-    max_daily_loss_rs: float = 500.0
+    max_daily_loss_rs: float = 2000.0
     # Backward-compatible legacy override used by older tests/runners.
     max_daily_loss_pct: float | None = None
 
