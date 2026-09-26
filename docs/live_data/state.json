@@ -2,11 +2,11 @@
   "version": 2,
   "day_ist": "2026-09-26",
   "cash": 100692.85104155213,
-  "realized_pnl": 0.0,
+  "realized_pnl": 0,
   "peak_equity": 101209.04052814496,
   "max_drawdown_rs": 516.1894865928334,
   "trades_today": 0,
-  "locked": true,
+  "locked": false,
   "position": null,
   "last_signal": {
     "B-1000SATS_USDT": "1789724400000:1:CLOSED",
@@ -47,50 +47,51 @@
     "B-QNT_USDT": "B-QNT_USDT-1790389500000-1"
   },
   "last_processed_bar": {
-    "B-BTC_USDT": 1790406000000,
-    "B-ETH_USDT": 1790406000000,
-    "B-ZEC_USDT": 1790406000000,
-    "B-SOL_USDT": 1790406000000,
-    "B-XRP_USDT": 1790406000000,
-    "B-XAU_USDT": 1790406000000,
-    "B-NEAR_USDT": 1790406000000,
-    "B-CL_USDT": 1790406000000,
-    "B-DOGE_USDT": 1790406000000,
-    "B-HYPE_USDT": 1790406000000,
+    "B-BTC_USDT": 1790415600000,
+    "B-ETH_USDT": 1790415600000,
+    "B-ZEC_USDT": 1790415600000,
+    "B-SOL_USDT": 1790415600000,
+    "B-XRP_USDT": 1790415600000,
+    "B-XAU_USDT": 1790415600000,
+    "B-NEAR_USDT": 1790415600000,
+    "B-CL_USDT": 1790415600000,
+    "B-DOGE_USDT": 1790415600000,
+    "B-HYPE_USDT": 1790415600000,
     "B-BCH_USDT": 1790406000000,
-    "B-UNI_USDT": 1790406000000,
-    "B-XAG_USDT": 1790406000000,
-    "B-BZ_USDT": 1790406000000,
-    "B-1000PEPE_USDT": 1790406000000,
-    "B-BNB_USDT": 1790406000000,
-    "B-SUI_USDT": 1790406000000,
+    "B-UNI_USDT": 1790415600000,
+    "B-XAG_USDT": 1790415600000,
+    "B-BZ_USDT": 1790415600000,
+    "B-1000PEPE_USDT": 1790415600000,
+    "B-BNB_USDT": 1790415600000,
+    "B-SUI_USDT": 1790415600000,
     "B-NIL_USDT": 1790343600000,
     "B-MUBARAK_USDT": 1790236800000,
-    "B-ADA_USDT": 1790406000000,
-    "B-LTC_USDT": 1790406000000,
-    "B-TAO_USDT": 1790406000000,
-    "B-WLD_USDT": 1790406000000,
-    "B-ENA_USDT": 1790406000000,
-    "B-AVAX_USDT": 1790406000000,
+    "B-ADA_USDT": 1790415600000,
+    "B-LTC_USDT": 1790415600000,
+    "B-TAO_USDT": 1790415600000,
+    "B-WLD_USDT": 1790415600000,
+    "B-ENA_USDT": 1790415600000,
+    "B-AVAX_USDT": 1790415600000,
     "B-PENGU_USDT": 1790262900000,
-    "B-LINK_USDT": 1790406000000,
+    "B-LINK_USDT": 1790415600000,
     "B-ARB_USDT": 1790283000000,
     "B-TRUMP_USDT": 1790258700000,
     "B-ONE_USDT": 1790277900000,
     "B-LSK_USDT": 1790365800000,
-    "B-ONDO_USDT": 1790406000000,
+    "B-ONDO_USDT": 1790415600000,
     "B-NOM_USDT": 1790295600000,
     "B-ETC_USDT": 1790324700000,
     "B-AKE_USDT": 1790322300000,
     "B-SAGA_USDT": 1790389200000,
-    "B-XPL_USDT": 1790406000000,
+    "B-XPL_USDT": 1790415600000,
     "B-BROCCOLI714_USDT": 1790332500000,
     "B-QNT_USDT": 1790405700000,
     "B-XLM_USDT": 1790350200000,
-    "B-BTW_USDT": 1790406000000,
-    "B-PHA_USDT": 1790406000000,
-    "B-BR_USDT": 1790406000000,
-    "B-AAVE_USDT": 1790406000000
+    "B-BTW_USDT": 1790415600000,
+    "B-PHA_USDT": 1790415600000,
+    "B-BR_USDT": 1790415600000,
+    "B-AAVE_USDT": 1790415600000,
+    "B-PUMP_USDT": 1790415600000
   },
   "pairs": [
     "B-BTC_USDT",
@@ -99,40 +100,40 @@
     "B-ZEC_USDT",
     "B-XRP_USDT",
     "B-XAU_USDT",
-    "B-CL_USDT",
     "B-NEAR_USDT",
+    "B-CL_USDT",
     "B-SUI_USDT",
-    "B-XAG_USDT",
     "B-ENA_USDT",
     "B-PHA_USDT",
     "B-DOGE_USDT",
     "B-UNI_USDT",
+    "B-XAG_USDT",
     "B-HYPE_USDT",
     "B-BZ_USDT",
-    "B-ONDO_USDT",
-    "B-LINK_USDT",
     "B-WLD_USDT",
+    "B-LINK_USDT",
+    "B-ONDO_USDT",
     "B-1000PEPE_USDT",
-    "B-XPL_USDT",
-    "B-BTW_USDT",
     "B-LTC_USDT",
-    "B-BNB_USDT",
+    "B-BTW_USDT",
     "B-ADA_USDT",
+    "B-BNB_USDT",
     "B-TAO_USDT",
+    "B-XPL_USDT",
     "B-BR_USDT",
     "B-AVAX_USDT",
-    "B-BCH_USDT",
+    "B-PUMP_USDT",
     "B-AAVE_USDT"
   ],
-  "events": 41661,
+  "events": 41721,
   "signals": 88,
   "rejected_signals": 72,
   "accepted_signals": 15,
   "errors": 66,
-  "updated_at": "2026-09-26T07:09:52.723008+00:00",
-  "heartbeat_at": "2026-09-26T07:09:52.723008+00:00",
-  "run_started_at": "2026-09-26T07:05:05.574637+00:00",
-  "run_finished_at": "2026-09-26T07:09:52.723008+00:00",
+  "updated_at": "2026-09-26T09:46:52.487382+00:00",
+  "heartbeat_at": "2026-09-26T09:46:52.487382+00:00",
+  "run_started_at": "2026-09-26T09:42:05.216988+00:00",
+  "run_finished_at": "2026-09-26T09:46:52.487382+00:00",
   "status": "LIVE_PAPER",
   "journal": [
     {
@@ -144,7 +145,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 0.27633,
@@ -163,7 +164,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 14.154,
@@ -182,7 +183,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 14.017,
@@ -243,7 +244,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 100.55,
@@ -262,7 +263,7 @@
       "side": "SHORT",
       "tw_signal": -1,
       "ai_side": "SHORT",
-      "ai_confidence": 24.0,
+      "ai_confidence": 24,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 0.03418,
@@ -281,7 +282,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 98.97,
@@ -300,7 +301,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "SHORT",
-      "ai_confidence": 24.0,
+      "ai_confidence": 24,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 9.578,
@@ -319,7 +320,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 14.019,
@@ -338,7 +339,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 0.11585,
@@ -357,7 +358,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 82.0,
+      "ai_confidence": 82,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 0.5054,
@@ -376,7 +377,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 99.42,
@@ -395,7 +396,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "NO TRADE",
-      "ai_confidence": 48.0,
+      "ai_confidence": 48,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 0.08573,
@@ -414,7 +415,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 0.2585,
@@ -433,7 +434,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 0.5522,
@@ -464,7 +465,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 82.0,
+      "ai_confidence": 82,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 0.4954,
@@ -501,7 +502,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 0.08811,
@@ -628,7 +629,7 @@
       "side": "SHORT",
       "tw_signal": -1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 0.11149,
@@ -647,7 +648,7 @@
       "side": "SHORT",
       "tw_signal": -1,
       "ai_side": "SHORT",
-      "ai_confidence": 24.0,
+      "ai_confidence": 24,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 69.35,
@@ -666,7 +667,7 @@
       "side": "SHORT",
       "tw_signal": -1,
       "ai_side": "SHORT",
-      "ai_confidence": 24.0,
+      "ai_confidence": 24,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 0.537,
@@ -685,7 +686,7 @@
       "side": "SHORT",
       "tw_signal": -1,
       "ai_side": "SHORT",
-      "ai_confidence": 24.0,
+      "ai_confidence": 24,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 1559.76,
@@ -704,7 +705,7 @@
       "side": "SHORT",
       "tw_signal": -1,
       "ai_side": "SHORT",
-      "ai_confidence": 24.0,
+      "ai_confidence": 24,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 298.15,
@@ -723,7 +724,7 @@
       "side": "SHORT",
       "tw_signal": -1,
       "ai_side": "SHORT",
-      "ai_confidence": 34.0,
+      "ai_confidence": 34,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 769.84,
@@ -742,7 +743,7 @@
       "side": "SHORT",
       "tw_signal": -1,
       "ai_side": "SHORT",
-      "ai_confidence": 24.0,
+      "ai_confidence": 24,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 0.0044183,
@@ -761,7 +762,7 @@
       "side": "SHORT",
       "tw_signal": -1,
       "ai_side": "SHORT",
-      "ai_confidence": 24.0,
+      "ai_confidence": 24,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 69.24,
@@ -780,7 +781,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 5.084,
@@ -799,7 +800,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 0.2568,
@@ -818,7 +819,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 0.4583,
@@ -837,7 +838,7 @@
       "side": "SHORT",
       "tw_signal": -1,
       "ai_side": "SHORT",
-      "ai_confidence": 24.0,
+      "ai_confidence": 24,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 69.75,
@@ -856,7 +857,7 @@
       "side": "SHORT",
       "tw_signal": -1,
       "ai_side": "SHORT",
-      "ai_confidence": 24.0,
+      "ai_confidence": 24,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 0.34424,
@@ -875,7 +876,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 82.0,
+      "ai_confidence": 82,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 0.4598,
@@ -894,7 +895,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 308.49,
@@ -913,7 +914,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 10.624,
@@ -932,7 +933,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 82.0,
+      "ai_confidence": 82,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 1.5931,
@@ -951,7 +952,7 @@
       "side": "SHORT",
       "tw_signal": -1,
       "ai_side": "LONG",
-      "ai_confidence": 68.0,
+      "ai_confidence": 68,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 70.94,
@@ -970,7 +971,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 9.455,
@@ -989,7 +990,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 94.238,
@@ -1008,7 +1009,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 118.86,
@@ -1027,7 +1028,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 64.73,
@@ -1046,7 +1047,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 10.419,
@@ -1065,7 +1066,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 0.2529,
@@ -1084,7 +1085,7 @@
       "side": "SHORT",
       "tw_signal": -1,
       "ai_side": "SHORT",
-      "ai_confidence": 24.0,
+      "ai_confidence": 24,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 2667.35,
@@ -1103,7 +1104,7 @@
       "side": "SHORT",
       "tw_signal": -1,
       "ai_side": "SHORT",
-      "ai_confidence": 24.0,
+      "ai_confidence": 24,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 83778.2,
@@ -1176,7 +1177,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 340.46,
@@ -1195,7 +1196,7 @@
       "side": "SHORT",
       "tw_signal": -1,
       "ai_side": "LONG",
-      "ai_confidence": 68.0,
+      "ai_confidence": 68,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 0.11208,
@@ -1214,7 +1215,7 @@
       "side": "SHORT",
       "tw_signal": -1,
       "ai_side": "SHORT",
-      "ai_confidence": 24.0,
+      "ai_confidence": 24,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 0.10795,
@@ -1233,7 +1234,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 0.09654,
@@ -1252,7 +1253,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 0.5358,
@@ -1271,7 +1272,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 1.5523,
@@ -1290,7 +1291,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 0.11271,
@@ -1309,12 +1310,12 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 68.0,
+      "ai_confidence": 68,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
-      "entry_price": 84480.0,
+      "entry_price": 84480,
       "bid": 84479.9,
-      "ask": 84480.0,
+      "ask": 84480,
       "spread_bps": 0.0118371282186863,
       "signal_source": "TW_FILTERED_PLUS_AI",
       "filter_config": "{\"atr_expansion_min\": 1.1, \"cooldown_bars\": 3, \"ema_distance_min\": 0.003, \"ema_filter\": true, \"ema_length\": 200, \"hull_length\": 8, \"rsi_filter\": false, \"slope_filter\": true, \"volume_ratio_min\": 1.2}"
@@ -1328,7 +1329,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_LOSS_LOCK",
       "entry_price": 1.5508,
@@ -1365,7 +1366,7 @@
       "mfe_r": 0.04236660042787898,
       "mae_r": 0.5578866341692797,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "time": "2026-09-25T01:07:57.999469+00:00"
     },
     {
@@ -1377,7 +1378,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "POSITION_ALREADY_OPEN",
       "entry_price": 0.07118,
@@ -1396,7 +1397,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "POSITION_ALREADY_OPEN",
       "entry_price": 13.328,
@@ -1417,7 +1418,7 @@
       "stop_price": 2682.0513530099997,
       "target_price": 2722.48428798,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "time": "2026-09-25T01:05:43.512096+00:00"
     },
     {
@@ -1447,7 +1448,7 @@
       "mfe_r": 2.437591017823926,
       "mae_r": 1.41219182774192,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "time": "2026-09-25T00:49:58.085936+00:00"
     },
     {
@@ -1459,7 +1460,7 @@
       "side": "SHORT",
       "tw_signal": -1,
       "ai_side": "SHORT",
-      "ai_confidence": 24.0,
+      "ai_confidence": 24,
       "decision": "REJECTED",
       "reject_reason": "POSITION_ALREADY_OPEN",
       "entry_price": 0.10903,
@@ -1480,7 +1481,7 @@
       "stop_price": 0.5220813953999999,
       "target_price": 0.5299519691999999,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "time": "2026-09-25T00:40:10.392026+00:00"
     },
     {
@@ -1552,7 +1553,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_TRADE_CAP",
       "entry_price": 293.36,
@@ -1571,7 +1572,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_TRADE_CAP",
       "entry_price": 1.0092,
@@ -1590,7 +1591,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_TRADE_CAP",
       "entry_price": 0.09662,
@@ -1609,7 +1610,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_TRADE_CAP",
       "entry_price": 1.5234,
@@ -1628,7 +1629,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "DAILY_TRADE_CAP",
       "entry_price": 2690.1,
@@ -1665,7 +1666,7 @@
       "mfe_r": 0.19465694187585061,
       "mae_r": 0.45062765268186267,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 82.0,
+      "ai_confidence": 82,
       "time": "2026-09-24T16:15:17.549254+00:00"
     },
     {
@@ -1679,7 +1680,7 @@
       "stop_price": 101.76904974,
       "target_price": 103.30325651999999,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 82.0,
+      "ai_confidence": 82,
       "time": "2026-09-24T16:05:01.755771+00:00"
     },
     {
@@ -1709,7 +1710,7 @@
       "mfe_r": 0.38834168629079274,
       "mae_r": 2.6021587566029876,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 82.0,
+      "ai_confidence": 82,
       "time": "2026-09-24T14:36:34.951320+00:00"
     },
     {
@@ -1721,7 +1722,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 82.0,
+      "ai_confidence": 82,
       "decision": "REJECTED",
       "reject_reason": "POSITION_ALREADY_OPEN",
       "entry_price": 4.604,
@@ -1742,7 +1743,7 @@
       "stop_price": 1523.85866079,
       "target_price": 1546.83140442,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 82.0,
+      "ai_confidence": 82,
       "time": "2026-09-24T14:30:03.503503+00:00"
     },
     {
@@ -1772,7 +1773,7 @@
       "mfe_r": 1.9989204425026443,
       "mae_r": 0.45310498047007136,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "time": "2026-09-24T14:26:18.820835+00:00"
     },
     {
@@ -1784,7 +1785,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 82.0,
+      "ai_confidence": 82,
       "decision": "REJECTED",
       "reject_reason": "POSITION_ALREADY_OPEN",
       "entry_price": 0.22211,
@@ -1803,7 +1804,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "POSITION_ALREADY_OPEN",
       "entry_price": 9.246,
@@ -1822,7 +1823,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 82.0,
+      "ai_confidence": 82,
       "decision": "REJECTED",
       "reject_reason": "POSITION_ALREADY_OPEN",
       "entry_price": 2.037,
@@ -1841,7 +1842,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "LONG",
-      "ai_confidence": 82.0,
+      "ai_confidence": 82,
       "decision": "REJECTED",
       "reject_reason": "POSITION_ALREADY_OPEN",
       "entry_price": 4.539,
@@ -1862,7 +1863,7 @@
       "stop_price": 1.4932960995,
       "target_price": 1.515808101,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "time": "2026-09-24T14:05:13.159701+00:00"
     },
     {
@@ -1892,7 +1893,7 @@
       "mfe_r": 2.0612634076422376,
       "mae_r": 5.207944494600098,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 82.0,
+      "ai_confidence": 82,
       "time": "2026-09-24T13:58:36.528414+00:00"
     },
     {
@@ -1906,7 +1907,7 @@
       "stop_price": 70.08191357999999,
       "target_price": 71.13842484,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 82.0,
+      "ai_confidence": 82,
       "time": "2026-09-24T13:55:12.011723+00:00"
     },
     {
@@ -1936,7 +1937,7 @@
       "mfe_r": 1.8664554258971655,
       "mae_r": 22.206978217684757,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 24.0,
+      "ai_confidence": 24,
       "time": "2026-09-24T13:26:38.689630+00:00"
     },
     {
@@ -1950,7 +1951,7 @@
       "stop_price": 0.11597390057999998,
       "target_price": 0.11424294684,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 24.0,
+      "ai_confidence": 24,
       "time": "2026-09-24T13:25:15.365982+00:00"
     },
     {
@@ -1986,7 +1987,7 @@
       "mfe_r": 0.47089349982513273,
       "mae_r": 0.979634751924167,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 34.0,
+      "ai_confidence": 34,
       "time": "2026-09-24T12:52:59.296274+00:00"
     },
     {
@@ -2006,7 +2007,7 @@
       "stop_price": 4280.4336920099995,
       "target_price": 4216.54662198,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 34.0,
+      "ai_confidence": 34,
       "time": "2026-09-24T09:30:03.209868+00:00"
     },
     {
@@ -2036,7 +2037,7 @@
       "mfe_r": 2.0216006667394564,
       "mae_r": 2.2002327277662697,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 24.0,
+      "ai_confidence": 24,
       "time": "2026-09-24T09:22:16.365498+00:00"
     },
     {
@@ -2048,7 +2049,7 @@
       "side": "SHORT",
       "tw_signal": -1,
       "ai_side": "SHORT",
-      "ai_confidence": 24.0,
+      "ai_confidence": 24,
       "decision": "REJECTED",
       "reject_reason": "POSITION_ALREADY_OPEN",
       "entry_price": 767.94,
@@ -2067,7 +2068,7 @@
       "side": "SHORT",
       "tw_signal": -1,
       "ai_side": "SHORT",
-      "ai_confidence": 24.0,
+      "ai_confidence": 24,
       "decision": "REJECTED",
       "reject_reason": "POSITION_ALREADY_OPEN",
       "entry_price": 9.062,
@@ -2160,7 +2161,7 @@
       "stop_price": 1508.2736349299998,
       "target_price": 1485.76208814,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 24.0,
+      "ai_confidence": 24,
       "time": "2026-09-24T09:05:17.412742+00:00"
     },
     {
@@ -2202,7 +2203,7 @@
       "mfe_r": 2.0111923177014264,
       "mae_r": 0.7914159601554854,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "time": "2026-09-24T08:09:05.221852+00:00"
     },
     {
@@ -2216,7 +2217,7 @@
       "stop_price": 97.98729353999998,
       "target_price": 99.46448891999998,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "time": "2026-09-24T07:50:15.240234+00:00"
     },
     {
@@ -2246,7 +2247,7 @@
       "mfe_r": 0.2409032282349983,
       "mae_r": 0.9763787677179464,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 24.0,
+      "ai_confidence": 24,
       "time": "2026-09-24T07:32:59.780129+00:00"
     },
     {
@@ -2258,7 +2259,7 @@
       "side": "SHORT",
       "tw_signal": -1,
       "ai_side": "LONG",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "decision": "REJECTED",
       "reject_reason": "POSITION_ALREADY_OPEN",
       "entry_price": 0.002526,
@@ -2279,7 +2280,7 @@
       "stop_price": 64.39756791,
       "target_price": 63.43641018000001,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 24.0,
+      "ai_confidence": 24,
       "time": "2026-09-24T06:35:09.456788+00:00"
     },
     {
@@ -2309,7 +2310,7 @@
       "mfe_r": 0.1594295681604045,
       "mae_r": 2.3732243677922154,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "time": "2026-09-24T06:06:36.924808+00:00"
     },
     {
@@ -2323,7 +2324,7 @@
       "stop_price": 0.009978860372999998,
       "target_price": 0.010129295453999999,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "time": "2026-09-24T06:05:52.739034+00:00"
     },
     {
@@ -2335,7 +2336,7 @@
       "side": "SHORT",
       "tw_signal": -1,
       "ai_side": "NO TRADE",
-      "ai_confidence": 48.0,
+      "ai_confidence": 48,
       "decision": "REJECTED",
       "reject_reason": "AI_CONFLICT",
       "entry_price": 0.05171,
@@ -2378,7 +2379,7 @@
       "mfe_r": 0.36469431996219603,
       "mae_r": 1.7037024346873209,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "time": "2026-09-21T01:24:21.571222+00:00"
     },
     {
@@ -2392,7 +2393,7 @@
       "stop_price": 0.4425649953,
       "target_price": 0.4492368294,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "time": "2026-09-21T01:22:22.272252+00:00"
     },
     {
@@ -2422,7 +2423,7 @@
       "mfe_r": 0.697790022429838,
       "mae_r": 1.2415227264477502,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "time": "2026-09-20T21:41:11.850075+00:00"
     },
     {
@@ -2436,7 +2437,7 @@
       "stop_price": 0.9440457713999999,
       "target_price": 0.9582776171999999,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 92.0,
+      "ai_confidence": 92,
       "time": "2026-09-20T21:38:26.977838+00:00"
     },
     {
@@ -2448,7 +2449,7 @@
       "side": "SHORT",
       "tw_signal": -1,
       "ai_side": "NO TRADE",
-      "ai_confidence": 48.0,
+      "ai_confidence": 48,
       "decision": "REJECTED",
       "reject_reason": "AI_CONFLICT",
       "entry_price": 0.4097,
@@ -2467,7 +2468,7 @@
       "side": "SHORT",
       "tw_signal": -1,
       "ai_side": "LONG",
-      "ai_confidence": 68.0,
+      "ai_confidence": 68,
       "decision": "REJECTED",
       "reject_reason": "AI_CONFLICT",
       "entry_price": 0.8211,
@@ -2499,12 +2500,12 @@
       "hold_seconds": 13146.243553,
       "mfe_price": 0.8363672400000001,
       "mae_price": 0.8363672400000001,
-      "mfe_pct": 0.0,
-      "mae_pct": 0.0,
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
+      "mfe_pct": 0,
+      "mae_pct": 0,
+      "mfe_r": 0,
+      "mae_r": 0,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 82.0,
+      "ai_confidence": 82,
       "time": "2026-09-19T13:29:07.405140+00:00"
     },
     {
@@ -2518,7 +2519,7 @@
       "stop_price": 0.8321854038000001,
       "target_price": 0.8447309124000001,
       "signal_source": "TW_FILTERED_PLUS_AI",
-      "ai_confidence": 82.0,
+      "ai_confidence": 82,
       "time": "2026-09-19T09:50:01.161563+00:00"
     },
     {
@@ -2530,7 +2531,7 @@
       "side": "SHORT",
       "tw_signal": -1,
       "ai_side": "LONG",
-      "ai_confidence": 68.0,
+      "ai_confidence": 68,
       "decision": "REJECTED",
       "reject_reason": "AI_CONFLICT",
       "entry_price": 1468.26,
@@ -2549,7 +2550,7 @@
       "side": "LONG",
       "tw_signal": 1,
       "ai_side": "NO TRADE",
-      "ai_confidence": 48.0,
+      "ai_confidence": 48,
       "decision": "REJECTED",
       "reject_reason": "AI_CONFLICT",
       "entry_price": 0.0853,
@@ -2581,376 +2582,376 @@
       "stop_price": 1.070834124e-05,
       "target_price": 1.0869773520000001e-05,
       "kind": "CLOSED",
-      "ai_score": 92.0,
+      "ai_score": 92,
       "time": "2026-09-18T09:47:04.117088+00:00"
     }
   ],
   "signal_map": {
     "B-BTC_USDT": {
       "tw": 0,
-      "ai": "LONG",
-      "confidence": 68.0,
-      "bar_time": 1790406000000
+      "ai": "NO TRADE",
+      "confidence": 40.0,
+      "bar_time": 1790415600000
     },
     "B-ETH_USDT": {
       "tw": 0,
-      "ai": "NO TRADE",
-      "confidence": 60.0,
-      "bar_time": 1790406000000
+      "ai": "SHORT",
+      "confidence": 16.0,
+      "bar_time": 1790415600000
     },
     "B-ZEC_USDT": {
       "tw": 0,
-      "ai": "LONG",
-      "confidence": 68.0,
-      "bar_time": 1790406000000
+      "ai": "SHORT",
+      "confidence": 16.0,
+      "bar_time": 1790415600000
     },
     "B-SOL_USDT": {
       "tw": 0,
       "ai": "SHORT",
-      "confidence": 24.0,
-      "bar_time": 1790406000000
+      "confidence": 16.0,
+      "bar_time": 1790415600000
     },
     "B-XAU_USDT": {
       "tw": 0,
-      "ai": "NO TRADE",
-      "confidence": 48.0,
-      "bar_time": 1790406000000
+      "ai": "SHORT",
+      "confidence": 16.0,
+      "bar_time": 1790415600000
     },
     "B-XRP_USDT": {
       "tw": 0,
-      "ai": "NO TRADE",
-      "confidence": 60.0,
-      "bar_time": 1790406000000
+      "ai": "SHORT",
+      "confidence": 16.0,
+      "bar_time": 1790415600000
     },
     "B-UNI_USDT": {
       "tw": 0,
-      "ai": "LONG",
-      "confidence": 92.0,
-      "bar_time": 1790406000000
+      "ai": "SHORT",
+      "confidence": 16.0,
+      "bar_time": 1790415600000
     },
     "B-CL_USDT": {
       "tw": 0,
       "ai": "NO TRADE",
-      "confidence": 48.0,
-      "bar_time": 1790406000000
+      "confidence": 40.0,
+      "bar_time": 1790415600000
     },
     "B-HYPE_USDT": {
       "tw": 0,
-      "ai": "NO TRADE",
-      "confidence": 60.0,
-      "bar_time": 1790406000000
+      "ai": "SHORT",
+      "confidence": 16.0,
+      "bar_time": 1790415600000
     },
     "B-NEAR_USDT": {
       "tw": 0,
-      "ai": "LONG",
-      "confidence": 84.0,
-      "bar_time": 1790406000000
+      "ai": "SHORT",
+      "confidence": 24.0,
+      "bar_time": 1790415600000
     },
     "B-XAG_USDT": {
       "tw": 0,
-      "ai": "LONG",
-      "confidence": 84.0,
-      "bar_time": 1790406000000
+      "ai": "SHORT",
+      "confidence": 16.0,
+      "bar_time": 1790415600000
     },
     "B-ONE_USDT": {
       "tw": 0,
       "ai": "NO TRADE",
-      "confidence": 60.0,
+      "confidence": 60,
       "bar_time": 1790277900000
     },
     "B-BNB_USDT": {
       "tw": 0,
-      "ai": "NO TRADE",
-      "confidence": 48.0,
-      "bar_time": 1790406000000
+      "ai": "SHORT",
+      "confidence": 16.0,
+      "bar_time": 1790415600000
     },
     "B-ARB_USDT": {
       "tw": 0,
       "ai": "NO TRADE",
-      "confidence": 48.0,
+      "confidence": 48,
       "bar_time": 1790283000000
     },
     "B-BZ_USDT": {
       "tw": 0,
-      "ai": "NO TRADE",
-      "confidence": 58.0,
-      "bar_time": 1790406000000
+      "ai": "SHORT",
+      "confidence": 16.0,
+      "bar_time": 1790415600000
     },
     "B-DOGE_USDT": {
       "tw": 0,
-      "ai": "NO TRADE",
-      "confidence": 60.0,
-      "bar_time": 1790406000000
+      "ai": "SHORT",
+      "confidence": 16.0,
+      "bar_time": 1790415600000
     },
     "B-LSK_USDT": {
       "tw": 0,
       "ai": "SHORT",
-      "confidence": 16.0,
+      "confidence": 16,
       "bar_time": 1790365800000
     },
     "B-AVA_USDT": {
       "tw": 0,
       "ai": "SHORT",
-      "confidence": 16.0,
+      "confidence": 16,
       "bar_time": 1789745400000
     },
     "B-ENA_USDT": {
       "tw": 0,
-      "ai": "SHORT",
-      "confidence": 16.0,
-      "bar_time": 1790406000000
+      "ai": "LONG",
+      "confidence": 84.0,
+      "bar_time": 1790415600000
     },
     "B-SUI_USDT": {
       "tw": 0,
       "ai": "SHORT",
-      "confidence": 24.0,
-      "bar_time": 1790406000000
+      "confidence": 16.0,
+      "bar_time": 1790415600000
     },
     "B-G_USDT": {
       "tw": 0,
       "ai": "LONG",
-      "confidence": 68.0,
+      "confidence": 68,
       "bar_time": 1789972200000
     },
     "B-1000PEPE_USDT": {
       "tw": 0,
-      "ai": "NO TRADE",
-      "confidence": 48.0,
-      "bar_time": 1790406000000
+      "ai": "SHORT",
+      "confidence": 16.0,
+      "bar_time": 1790415600000
     },
     "B-WLD_USDT": {
       "tw": 0,
-      "ai": "NO TRADE",
-      "confidence": 60.0,
-      "bar_time": 1790406000000
+      "ai": "SHORT",
+      "confidence": 16.0,
+      "bar_time": 1790415600000
     },
     "B-ADA_USDT": {
       "tw": 0,
       "ai": "SHORT",
-      "confidence": 24.0,
-      "bar_time": 1790406000000
+      "confidence": 16.0,
+      "bar_time": 1790415600000
     },
     "B-BR_USDT": {
       "tw": 0,
-      "ai": "NO TRADE",
-      "confidence": 40.0,
-      "bar_time": 1790406000000
+      "ai": "LONG",
+      "confidence": 84.0,
+      "bar_time": 1790415600000
     },
     "B-ONDO_USDT": {
       "tw": 0,
-      "ai": "LONG",
-      "confidence": 92.0,
-      "bar_time": 1790406000000
+      "ai": "NO TRADE",
+      "confidence": 40.0,
+      "bar_time": 1790415600000
     },
     "B-PONS_USDT": {
       "tw": 0,
       "ai": "SHORT",
-      "confidence": 16.0,
+      "confidence": 16,
       "bar_time": 1789773000000
     },
     "B-COTI_USDT": {
       "tw": 0,
       "ai": "NO TRADE",
-      "confidence": 60.0,
+      "confidence": 60,
       "bar_time": 1789755600000
     },
     "B-GENIUS_USDT": {
       "tw": 0,
       "ai": "SHORT",
-      "confidence": 16.0,
+      "confidence": 16,
       "bar_time": 1789731300000
     },
     "B-LINK_USDT": {
       "tw": 0,
-      "ai": "LONG",
-      "confidence": 68.0,
-      "bar_time": 1790406000000
+      "ai": "SHORT",
+      "confidence": 16.0,
+      "bar_time": 1790415600000
     },
     "B-PUMP_USDT": {
       "tw": 0,
-      "ai": "LONG",
-      "confidence": 84.0,
-      "bar_time": 1790112300000
+      "ai": "NO TRADE",
+      "confidence": 40.0,
+      "bar_time": 1790415600000
     },
     "B-AAVE_USDT": {
       "tw": 0,
-      "ai": "NO TRADE",
-      "confidence": 60.0,
-      "bar_time": 1790406000000
+      "ai": "SHORT",
+      "confidence": 16.0,
+      "bar_time": 1790415600000
     },
     "B-AKE_USDT": {
       "tw": 0,
       "ai": "SHORT",
-      "confidence": 16.0,
+      "confidence": 16,
       "bar_time": 1790322300000
     },
     "B-TAO_USDT": {
       "tw": 0,
-      "ai": "NO TRADE",
-      "confidence": 60.0,
-      "bar_time": 1790406000000
+      "ai": "LONG",
+      "confidence": 84.0,
+      "bar_time": 1790415600000
     },
     "B-BCH_USDT": {
       "tw": 0,
       "ai": "NO TRADE",
-      "confidence": 60.0,
+      "confidence": 60,
       "bar_time": 1790406000000
     },
     "B-STRK_USDT": {
       "tw": 0,
       "ai": "SHORT",
-      "confidence": 16.0,
+      "confidence": 16,
       "bar_time": 1789850700000
     },
     "B-F_USDT": {
       "tw": 0,
       "ai": "LONG",
-      "confidence": 68.0,
+      "confidence": 68,
       "bar_time": 1789833000000
     },
     "B-AVAX_USDT": {
       "tw": 0,
-      "ai": "NO TRADE",
-      "confidence": 60.0,
-      "bar_time": 1790406000000
+      "ai": "SHORT",
+      "confidence": 16.0,
+      "bar_time": 1790415600000
     },
     "B-MYX_USDT": {
       "tw": 0,
       "ai": "LONG",
-      "confidence": 84.0,
+      "confidence": 84,
       "bar_time": 1789811100000
     },
     "B-AR_USDT": {
       "tw": 0,
       "ai": "NO TRADE",
-      "confidence": 40.0,
+      "confidence": 40,
       "bar_time": 1789898100000
     },
     "B-FIL_USDT": {
       "tw": 0,
       "ai": "LONG",
-      "confidence": 84.0,
+      "confidence": 84,
       "bar_time": 1789996200000
     },
     "B-ZAMA_USDT": {
       "tw": 0,
       "ai": "LONG",
-      "confidence": 84.0,
+      "confidence": 84,
       "bar_time": 1789972200000
     },
     "B-INJ_USDT": {
       "tw": 0,
       "ai": "SHORT",
-      "confidence": 16.0,
+      "confidence": 16,
       "bar_time": 1789940100000
     },
     "B-TRUMP_USDT": {
       "tw": 0,
       "ai": "LONG",
-      "confidence": 82.0,
+      "confidence": 82,
       "bar_time": 1790258700000
     },
     "B-BANK_USDT": {
       "tw": 0,
       "ai": "SHORT",
-      "confidence": 16.0,
+      "confidence": 16,
       "bar_time": 1789911900000
     },
     "B-SAGA_USDT": {
       "tw": 0,
       "ai": "SHORT",
-      "confidence": 24.0,
+      "confidence": 24,
       "bar_time": 1790389200000
     },
     "B-ZETA_USDT": {
       "tw": 0,
       "ai": "SHORT",
-      "confidence": 24.0,
+      "confidence": 24,
       "bar_time": 1790071800000
     },
     "B-LTC_USDT": {
       "tw": 0,
       "ai": "LONG",
-      "confidence": 92.0,
-      "bar_time": 1790406000000
+      "confidence": 84.0,
+      "bar_time": 1790415600000
     },
     "B-MUBARAK_USDT": {
       "tw": 0,
       "ai": "SHORT",
-      "confidence": 16.0,
+      "confidence": 16,
       "bar_time": 1790236800000
     },
     "B-PENGU_USDT": {
       "tw": 0,
       "ai": "NO TRADE",
-      "confidence": 40.0,
+      "confidence": 40,
       "bar_time": 1790262900000
     },
     "B-FORM_USDT": {
       "tw": 0,
       "ai": "SHORT",
-      "confidence": 16.0,
+      "confidence": 16,
       "bar_time": 1790088300000
     },
     "B-MARSCOIN_USDT": {
       "tw": 0,
       "ai": "SHORT",
-      "confidence": 16.0,
+      "confidence": 16,
       "bar_time": 1790145600000
     },
     "B-NIL_USDT": {
       "tw": 0,
       "ai": "LONG",
-      "confidence": 84.0,
+      "confidence": 84,
       "bar_time": 1790343600000
     },
     "B-NOM_USDT": {
       "tw": 0,
       "ai": "NO TRADE",
-      "confidence": 40.0,
+      "confidence": 40,
       "bar_time": 1790295600000
     },
     "B-ETC_USDT": {
       "tw": 0,
       "ai": "LONG",
-      "confidence": 84.0,
+      "confidence": 84,
       "bar_time": 1790324700000
     },
     "B-XPL_USDT": {
       "tw": 0,
       "ai": "LONG",
-      "confidence": 92.0,
-      "bar_time": 1790406000000
+      "confidence": 84.0,
+      "bar_time": 1790415600000
     },
     "B-BROCCOLI714_USDT": {
       "tw": 0,
       "ai": "NO TRADE",
-      "confidence": 40.0,
+      "confidence": 40,
       "bar_time": 1790332500000
     },
     "B-QNT_USDT": {
       "tw": 0,
       "ai": "NO TRADE",
-      "confidence": 40.0,
+      "confidence": 40,
       "bar_time": 1790405700000
     },
     "B-XLM_USDT": {
       "tw": 0,
       "ai": "SHORT",
-      "confidence": 16.0,
+      "confidence": 16,
       "bar_time": 1790350200000
     },
     "B-BTW_USDT": {
       "tw": 0,
-      "ai": "SHORT",
-      "confidence": 24.0,
-      "bar_time": 1790406000000
+      "ai": "NO TRADE",
+      "confidence": 60.0,
+      "bar_time": 1790415600000
     },
     "B-PHA_USDT": {
       "tw": 0,
       "ai": "SHORT",
-      "confidence": 34.0,
-      "bar_time": 1790406000000
+      "confidence": 16.0,
+      "bar_time": 1790415600000
     }
   }
 }
