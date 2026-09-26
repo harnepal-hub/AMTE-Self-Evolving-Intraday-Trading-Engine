@@ -35,7 +35,7 @@ STOP_PCT = 0.005
 TARGET_PCT = 0.01
 FEE_BPS = 5.0
 SLIPPAGE_BPS = 2.0
-MAX_DAILY_LOSS_RS = 500.0
+MAX_DAILY_LOSS_RS = 2000.0
 MAX_TRADES_PER_DAY = 10
 CFG = {
     "hull_length": 8, "ema_length": 200, "ema_filter": True,
@@ -225,7 +225,7 @@ def update_drawdown(s, bid=None, ask=None):
     s["peak_equity"] = max(float(s.get("peak_equity", 100000.0)), eq)
     dd = max(0.0, s["peak_equity"] - eq)
     s["max_drawdown_rs"] = max(float(s.get("max_drawdown_rs", 0.0)), dd)
-    if dd >= 500.0:
+    if dd >= 2000.0:
         s["locked"] = True
         return bool(s.get("position"))
     return False
