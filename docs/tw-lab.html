@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AMTE • TW Indicator Lab</title>
+<style>
+:root{--bg:#f5f8fc;--panel:#fff;--text:#10213f;--muted:#66738a;--line:#e2e8f0;--blue:#2563eb;--green:#059669;--red:#dc2626;--yellow:#b7791f}
+body.dark{--bg:#07111f;--panel:#0d1a2b;--text:#edf4ff;--muted:#91a2b9;--line:#20324a;--blue:#4f8cff;--green:#23c483;--red:#ff5d6c;--yellow:#e7b65b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:13px Inter,system-ui,sans-serif}.top{height:68px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;padding:8px 18px;gap:20px;position:sticky;top:0;z-index:5}.brand{font-weight:850;font-size:19px;white-space:nowrap}.brand small{display:block;font-size:10px;color:var(--muted);font-weight:500;margin-top:3px}.nav{display:flex;gap:7px;flex:1}.nav a{padding:9px 12px;border-radius:8px;text-decoration:none;color:var(--text)}.nav a.on{background:#e8f0ff;color:var(--blue);font-weight:750}.tools{margin-left:auto}.theme{padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--text)}.wrap{max-width:1800px;margin:auto;padding:14px}.hero{display:flex;justify-content:space-between;gap:14px;align-items:center;margin-bottom:12px}.hero h1{margin:0;font-size:22px}.hero p{margin:5px 0 0;color:var(--muted)}.badge{padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:var(--panel);font-weight:750}.grid{display:grid;grid-template-columns:330px 1fr;gap:12px}.panel,.card{background:var(--panel);border:1px solid var(--line);border-radius:10px}.ph{padding:11px 13px;border-bottom:1px solid var(--line);font-weight:850;font-size:15px}.body{padding:12px}.controls{display:grid;gap:10px}.field label{display:block;color:var(--muted);font-size:11px;margin-bottom:5px}.field input,.field select{width:100%;padding:9px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--text)}.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.run{width:100%;padding:11px;border:0;border-radius:8px;background:var(--blue);color:white;font-weight:800;cursor:pointer}.note{font-size:10px;color:var(--muted);line-height:1.5}.cards{display:grid;grid-template-columns:repeat(8,1fr);gap:9px;margin-bottom:12px}.card{padding:11px;min-height:72px}.label{font-size:10px;color:var(--muted)}.value{font-size:19px;font-weight:850;margin-top:5px}.green{color:var(--green)}.red{color:var(--red)}.chart{height:290px}.chart canvas{width:100%;height:100%;display:block}.status{padding:9px;border-radius:7px;background:var(--bg);color:var(--muted);margin-bottom:10px}.table{overflow:auto;max-height:430px}table{width:100%;border-collapse:collapse}th,td{padding:7px 6px;border-bottom:1px solid var(--line);white-space:nowrap;text-align:left;font-size:10px}th{color:var(--muted)}.signal-buy{color:var(--green);font-weight:800}.signal-sell{color:var(--red);font-weight:800}.section{margin-top:12px}.export{float:right;color:var(--blue);cursor:pointer;font-weight:700}.legend{font-size:10px;color:var(--muted);margin-top:8px}.formula{font-family:ui-monospace,monospace;font-size:11px;padding:9px;background:var(--bg);border-radius:7px;line-height:1.6}.footer{text-align:center;color:var(--muted);font-size:10px;padding:15px}@media(max-width:1100px){.nav{display:none}.grid{grid-template-columns:1fr}.cards{grid-template-columns:repeat(4,1fr)}}@media(max-width:650px){.cards{grid-template-columns:repeat(2,1fr)}.hero{display:block}.badge{margin-top:10px}.row2{grid-template-columns:1fr}}
+</style></head>
+<body>
+<header class="top"><div class="brand">📊 TW Indicator Lab<small>TW-only historical research · AI disabled</small></div>
+<nav class="nav"><a href="./">AMTE Dashboard</a><a class="on" href="./tw-lab.html">TW Indicator Lab</a></nav>
+<div class="tools"><button id="theme" class="theme">☾ Dark</button></div></header>
+<main class="wrap">
+<div class="hero"><div><h1>TW Indicator Lab</h1><p>Pure TW signal backtest — no AI confirmation, no AMTE live-paper state and no exchange orders.</p></div><div class="badge">REAL ORDERS: DISABLED</div></div>
+<section class="grid">
+<div class="panel"><div class="ph">Backtest settings</div><div class="body controls">
+<div class="field"><label>CoinDCX USDT futures pair</label><select id="pair"><option>B-BTC_USDT</option><option>B-ETH_USDT</option><option>B-SOL_USDT</option><option>B-BNB_USDT</option><option>B-XRP_USDT</option><option>B-DOGE_USDT</option><option>B-ADA_USDT</option><option>B-SUI_USDT</option><option>B-AVAX_USDT</option><option>B-LINK_USDT</option></select></div>
+<div class="field"><label>Timeframe</label><select id="tf"><option value="1">1m</option><option value="5" selected>5m</option><option value="15">15m</option><option value="60">1h</option><option value="240">4h</option><option value="1D">1D</option></select></div>
+<div class="row2"><div class="field"><label>History (days)</label><input id="days" type="number" value="30" min="1" max="365"></div><div class="field"><label>TW length</label><input id="len" type="number" value="16" min="2" max="100"></div></div>
+<div class="row2"><div class="field"><label>Initial capital ₹</label><input id="capital" type="number" value="100000"></div><div class="field"><label>Risk / trade %</label><input id="risk" type="number" value="0.10" step="0.01"></div></div>
+<div class="row2"><div class="field"><label>Stop loss %</label><input id="sl" type="number" value="0.50" step="0.05"></div><div class="field"><label>Target %</label><input id="tp" type="number" value="1.00" step="0.05"></div></div>
+<div class="row2"><div class="field"><label>Fee / side (bps)</label><input id="fee" type="number" value="5" step="0.5"></div><div class="field"><label>Slippage / side (bps)</label><input id="slip" type="number" value="2" step="0.5"></div></div>
+<div class="field"><label>Max trades / day</label><input id="maxTrades" type="number" value="10" min="1"></div>
+<button id="run" class="run">▶ Run TW-only backtest</button>
+<div class="formula"><b>TW signal used</b><br>HULL = EMA(2×EMA(close, L/2) − EMA(close, L), √L)<br>SHULL = HULL[2]<br><span class="green">BUY</span> = SHULL crosses below HULL<br><span class="red">SELL</span> = SHULL crosses above HULL</div>
+<div class="note">No look-ahead: a signal is detected on a closed candle and entered at the next candle open. If both SL and TP are touched in the same candle, SL is counted first (conservative assumption). Fees and slippage are included in net P&amp;L.</div>
+</div></div>
+<div>
+<div id="status" class="status">Ready. Choose settings and run the test.</div>
+<div class="cards">
+<div class="card"><div class="label">Initial capital</div><div id="m0" class="value">₹100,000</div></div>
+<div class="card"><div class="label">Final equity</div><div id="m1" class="value">—</div></div>
+<div class="card"><div class="label">Net P&amp;L</div><div id="m2" class="value">—</div></div>
+<div class="card"><div class="label">Trades</div><div id="m3" class="value">—</div></div>
+<div class="card"><div class="label">Win rate</div><div id="m4" class="value">—</div></div>
+<div class="card"><div class="label">Profit factor</div><div id="m5" class="value">—</div></div>
+<div class="card"><div class="label">Max drawdown</div><div id="m6" class="value">—</div></div>
+<div class="card"><div class="label">Avg hold</div><div id="m7" class="value">—</div></div>
+</div>
+<div class="panel"><div class="ph">Equity curve</div><div class="body chart"><canvas id="equity"></canvas><div class="legend">The curve is based on closed-trade equity. This is historical simulation, not a forecast.</div></div></div>
+</div></section>
+<section class="panel section"><div class="ph">Trade results <span id="download" class="export">Download CSV</span></div><div class="body"><div class="table"><table><thead><tr><th>#</th><th>Entry time</th><th>Exit time</th><th>Side</th><th>Entry</th><th>Exit</th><th>SL</th><th>TP</th><th>Gross ₹</th><th>Fees ₹</th><th>Net ₹</th><th>Reason</th><th>Hold</th></tr></thead><tbody id="rows"><tr><td colspan="13" class="note">No test run yet.</td></tr></tbody></table></div></div></section>
+<section class="panel section"><div class="ph">Signal summary</div><div class="body"><div id="summary" class="note">Run a backtest to see BUY/SELL signal counts and execution statistics.</div></div></section>
+<div class="footer">AMTE TW Indicator Lab · CoinDCX public futures candles · Research only · No real exchange orders</div>
+</main>
+<script src="tw-lab.js?v=20260926-01"></script></body></html>
