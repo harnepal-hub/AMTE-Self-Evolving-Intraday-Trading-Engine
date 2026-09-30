@@ -36,6 +36,7 @@ TARGET_PCT = 0.01
 FEE_BPS = 5.0
 SLIPPAGE_BPS = 2.0
 MAX_DAILY_LOSS_RS = 2000.0
+MAX_EQUITY_DRAWDOWN_RS = 2000.0
 MAX_TRADES_PER_DAY = 10
 CFG = {
     "hull_length": 8, "ema_length": 200, "ema_filter": True,
@@ -160,8 +161,8 @@ def ai_proxy(rows):
 
 def default_state():
     return {
-        "version": 7, "day_ist": "", "cash": 100000.0, "realized_pnl": 0.0, "peak_equity": 100000.0, "max_drawdown_rs": 0.0,
-        "trades_today": 0, "locked": False, "position": None,
+        "version": 8, "risk_model_version": 2, "day_ist": "", "cash": 100000.0, "realized_pnl": 0.0, "daily_start_equity": 100000.0, "daily_drawdown_rs": 0.0, "peak_equity": 100000.0, "max_drawdown_rs": 0.0,
+        "trades_today": 0, "locked": False, "lock_reason": "", "position": None,
         "last_signal": {}, "last_processed_bar": {}, "pairs": [], "events": 0, "signals": 0,
         "rejected_signals": 0, "accepted_signals": 0, "errors": 0,
         "updated_at": None, "heartbeat_at": None, "run_started_at": None, "run_finished_at": None,
@@ -173,8 +174,30 @@ def load_state(path):
     if not path.exists():
         return default_state()
     try:
+        raw = json.loads(path.read_text())
+        legacy = int(raw.get("version", 0)) < 8
         s = default_state()
-        s.update(json.loads(path.read_text()))
+        s.update(raw)
+        s.setdefault("risk_model_version", 2)
+        s.setdefault("daily_start_equity", float(s.get("cash", 100000.0)))
+        s.setdefault("daily_drawdown_rs", 0.0)
+        s.setdefault("lock_reason", "")
+        # Legacy state could remain permanently locked by the old lifetime-peak rule.
+        # Clear only that legacy lock when there is no open paper position; history is preserved.
+        if legacy and s.get("locked") and not s.get("position"):
+            s["locked"] = False
+            s["lock_reason"] = ""
+            s["daily_start_equity"] = float(s.get("cash", 100000.0))
+            s["daily_drawdown_rs"] = 0.0
+            s.setdefault("journal", []).insert(0, {
+                "event": "RISK_MODEL_MIGRATION",
+                "reason": "Legacy paper lock cleared and risk baseline re-established",
+                "historical_max_drawdown_rs": float(s.get("max_drawdown_rs", 0.0)),
+                "time": datetime.now(timezone.utc).isoformat(),
+            })
+            s["journal"] = s["journal"][:1000]
+        s["version"] = 8
+        s["risk_model_version"] = 2
         return s
     except Exception:
         return default_state()
@@ -208,7 +231,14 @@ def roll_day(s):
         s["day_ist"] = d
         s["trades_today"] = 0
         s["locked"] = False
+        s["lock_reason"] = ""
         s["realized_pnl"] = 0.0
+        s["daily_start_equity"] = float(s.get("cash", 100000.0))
+        s["daily_drawdown_rs"] = 0.0
+    else:
+        s.setdefault("daily_start_equity", float(s.get("cash", 100000.0)))
+        s.setdefault("daily_drawdown_rs", 0.0)
+        s.setdefault("lock_reason", "")
 
 
 def equity_mark(s, bid=None, ask=None):
@@ -222,11 +252,15 @@ def equity_mark(s, bid=None, ask=None):
 
 def update_drawdown(s, bid=None, ask=None):
     eq = equity_mark(s, bid, ask)
+    start_eq = float(s.get("daily_start_equity", s.get("cash", 100000.0)))
+    daily_dd = max(0.0, start_eq - eq)
+    s["daily_drawdown_rs"] = max(float(s.get("daily_drawdown_rs", 0.0)), daily_dd)
     s["peak_equity"] = max(float(s.get("peak_equity", 100000.0)), eq)
-    dd = max(0.0, s["peak_equity"] - eq)
-    s["max_drawdown_rs"] = max(float(s.get("max_drawdown_rs", 0.0)), dd)
-    if dd >= MAX_DAILY_LOSS_RS:
+    lifetime_dd = max(0.0, s["peak_equity"] - eq)
+    s["max_drawdown_rs"] = max(float(s.get("max_drawdown_rs", 0.0)), lifetime_dd)
+    if daily_dd >= MAX_EQUITY_DRAWDOWN_RS:
         s["locked"] = True
+        s["lock_reason"] = "EQUITY_DRAWDOWN_LOCK"
         return bool(s.get("position"))
     return False
 
@@ -319,6 +353,7 @@ def exit_position(s, bid, ask, reason):
     s["position"] = None
     if s["realized_pnl"] <= -MAX_DAILY_LOSS_RS:
         s["locked"] = True
+        s["lock_reason"] = "DAILY_LOSS_LOCK"
 
 
 def risk_check(s):
@@ -388,7 +423,7 @@ def process(s, pair, bars_cache=None, rows=None):
         elif s["position"]:
             decision, reject = "REJECTED", "POSITION_ALREADY_OPEN"
         elif s["locked"]:
-            decision, reject = "REJECTED", "DAILY_LOSS_LOCK"
+            decision, reject = "REJECTED", (s.get("lock_reason") or "RISK_LOCK")
         elif MAX_TRADES_PER_DAY is not None and s["trades_today"] >= MAX_TRADES_PER_DAY:
             decision, reject = "REJECTED", "DAILY_TRADE_CAP"
         elif ai_side != wanted:
@@ -516,7 +551,7 @@ def main():
         "run_started_at": s.get("run_started_at"), "run_finished_at": s.get("run_finished_at"),
         "day_ist": s["day_ist"], "capital": 100000.0, "cash": s["cash"],
         "realized_pnl": s["realized_pnl"], "trades_today": s["trades_today"],
-        "max_trades_per_day": MAX_TRADES_PER_DAY, "max_daily_loss_rs": MAX_DAILY_LOSS_RS, "max_equity_drawdown_rs": MAX_DAILY_LOSS_RS,
+        "max_trades_per_day": MAX_TRADES_PER_DAY, "max_daily_loss_rs": MAX_DAILY_LOSS_RS, "max_equity_drawdown_rs": MAX_EQUITY_DRAWDOWN_RS, "daily_start_equity": s.get("daily_start_equity"), "daily_drawdown_rs": s.get("daily_drawdown_rs"), "lock_reason": s.get("lock_reason", ""),
         "pairs": len(pairs), "pair_list": pairs, "events": s["events"],
         "signals": s["signals"], "accepted_signals": s["accepted_signals"],
         "rejected_signals": s["rejected_signals"], "errors": s["errors"],
