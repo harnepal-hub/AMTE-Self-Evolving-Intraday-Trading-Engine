@@ -66,10 +66,29 @@ SIGNAL_FIELDS = [
 ]
 
 
-def get_json(url, params=None, timeout=12):
-    r = requests.get(url, params=params, timeout=timeout)
-    r.raise_for_status()
-    return r.json()
+_HTTP = requests.Session()
+_HTTP.headers.update({
+    "User-Agent": "AMTE-PaperEngine/1.0",
+    "Accept": "application/json",
+})
+
+def get_json(url, params=None, timeout=12, retries=3):
+    """GET JSON with bounded retries for transient CoinDCX failures."""
+    last = None
+    for attempt in range(retries + 1):
+        try:
+            r = _HTTP.get(url, params=params, timeout=(5, timeout))
+            if r.status_code in (429, 500, 502, 503, 504):
+                raise requests.HTTPError(f"transient HTTP {r.status_code}", response=r)
+            r.raise_for_status()
+            return r.json()
+        except (requests.RequestException, ValueError) as exc:
+            last = exc
+            if attempt >= retries:
+                raise
+            # Deterministic backoff: 1s, 2s, 4s. Avoid hammering a degraded API.
+            time.sleep(2 ** attempt)
+    raise last
 
 
 def active_pairs(n):
@@ -115,7 +134,7 @@ def frame(rows):
 
 def book(pair):
     try:
-        d = get_json(BOOK.format(pair=pair), timeout=5)
+        d = get_json(BOOK.format(pair=pair), timeout=5, retries=1)
         bids, asks = d.get("bids", {}), d.get("asks", {})
         if not bids or not asks:
             return None
@@ -507,7 +526,7 @@ def main():
 
     # Fetch candle histories concurrently so all 30 coins are evaluated within
     # the 5-minute cadence. State mutation and signal decisions remain sequential.
-    workers = min(12, max(1, len(pairs)))
+    workers = min(8, max(1, len(pairs)))
     while time.monotonic() < end:
         fetched = {}
         with ThreadPoolExecutor(max_workers=workers) as pool:
@@ -520,7 +539,7 @@ def main():
                     s["errors"] += 1
                     event(s, {"event": "FETCH_ERROR", "pair": p, "error": str(exc)})
         for p in pairs:
-            process(s, p, bars_cache, fetched.get(p, []))
+            process(s, p, bars_cache, fetched.get(p) or bars_cache.get(p, []))
             risk_check(s)
             if s.get("position") and s["position"].get("pair") == p:
                 q = book(p)
