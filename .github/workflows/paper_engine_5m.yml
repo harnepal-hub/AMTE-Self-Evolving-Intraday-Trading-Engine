@@ -75,7 +75,8 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          python scripts/run_3strategy_paper.py --minutes 3.5 --max-pairs 30
+          python -m py_compile scripts/run_3strategy_paper.py 2>&1 | tee data/paper_3strategy/engine_compile.log
+          python scripts/run_3strategy_paper.py --minutes 3.5 --max-pairs 30 2>&1 | tee data/paper_3strategy/engine_run.log
       - name: Record 3-strategy engine diagnostic
         if: steps.guard.outputs.should_run == 'true'
         shell: bash
@@ -104,6 +105,13 @@ jobs:
               'signals':state.get('signals',0),
               'errors':state.get('errors',0)
           }
+          (p/'engine_diagnostic.json').write_text(json.dumps(diag,indent=2))
+          log=p/'engine_run.log'
+          if log.exists():
+              diag['run_log_tail']=log.read_text(errors='replace')[-12000:]
+          clog=p/'engine_compile.log'
+          if clog.exists():
+              diag['compile_log']=clog.read_text(errors='replace')[-4000:]
           (p/'engine_diagnostic.json').write_text(json.dumps(diag,indent=2))
           print(json.dumps(diag,indent=2))
           PY
