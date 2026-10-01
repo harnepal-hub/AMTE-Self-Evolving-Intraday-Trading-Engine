@@ -70,6 +70,7 @@ jobs:
 
       - name: Run independent 3-strategy paper engine
         if: steps.guard.outputs.should_run == 'true'
+        continue-on-error: true
         run: python scripts/run_3strategy_paper.py --minutes 3.5 --max-pairs 30
 
       - name: Publish live paper state
