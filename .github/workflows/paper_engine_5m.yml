@@ -70,8 +70,43 @@ jobs:
 
       - name: Run independent 3-strategy paper engine
         if: steps.guard.outputs.should_run == 'true'
+        id: three_strategy
         continue-on-error: true
-        run: python scripts/run_3strategy_paper.py --minutes 3.5 --max-pairs 30
+        shell: bash
+        run: |
+          set -o pipefail
+          python scripts/run_3strategy_paper.py --minutes 3.5 --max-pairs 30
+      - name: Record 3-strategy engine diagnostic
+        if: steps.guard.outputs.should_run == 'true'
+        shell: bash
+        env:
+          ENGINE_OUTCOME: ${{ steps.three_strategy.outcome }}
+        run: |
+          python - <<'PY'
+          import json
+          from datetime import datetime, timezone
+          from pathlib import Path
+          p=Path('data/paper_3strategy')
+          p.mkdir(parents=True, exist_ok=True)
+          state={}
+          sp=p/'state.json'
+          if sp.exists():
+              try: state=json.loads(sp.read_text())
+              except Exception as e: state={'read_error':str(e)}
+          diag={
+              'workflow_time':datetime.now(timezone.utc).isoformat(),
+              'step_outcome':__import__('os').environ.get('ENGINE_OUTCOME'),
+              'state_status':state.get('status'),
+              'updated_at':state.get('updated_at'),
+              'heartbeat_at':state.get('heartbeat_at'),
+              'pairs':len(state.get('pairs',[])),
+              'events':state.get('events',0),
+              'signals':state.get('signals',0),
+              'errors':state.get('errors',0)
+          }
+          (p/'engine_diagnostic.json').write_text(json.dumps(diag,indent=2))
+          print(json.dumps(diag,indent=2))
+          PY
 
       - name: Publish live paper state
         if: steps.guard.outputs.should_run == 'true'
