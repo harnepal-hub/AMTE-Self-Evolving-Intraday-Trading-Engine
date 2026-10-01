@@ -47,8 +47,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin main
           git reset --hard origin/main
-          mkdir -p data/paper_3strategy docs/live_3strategy
-          cp -a /tmp/amte-3strategy-state/. data/paper_3strategy/ 2>/dev/null || true
+          mkdir -p /tmp/amte-3strategy-state data/paper_3strategy docs/live_3strategy
           cp -a data/paper_3strategy/. /tmp/amte-3strategy-state/
           rm -rf docs/live_3strategy
           mkdir -p docs/live_3strategy
