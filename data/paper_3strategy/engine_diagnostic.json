@@ -1,5 +1,5 @@
 {
-  "workflow_time": "2026-10-01T12:55:40.196442+00:00",
+  "workflow_time": "2026-10-01T13:01:11.432680+00:00",
   "step_outcome": "failure",
   "state_status": "WAITING_FOR_ENGINE",
   "updated_at": null,
@@ -7,5 +7,6 @@
   "pairs": 0,
   "events": 0,
   "signals": 0,
-  "errors": 0
+  "errors": 0,
+  "compile_log": "  File \"scripts/run_3strategy_paper.py\", line 233\n    MARKET.write_text(json.dumps({\"updated_at\":datetime.now(timezone.utc).isoformat(),\"prices\":{p:prices[p] for p in pairs if p in prices},\"signals\":s[\"signal_map\"],\"candles\":{p:cache.get(p,[]) for p in pairs if cache.get(p)},\"source\":\"CoinDCX public futures REST\",\"candle_resolution\":5},separators=(\",\",\":\"))\n                     ^\nSyntaxError: '(' was never closed\n"
 }
