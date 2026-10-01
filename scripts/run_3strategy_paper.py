@@ -122,7 +122,7 @@ def signal(r):
     return (1 if t==1 and a==1 and d==1 else -1 if t==-1 and a==-1 and d==-1 else 0,t,a,d)
 
 def default():
-    return {"version":1,"day_ist":"","cash":100000.0,"realized_pnl":0.0,"daily_start_equity":100000.0,"daily_drawdown_rs":0.0,"peak_equity":100000.0,"max_drawdown_rs":0.0,"trades_today":0,"locked":False,"lock_reason":"","position":None,"last_signal":{},"last_processed_bar":{},"pairs":[],"events":0,"signals":0,"accepted_signals":0,"rejected_signals":0,"errors":0,"updated_at":None,"status":"STARTING","signal_map":{}}
+    return {"version":1,"day_ist":"","cash":100000.0,"realized_pnl":0.0,"daily_start_equity":100000.0,"daily_drawdown_rs":0.0,"peak_equity":100000.0,"max_drawdown_rs":0.0,"trades_today":0,"locked":False,"lock_reason":"","position":None,"last_signal":{},"last_processed_bar":{},"pairs":[],"events":0,"signals":0,"accepted_signals":0,"rejected_signals":0,"errors":0,"updated_at":None,"heartbeat_at":None,"run_started_at":None,"run_finished_at":None,"status":"STARTING","signal_map":{}}
 
 def load():
     if not STATE.exists():return default()
@@ -236,7 +236,7 @@ def main():
     DATA.mkdir(parents=True,exist_ok=True);s=load();roll(s)
     try:pairs=active_pairs(a.max_pairs)
     except Exception as e:pairs=s.get("pairs",[])[:a.max_pairs];s["errors"]+=1;event(s,{"event":"ACTIVE_PAIRS_ERROR","error":str(e)})
-    s["pairs"]=pairs;s["status"]="STARTING";end=time.monotonic()+a.minutes*60;cache={}
+    s["pairs"]=pairs;s["run_started_at"]=datetime.now(timezone.utc).isoformat();s["run_finished_at"]=None;s["status"]="STARTING";end=time.monotonic()+a.minutes*60;cache={}
     workers=min(8,max(1,len(pairs)))
     while time.monotonic()<end:
         fetched={}
@@ -252,7 +252,7 @@ def main():
                 if s.get("position") and s["position"].get("pair")==p: excursion(s,rr)
                 process(s,p,rr,cache);risk(s);update_dd(s)
             except Exception as e:s["errors"]+=1;event(s,{"event":"PAIR_ERROR","pair":p,"error":str(e)})
-        s["updated_at"]=datetime.now(timezone.utc).isoformat();s["status"]="LIVE_PAPER";save(s);time.sleep(15)
-    snapshot(s,pairs,cache);s["updated_at"]=datetime.now(timezone.utc).isoformat();save(s)
+        s["updated_at"]=datetime.now(timezone.utc).isoformat();s["heartbeat_at"]=s["updated_at"];s["status"]="LIVE_PAPER";save(s);time.sleep(15)
+    snapshot(s,pairs,cache);s["run_finished_at"]=datetime.now(timezone.utc).isoformat();s["updated_at"]=s["run_finished_at"];s["heartbeat_at"]=s["run_finished_at"];save(s)
 
 if __name__=="__main__":main()
