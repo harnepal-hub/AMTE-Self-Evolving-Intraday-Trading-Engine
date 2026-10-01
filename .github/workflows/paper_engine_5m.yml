@@ -228,12 +228,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Start next capture cycle
-        if: steps.guard.outputs.should_run == 'true'
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          gh workflow run paper_engine_5m.yml --repo "${GITHUB_REPOSITORY}" --ref main
-          echo "Next paper cycle dispatched via workflow_dispatch."
+      # Scheduling is handled by the 5-minute watchdog above.\n      # Do not self-dispatch with GITHUB_TOKEN; GitHub blocks recursive workflow triggers.\n
