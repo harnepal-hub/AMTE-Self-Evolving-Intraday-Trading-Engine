@@ -1,4 +1,1 @@
-  File "scripts/run_3strategy_paper.py", line 233
-    MARKET.write_text(json.dumps({"updated_at":datetime.now(timezone.utc).isoformat(),"prices":{p:prices[p] for p in pairs if p in prices},"signals":s["signal_map"],"candles":{p:cache.get(p,[]) for p in pairs if cache.get(p)},"source":"CoinDCX public futures REST","candle_resolution":5},separators=(",",":"))
-                     ^
-SyntaxError: '(' was never closed
+compile_exit=0
