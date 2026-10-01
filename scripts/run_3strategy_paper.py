@@ -168,6 +168,27 @@ def exitpos(s,bid,ask,reason):
     csvadd(TRADES,TRADE_FIELDS,row);event(s,{"event":"EXIT",**row});s["position"]=None
     if s["realized_pnl"]<=-DAILY_LOCK:s["locked"]=True;s["lock_reason"]="DAILY_LOSS_LOCK"
 
+def excursion(s,rows):
+    p=s.get("position")
+    if not p:return
+    side=1 if p["side"]=="LONG" else -1
+    for x in rows[-3:]:
+        if side==1:
+            p["mfe_price"]=max(p["mfe_price"],x["high"]);p["mae_price"]=min(p["mae_price"],x["low"])
+        else:
+            p["mfe_price"]=max(p["mfe_price"],2*p["entry_price"]-x["low"]);p["mae_price"]=min(p["mae_price"],2*p["entry_price"]-x["high"])
+
+def update_dd(s):
+    p=s.get("position")
+    if not p:return
+    q=book(p["pair"])
+    if not q:return
+    bid,ask=q; mark=(bid+ask)/2; side=1 if p["side"]=="LONG" else -1
+    eq=s["cash"]+(mark-p["entry_price"])*p["quantity"]*side
+    dd=max(0.0,s["daily_start_equity"]-eq);s["daily_drawdown_rs"]=max(s.get("daily_drawdown_rs",0),dd)
+    s["peak_equity"]=max(s.get("peak_equity",100000),eq);s["max_drawdown_rs"]=max(s.get("max_drawdown_rs",0),s["peak_equity"]-eq)
+    if dd>=DAILY_LOCK:s["locked"]=True;s["lock_reason"]="EQUITY_DRAWDOWN_LOCK"
+
 def risk(s):
     p=s.get("position")
     if not p:return
@@ -225,7 +246,7 @@ def main():
                 try:fetched[p]=f.result()
                 except Exception as e:s["errors"]+=1;event(s,{"event":"FETCH_ERROR","pair":p,"error":str(e)})
         for p in pairs:
-            try:process(s,p,fetched.get(p) or cache.get(p,[]),cache);risk(s)
+            try:\n                rr=fetched.get(p) or cache.get(p,[])\n                if s.get("position") and s["position"].get("pair")==p: excursion(s,rr)\n                process(s,p,rr,cache);risk(s);update_dd(s)
             except Exception as e:s["errors"]+=1;event(s,{"event":"PAIR_ERROR","pair":p,"error":str(e)})
         s["updated_at"]=datetime.now(timezone.utc).isoformat();s["status"]="LIVE_PAPER";save(s);time.sleep(15)
     snapshot(s,pairs,cache);s["updated_at"]=datetime.now(timezone.utc).isoformat();save(s)
