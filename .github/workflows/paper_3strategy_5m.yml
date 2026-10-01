@@ -10,14 +10,13 @@ on:
       - 'scripts/run_3strategy_paper.py'
       - 'docs/three-strategy-live.html'
       - 'docs/three-strategy-live.js'
-      - '.github/workflows/paper_3strategy_5m.yml'
 
 permissions:
   contents: write
 
 concurrency:
   group: amte-3strategy-paper
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   paper:
