@@ -230,7 +230,7 @@ def process(s,pair,rows,cache):
 def snapshot(s,pairs,cache):
     try:
         prices=getj(PRICES).get("prices",{})
-        MARKET.write_text(json.dumps({"updated_at":datetime.now(timezone.utc).isoformat(),"prices":{p:prices[p] for p in pairs if p in prices},"signals":s["signal_map"],"candles":{p:cache.get(p,[]) for p in pairs if cache.get(p)},"source":"CoinDCX public futures REST","candle_resolution":5},separators=(",",":"))
+        MARKET.write_text(json.dumps({"updated_at":datetime.now(timezone.utc).isoformat(),"prices":{p:prices[p] for p in pairs if p in prices},"signals":s["signal_map"],"candles":{p:cache.get(p,[]) for p in pairs if cache.get(p)},"source":"CoinDCX public futures REST","candle_resolution":5},separators=(",",":")))
     except Exception as e:
         s["errors"]+=1
         event(s,{"event":"SNAPSHOT_ERROR","error":str(e)})
