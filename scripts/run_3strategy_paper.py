@@ -246,7 +246,10 @@ def main():
                 try:fetched[p]=f.result()
                 except Exception as e:s["errors"]+=1;event(s,{"event":"FETCH_ERROR","pair":p,"error":str(e)})
         for p in pairs:
-            try:\n                rr=fetched.get(p) or cache.get(p,[])\n                if s.get("position") and s["position"].get("pair")==p: excursion(s,rr)\n                process(s,p,rr,cache);risk(s);update_dd(s)
+            try:
+                rr=fetched.get(p) or cache.get(p,[])
+                if s.get("position") and s["position"].get("pair")==p: excursion(s,rr)
+                process(s,p,rr,cache);risk(s);update_dd(s)
             except Exception as e:s["errors"]+=1;event(s,{"event":"PAIR_ERROR","pair":p,"error":str(e)})
         s["updated_at"]=datetime.now(timezone.utc).isoformat();s["status"]="LIVE_PAPER";save(s);time.sleep(15)
     snapshot(s,pairs,cache);s["updated_at"]=datetime.now(timezone.utc).isoformat();save(s)
