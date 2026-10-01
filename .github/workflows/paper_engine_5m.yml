@@ -64,29 +64,6 @@ jobs:
         if: steps.guard.outputs.should_run == 'true'
         run: python -m pip install -r requirements.txt
 
-      - name: Run independent 3-strategy paper engine
-        if: steps.guard.outputs.should_run == 'true'
-        id: three_strategy
-        continue-on-error: true
-        shell: bash
-        run: |
-          set +e
-          echo "=== 3-STRATEGY PREFLIGHT ==="
-          python -m py_compile scripts/run_3strategy_paper.py > data/paper_3strategy/engine_compile.log 2>&1
-          COMPILE_EXIT=$?
-          echo "compile_exit=$COMPILE_EXIT" >> data/paper_3strategy/engine_compile.log
-          if [ "$COMPILE_EXIT" -eq 0 ]; then
-            echo "=== 3-STRATEGY ENGINE START ===" | tee data/paper_3strategy/engine_run.log
-            python -u scripts/run_3strategy_paper.py --minutes 3.5 --max-pairs 30 >> data/paper_3strategy/engine_run.log 2>&1
-            RUN_EXIT=$?
-          else
-            RUN_EXIT=$COMPILE_EXIT
-          fi
-          echo "run_exit=$RUN_EXIT" >> data/paper_3strategy/engine_run.log
-          echo "compile_exit=$COMPILE_EXIT"
-          echo "run_exit=$RUN_EXIT"
-          exit "$RUN_EXIT"
-
       - name: Run server-side live paper engine
         if: steps.guard.outputs.should_run == 'true'
         run: python scripts/run_server_paper.py --minutes 4.5 --max-pairs 30
@@ -228,4 +205,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Scheduling is handled by the 5-minute watchdog above.\n      # Do not self-dispatch with GITHUB_TOKEN; GitHub blocks recursive workflow triggers.\n
+      - name: Start next capture cycle
+        if: steps.guard.outputs.should_run == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          echo "Dispatching next paper-engine cycle..."
+          curl --fail-with-body -L \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2026-03-10" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows/paper_engine_5m.yml/dispatches" \
+            -d '{"ref":"main"}'
+          echo "Next paper-engine cycle dispatched."
