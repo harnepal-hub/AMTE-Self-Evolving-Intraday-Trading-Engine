@@ -228,31 +228,45 @@ def process(s,pair,rows,cache):
     if not enter(s,pair,combined,bid,ask,sid,t,a,d):s["rejected_signals"]+=1;event(s,{"event":"SIGNAL_REJECTED","pair":pair,"signal_id":sid,"reason":"ENTRY_GUARD"})
 
 def snapshot(s,pairs,cache):
-    prices=getj(PRICES).get("prices",{})
-    MARKET.write_text(json.dumps({"updated_at":datetime.now(timezone.utc).isoformat(),"prices":{p:prices[p] for p in pairs if p in prices},"signals":s["signal_map"],"candles":{p:cache.get(p,[]) for p in pairs if cache.get(p)},"source":"CoinDCX public futures REST","candle_resolution":5},separators=(",",":"))
+    try:
+        prices=getj(PRICES).get("prices",{})
+        MARKET.write_text(json.dumps({"updated_at":datetime.now(timezone.utc).isoformat(),"prices":{p:prices[p] for p in pairs if p in prices},"signals":s["signal_map"],"candles":{p:cache.get(p,[]) for p in pairs if cache.get(p)},"source":"CoinDCX public futures REST","candle_resolution":5},separators=(",",":"))
+    except Exception as e:
+        s["errors"]+=1
+        event(s,{"event":"SNAPSHOT_ERROR","error":str(e)})
+        try: save(s)
+        except Exception: pass
 
 def main():
     ap=argparse.ArgumentParser();ap.add_argument("--minutes",type=float,default=4.5);ap.add_argument("--max-pairs",type=int,default=30);a=ap.parse_args()
     DATA.mkdir(parents=True,exist_ok=True);s=load();roll(s)
-    try:pairs=active_pairs(a.max_pairs)
-    except Exception as e:pairs=s.get("pairs",[])[:a.max_pairs];s["errors"]+=1;event(s,{"event":"ACTIVE_PAIRS_ERROR","error":str(e)})
-    s["pairs"]=pairs;s["run_started_at"]=datetime.now(timezone.utc).isoformat();s["run_finished_at"]=None;s["status"]="STARTING";end=time.monotonic()+a.minutes*60;cache={}
-    workers=min(8,max(1,len(pairs)))
-    while time.monotonic()<end:
-        fetched={}
-        with ThreadPoolExecutor(max_workers=workers) as pool:
-            fs={pool.submit(bars,p):p for p in pairs}
-            for f in as_completed(fs):
-                p=fs[f]
-                try:fetched[p]=f.result()
-                except Exception as e:s["errors"]+=1;event(s,{"event":"FETCH_ERROR","pair":p,"error":str(e)})
-        for p in pairs:
-            try:
-                rr=fetched.get(p) or cache.get(p,[])
-                if s.get("position") and s["position"].get("pair")==p: excursion(s,rr)
-                process(s,p,rr,cache);risk(s);update_dd(s)
-            except Exception as e:s["errors"]+=1;event(s,{"event":"PAIR_ERROR","pair":p,"error":str(e)})
-        s["updated_at"]=datetime.now(timezone.utc).isoformat();s["heartbeat_at"]=s["updated_at"];s["status"]="LIVE_PAPER";save(s);time.sleep(15)
-    snapshot(s,pairs,cache);s["run_finished_at"]=datetime.now(timezone.utc).isoformat();s["updated_at"]=s["run_finished_at"];s["heartbeat_at"]=s["run_finished_at"];save(s)
+    s["run_started_at"]=datetime.now(timezone.utc).isoformat();s["run_finished_at"]=None;s["status"]="STARTING";s["updated_at"]=s["run_started_at"];s["heartbeat_at"]=s["run_started_at"];save(s)
+    try:
+        try:pairs=active_pairs(a.max_pairs)
+        except Exception as e:pairs=s.get("pairs",[])[:a.max_pairs];s["errors"]+=1;event(s,{"event":"ACTIVE_PAIRS_ERROR","error":str(e)})
+        s["pairs"]=pairs;save(s)
+        end=time.monotonic()+a.minutes*60;cache={};workers=min(8,max(1,len(pairs)))
+        while time.monotonic()<end:
+            fetched={}
+            with ThreadPoolExecutor(max_workers=workers) as pool:
+                fs={pool.submit(bars,p):p for p in pairs}
+                for f in as_completed(fs):
+                    p=fs[f]
+                    try:fetched[p]=f.result()
+                    except Exception as e:s["errors"]+=1;event(s,{"event":"FETCH_ERROR","pair":p,"error":str(e)})
+            for p in pairs:
+                try:
+                    rr=fetched.get(p) or cache.get(p,[])
+                    if s.get("position") and s["position"].get("pair")==p: excursion(s,rr)
+                    process(s,p,rr,cache);risk(s);update_dd(s)
+                except Exception as e:s["errors"]+=1;event(s,{"event":"PAIR_ERROR","pair":p,"error":str(e)})
+            s["updated_at"]=datetime.now(timezone.utc).isoformat();s["heartbeat_at"]=s["updated_at"];s["status"]="LIVE_PAPER";save(s);time.sleep(15)
+        snapshot(s,pairs,cache)
+        s["run_finished_at"]=datetime.now(timezone.utc).isoformat();s["updated_at"]=s["run_finished_at"];s["heartbeat_at"]=s["run_finished_at"];s["status"]="LIVE_PAPER";save(s)
+    except Exception as e:
+        s["errors"]+=1;s["status"]="ERROR";s["updated_at"]=datetime.now(timezone.utc).isoformat();s["heartbeat_at"]=s["updated_at"]
+        event(s,{"event":"ENGINE_FATAL_ERROR","error":str(e)})
+        save(s)
+        raise
 
 if __name__=="__main__":main()
