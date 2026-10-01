@@ -64,6 +64,29 @@ jobs:
         if: steps.guard.outputs.should_run == 'true'
         run: python -m pip install -r requirements.txt
 
+      - name: Run independent 3-strategy paper engine
+        if: steps.guard.outputs.should_run == 'true'
+        id: three_strategy
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +e
+          echo "=== 3-STRATEGY PREFLIGHT ==="
+          python -m py_compile scripts/run_3strategy_paper.py > data/paper_3strategy/engine_compile.log 2>&1
+          COMPILE_EXIT=$?
+          echo "compile_exit=$COMPILE_EXIT" >> data/paper_3strategy/engine_compile.log
+          if [ "$COMPILE_EXIT" -eq 0 ]; then
+            echo "=== 3-STRATEGY ENGINE START ===" | tee data/paper_3strategy/engine_run.log
+            python -u scripts/run_3strategy_paper.py --minutes 3.5 --max-pairs 30 >> data/paper_3strategy/engine_run.log 2>&1
+            RUN_EXIT=$?
+          else
+            RUN_EXIT=$COMPILE_EXIT
+          fi
+          echo "run_exit=$RUN_EXIT" >> data/paper_3strategy/engine_run.log
+          echo "compile_exit=$COMPILE_EXIT"
+          echo "run_exit=$RUN_EXIT"
+          exit "$RUN_EXIT"
+
       - name: Run server-side live paper engine
         if: steps.guard.outputs.should_run == 'true'
         run: python scripts/run_server_paper.py --minutes 4.5 --max-pairs 30
@@ -74,9 +97,23 @@ jobs:
         continue-on-error: true
         shell: bash
         run: |
-          set -o pipefail
-          python -m py_compile scripts/run_3strategy_paper.py 2>&1 | tee data/paper_3strategy/engine_compile.log
-          python scripts/run_3strategy_paper.py --minutes 3.5 --max-pairs 30 2>&1 | tee data/paper_3strategy/engine_run.log
+          set +e
+          echo "=== 3-STRATEGY PREFLIGHT ==="
+          python -m py_compile scripts/run_3strategy_paper.py > data/paper_3strategy/engine_compile.log 2>&1
+          COMPILE_EXIT=$?
+          echo "compile_exit=$COMPILE_EXIT" >> data/paper_3strategy/engine_compile.log
+          if [ "$COMPILE_EXIT" -eq 0 ]; then
+            echo "=== 3-STRATEGY ENGINE START ===" | tee data/paper_3strategy/engine_run.log
+            python -u scripts/run_3strategy_paper.py --minutes 3.5 --max-pairs 30 >> data/paper_3strategy/engine_run.log 2>&1
+            RUN_EXIT=$?
+          else
+            RUN_EXIT=$COMPILE_EXIT
+          fi
+          echo "run_exit=$RUN_EXIT" >> data/paper_3strategy/engine_run.log
+          echo "compile_exit=$COMPILE_EXIT"
+          echo "run_exit=$RUN_EXIT"
+          exit "$RUN_EXIT"
+
       - name: Record 3-strategy engine diagnostic
         if: steps.guard.outputs.should_run == 'true'
         shell: bash
