@@ -1,4 +1,5 @@
 """AMTE independent 3-strategy server-side paper engine.
+# Trigger a fresh validation cycle after the Pages deployment fix.
 Turtle Soup + AF StochZ + Deviation Trend Profile.
 Public CoinDCX futures data only. No real exchange orders.
 """
