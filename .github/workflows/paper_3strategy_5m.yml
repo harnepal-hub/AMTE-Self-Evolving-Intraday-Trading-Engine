@@ -53,7 +53,8 @@ jobs:
           mkdir -p docs/live_3strategy
           cp data/paper_3strategy/state.json docs/live_3strategy/state.json
           cp data/paper_3strategy/market.json docs/live_3strategy/market.json
-          printf '{"generated_at":"%s"}\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > docs/live_3strategy/heartbeat.json
+          printf '{"generated_at":"%s"}
+' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > docs/live_3strategy/heartbeat.json
           git add data/paper_3strategy docs/live_3strategy
           git diff --cached --quiet || git commit -m "data: update 3-strategy paper state"
           for attempt in 1 2 3; do
@@ -64,7 +65,8 @@ jobs:
             cp -a /tmp/amte-3strategy-state/. data/paper_3strategy/
             cp data/paper_3strategy/state.json docs/live_3strategy/state.json
             cp data/paper_3strategy/market.json docs/live_3strategy/market.json
-            printf '{"generated_at":"%s"}\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > docs/live_3strategy/heartbeat.json
+            printf '{"generated_at":"%s"}
+' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > docs/live_3strategy/heartbeat.json
             git add data/paper_3strategy docs/live_3strategy
             git commit -m "data: update 3-strategy paper state" || true
           done
