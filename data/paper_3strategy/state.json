@@ -13,42 +13,42 @@
   "position": null,
   "last_signal": {},
   "last_processed_bar": {
-    "B-BTC_USDT": 1790952300000,
-    "B-ETH_USDT": 1790952300000,
-    "B-SOL_USDT": 1790952300000,
-    "B-ZEC_USDT": 1790952300000,
-    "B-XAU_USDT": 1790952300000,
-    "B-MOVR_USDT": 1790952300000,
-    "B-HYPE_USDT": 1790952300000,
-    "B-NEAR_USDT": 1790952300000,
-    "B-CL_USDT": 1790952300000,
-    "B-QNT_USDT": 1790952300000,
-    "B-XRP_USDT": 1790952300000,
-    "B-XAG_USDT": 1790952300000,
-    "B-BZ_USDT": 1790952300000,
-    "B-DOGE_USDT": 1790952300000,
-    "B-SUI_USDT": 1790952300000,
-    "B-ENA_USDT": 1790952300000,
-    "B-UNI_USDT": 1790952300000,
-    "B-WLD_USDT": 1790952300000,
-    "B-PUMP_USDT": 1790952300000,
-    "B-1000PEPE_USDT": 1790952300000,
+    "B-BTC_USDT": 1790952900000,
+    "B-ETH_USDT": 1790952900000,
+    "B-SOL_USDT": 1790952900000,
+    "B-ZEC_USDT": 1790952900000,
+    "B-XAU_USDT": 1790952900000,
+    "B-MOVR_USDT": 1790952900000,
+    "B-HYPE_USDT": 1790952900000,
+    "B-NEAR_USDT": 1790952900000,
+    "B-CL_USDT": 1790952900000,
+    "B-QNT_USDT": 1790952900000,
+    "B-XRP_USDT": 1790952900000,
+    "B-XAG_USDT": 1790952900000,
+    "B-BZ_USDT": 1790952900000,
+    "B-DOGE_USDT": 1790952900000,
+    "B-SUI_USDT": 1790952900000,
+    "B-ENA_USDT": 1790952900000,
+    "B-UNI_USDT": 1790952900000,
+    "B-WLD_USDT": 1790952900000,
+    "B-PUMP_USDT": 1790952900000,
+    "B-1000PEPE_USDT": 1790952900000,
     "B-BTW_USDT": 1790942700000,
-    "B-BNB_USDT": 1790952300000,
+    "B-BNB_USDT": 1790952900000,
     "B-TRUMP_USDT": 1790925300000,
-    "B-AAVE_USDT": 1790952300000,
-    "B-ADA_USDT": 1790952300000,
-    "B-LINK_USDT": 1790952300000,
-    "B-US_USDT": 1790952300000,
+    "B-AAVE_USDT": 1790952900000,
+    "B-ADA_USDT": 1790952900000,
+    "B-LINK_USDT": 1790952900000,
+    "B-US_USDT": 1790952900000,
     "B-ONDO_USDT": 1790948400000,
     "B-SOON_USDT": 1790871300000,
-    "B-TAO_USDT": 1790952300000,
-    "B-AVAX_USDT": 1790952300000,
+    "B-TAO_USDT": 1790952900000,
+    "B-AVAX_USDT": 1790952900000,
     "B-MON_USDT": 1790897400000,
-    "B-GTC_USDT": 1790952300000,
+    "B-GTC_USDT": 1790952900000,
     "B-ALICE_USDT": 1790949000000,
-    "B-SAND_USDT": 1790952300000,
-    "B-LTC_USDT": 1790952300000
+    "B-SAND_USDT": 1790952900000,
+    "B-LTC_USDT": 1790952900000
   },
   "pairs": [
     "B-BTC_USDT",
@@ -60,8 +60,8 @@
     "B-XRP_USDT",
     "B-XAG_USDT",
     "B-MOVR_USDT",
-    "B-NEAR_USDT",
     "B-HYPE_USDT",
+    "B-NEAR_USDT",
     "B-QNT_USDT",
     "B-BZ_USDT",
     "B-DOGE_USDT",
@@ -82,156 +82,156 @@
     "B-TAO_USDT",
     "B-LTC_USDT"
   ],
-  "events": 7710,
+  "events": 7770,
   "signals": 0,
   "accepted_signals": 0,
   "rejected_signals": 0,
   "errors": 1,
-  "updated_at": "2026-10-02T14:52:19.704281+00:00",
-  "heartbeat_at": "2026-10-02T14:52:19.704281+00:00",
-  "run_started_at": "2026-10-02T14:48:43.450658+00:00",
-  "run_finished_at": "2026-10-02T14:52:19.704281+00:00",
+  "updated_at": "2026-10-02T15:01:15.487031+00:00",
+  "heartbeat_at": "2026-10-02T15:01:15.487031+00:00",
+  "run_started_at": "2026-10-02T14:57:37.129299+00:00",
+  "run_finished_at": "2026-10-02T15:01:15.487031+00:00",
   "status": "LIVE_PAPER",
   "signal_map": {
     "B-BTC_USDT": {
       "combined": 0,
-      "turtle": 0,
+      "turtle": 1,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1790952300000
+      "bar_time": 1790952900000
     },
     "B-ETH_USDT": {
       "combined": 0,
-      "turtle": 0,
+      "turtle": 1,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1790952300000
+      "bar_time": 1790952900000
     },
     "B-SOL_USDT": {
       "combined": 0,
-      "turtle": 0,
+      "turtle": 1,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1790952300000
+      "bar_time": 1790952900000
     },
     "B-ZEC_USDT": {
       "combined": 0,
-      "turtle": 0,
+      "turtle": 1,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1790952300000
+      "bar_time": 1790952900000
     },
     "B-XAU_USDT": {
       "combined": 0,
-      "turtle": 0,
+      "turtle": 1,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1790952300000
+      "bar_time": 1790952900000
     },
     "B-MOVR_USDT": {
       "combined": 0,
       "turtle": 0,
       "af": 0,
-      "dtp": 0,
-      "bar_time": 1790952300000
+      "dtp": 1,
+      "bar_time": 1790952900000
     },
     "B-HYPE_USDT": {
       "combined": 0,
-      "turtle": 0,
+      "turtle": 1,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1790952300000
+      "bar_time": 1790952900000
     },
     "B-NEAR_USDT": {
       "combined": 0,
       "turtle": 0,
       "af": 0,
-      "dtp": 0,
-      "bar_time": 1790952300000
+      "dtp": -1,
+      "bar_time": 1790952900000
     },
     "B-CL_USDT": {
       "combined": 0,
       "turtle": 0,
       "af": 0,
       "dtp": 1,
-      "bar_time": 1790952300000
+      "bar_time": 1790952900000
     },
     "B-QNT_USDT": {
       "combined": 0,
-      "turtle": 0,
+      "turtle": -1,
       "af": 0,
       "dtp": 1,
-      "bar_time": 1790952300000
+      "bar_time": 1790952900000
     },
     "B-XRP_USDT": {
       "combined": 0,
-      "turtle": 0,
+      "turtle": 1,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1790952300000
+      "bar_time": 1790952900000
     },
     "B-XAG_USDT": {
       "combined": 0,
-      "turtle": 0,
+      "turtle": 1,
       "af": 0,
-      "dtp": 0,
-      "bar_time": 1790952300000
+      "dtp": -1,
+      "bar_time": 1790952900000
     },
     "B-BZ_USDT": {
       "combined": 0,
       "turtle": 0,
       "af": 0,
       "dtp": 1,
-      "bar_time": 1790952300000
+      "bar_time": 1790952900000
     },
     "B-DOGE_USDT": {
       "combined": 0,
-      "turtle": 0,
+      "turtle": 1,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1790952300000
+      "bar_time": 1790952900000
     },
     "B-SUI_USDT": {
       "combined": 0,
-      "turtle": 0,
+      "turtle": 1,
       "af": 0,
-      "dtp": 0,
-      "bar_time": 1790952300000
+      "dtp": -1,
+      "bar_time": 1790952900000
     },
     "B-ENA_USDT": {
       "combined": 0,
       "turtle": 0,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1790952300000
+      "bar_time": 1790952900000
     },
     "B-UNI_USDT": {
       "combined": 0,
-      "turtle": 0,
+      "turtle": 1,
       "af": 0,
-      "dtp": 0,
-      "bar_time": 1790952300000
+      "dtp": -1,
+      "bar_time": 1790952900000
     },
     "B-WLD_USDT": {
       "combined": 0,
       "turtle": 0,
       "af": 0,
       "dtp": 1,
-      "bar_time": 1790952300000
+      "bar_time": 1790952900000
     },
     "B-PUMP_USDT": {
       "combined": 0,
-      "turtle": -1,
+      "turtle": 0,
       "af": 0,
       "dtp": 1,
-      "bar_time": 1790952300000
+      "bar_time": 1790952900000
     },
     "B-1000PEPE_USDT": {
       "combined": 0,
-      "turtle": 0,
+      "turtle": 1,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1790952300000
+      "bar_time": 1790952900000
     },
     "B-BTW_USDT": {
       "combined": 0,
@@ -242,10 +242,10 @@
     },
     "B-BNB_USDT": {
       "combined": 0,
-      "turtle": 0,
+      "turtle": 1,
       "af": 0,
-      "dtp": 0,
-      "bar_time": 1790952300000
+      "dtp": -1,
+      "bar_time": 1790952900000
     },
     "B-TRUMP_USDT": {
       "combined": 0,
@@ -259,28 +259,28 @@
       "turtle": 0,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1790952300000
+      "bar_time": 1790952900000
     },
     "B-ADA_USDT": {
       "combined": 0,
-      "turtle": 0,
+      "turtle": 1,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1790952300000
+      "bar_time": 1790952900000
     },
     "B-LINK_USDT": {
       "combined": 0,
-      "turtle": 0,
+      "turtle": 1,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1790952300000
+      "bar_time": 1790952900000
     },
     "B-US_USDT": {
       "combined": 0,
       "turtle": 0,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1790952300000
+      "bar_time": 1790952900000
     },
     "B-ONDO_USDT": {
       "combined": 0,
@@ -298,17 +298,17 @@
     },
     "B-TAO_USDT": {
       "combined": 0,
-      "turtle": 0,
+      "turtle": 1,
       "af": 0,
-      "dtp": 0,
-      "bar_time": 1790952300000
+      "dtp": -1,
+      "bar_time": 1790952900000
     },
     "B-AVAX_USDT": {
       "combined": 0,
-      "turtle": 0,
+      "turtle": 1,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1790952300000
+      "bar_time": 1790952900000
     },
     "B-MON_USDT": {
       "combined": 0,
@@ -322,7 +322,7 @@
       "turtle": 0,
       "af": 0,
       "dtp": 0,
-      "bar_time": 1790952300000
+      "bar_time": 1790952900000
     },
     "B-ALICE_USDT": {
       "combined": 0,
@@ -333,17 +333,17 @@
     },
     "B-SAND_USDT": {
       "combined": 0,
-      "turtle": 1,
+      "turtle": 0,
       "af": 0,
       "dtp": 0,
-      "bar_time": 1790952300000
+      "bar_time": 1790952900000
     },
     "B-LTC_USDT": {
       "combined": 0,
-      "turtle": 0,
+      "turtle": 1,
       "af": 0,
-      "dtp": 1,
-      "bar_time": 1790952300000
+      "dtp": 0,
+      "bar_time": 1790952900000
     }
   },
   "journal": [
