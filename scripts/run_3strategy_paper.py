@@ -1,5 +1,5 @@
 """AMTE independent 3-strategy server-side paper engine.
-# Trigger a fresh validation cycle after the Pages deployment fix.
+# AF diagnostics added; entry logic remains unchanged until validation.
 Turtle Soup + AF StochZ + Deviation Trend Profile.
 Public CoinDCX futures data only. No real exchange orders.
 """
@@ -88,27 +88,51 @@ def turtle(r,i):
     return 0
 
 def af(r):
-    c=[x["close"] for x in r]; kraw=[float("nan")]*len(c)
+    """AF StochZ signal plus full diagnostic values for the latest closed bar."""
+    c=[x["close"] for x in r]; kraw=[float("nan")]*len(c); lengths=[None]*len(c)
     for i in range(len(c)):
         if i<AF_ER:continue
         ch=abs(c[i]-c[i-AF_ER]); vol=sum(abs(c[j]-c[j-1]) for j in range(i-AF_ER+1,i+1)); er=ch/vol if vol else 0
         ln=max(AF_MIN,min(AF_MAX,round(AF_MAX-er*(AF_MAX-AF_MIN))))
+        lengths[i]=ln
         w=r[max(0,i-ln+1):i+1]; hi=max(x["high"] for x in w); lo=min(x["low"] for x in w)
         kraw[i]=((c[i]-lo)/(hi-lo)*100) if hi>lo else 50
     k=sma([50 if not math.isfinite(x) else x for x in kraw],3); d=sma(k,3)
-    f=[float("nan")]*len(c)
+    fisher=[float("nan")]*len(c)
     for i,x in enumerate(k):
         if math.isfinite(x):
-            z=max(-.998,min(.998,(x-50)/50)); f[i]=.5*math.log((1+z)/(1-z))
-    fm=sma([0 if not math.isfinite(x) else x for x in f],AF_Z); fs=stdev([0 if not math.isfinite(x) else x for x in f],AF_Z)
-    z=[0]*len(c)
+            z0=max(-.998,min(.998,(x-50)/50)); fisher[i]=.5*math.log((1+z0)/(1-z0))
+    fm=sma([0 if not math.isfinite(x) else x for x in fisher],AF_Z)
+    fs=stdev([0 if not math.isfinite(x) else x for x in fisher],AF_Z)
+    z=[float("nan")]*len(c)
     for i in range(len(c)):
-        if math.isfinite(f[i]) and math.isfinite(fs[i]) and fs[i]:z[i]=(f[i]-fm[i])/fs[i]
+        if math.isfinite(fisher[i]) and math.isfinite(fs[i]) and fs[i]>1e-12:
+            z[i]=(fisher[i]-fm[i])/fs[i]
     i=len(c)-1
-    if i<3:return 0
-    bull=z[i]<-1 and z[i]>z[i-1] and k[i]>d[i]
-    bear=z[i]>1 and z[i]<z[i-1] and k[i]<d[i]
-    return 1 if bull else -1 if bear else 0
+    diag={
+        "ready":False,"adaptive_length":lengths[i] if i<len(lengths) else None,
+        "k":None,"d":None,"fisher":None,"z":None,"prev_z":None,
+        "z_reversal_long":False,"z_reversal_short":False,
+        "stoch_cross_long":False,"stoch_cross_short":False,
+        "bull":False,"bear":False,"reason":"INSUFFICIENT_DATA"
+    }
+    if i<3:return 0,diag
+    vals={"k":k[i],"d":d[i],"fisher":fisher[i],"z":z[i],
+          "prev_z":z[i-1] if i>0 else None}
+    diag.update({key:(float(val) if isinstance(val,(int,float)) and math.isfinite(val) else None) for key,val in vals.items()})
+    diag["ready"]=all(diag[x] is not None for x in ("k","d","z","prev_z"))
+    if not diag["ready"]:
+        diag["reason"]="INDICATOR_NOT_READY"
+        return 0,diag
+    diag["z_reversal_long"]=diag["z"] < -1 and diag["z"] > diag["prev_z"]
+    diag["z_reversal_short"]=diag["z"] > 1 and diag["z"] < diag["prev_z"]
+    diag["stoch_cross_long"]=diag["k"] > diag["d"]
+    diag["stoch_cross_short"]=diag["k"] < diag["d"]
+    bull=diag["z_reversal_long"] and diag["stoch_cross_long"]
+    bear=diag["z_reversal_short"] and diag["stoch_cross_short"]
+    diag["bull"]=bull; diag["bear"]=bear
+    diag["reason"]="LONG_TRIGGER" if bull else "SHORT_TRIGGER" if bear else "NO_TRIGGER"
+    return (1 if bull else -1 if bear else 0),diag
 
 def dtp(r):
     c=[x["close"] for x in r]; s=sma(c,DTP_SMA); a=atr(r,DTP_ATR); i=len(c)-1
@@ -117,12 +141,13 @@ def dtp(r):
     return 1 if slope>0 and c[i]>=s[i] else -1 if slope<0 and c[i]<=s[i] else 0
 
 def signal(r):
-    if len(r)<DTP_ATR+5:return (0,0,0,0)
-    t=turtle(r,len(r)-1); a=af(r); d=dtp(r)
-    return (1 if t==1 and a==1 and d==1 else -1 if t==-1 and a==-1 and d==-1 else 0,t,a,d)
+    if len(r)<DTP_ATR+5:return (0,0,0,0,{})
+    t=turtle(r,len(r)-1); a,ad=af(r); d=dtp(r)
+    combined=1 if t==1 and a==1 and d==1 else -1 if t==-1 and a==-1 and d==-1 else 0
+    return combined,t,a,d,ad
 
 def default():
-    return {"version":1,"day_ist":"","cash":100000.0,"realized_pnl":0.0,"daily_start_equity":100000.0,"daily_drawdown_rs":0.0,"peak_equity":100000.0,"max_drawdown_rs":0.0,"trades_today":0,"locked":False,"lock_reason":"","position":None,"last_signal":{},"last_processed_bar":{},"pairs":[],"events":0,"signals":0,"accepted_signals":0,"rejected_signals":0,"errors":0,"updated_at":None,"heartbeat_at":None,"run_started_at":None,"run_finished_at":None,"status":"STARTING","signal_map":{}}
+    return {"version":1,"day_ist":"","cash":100000.0,"realized_pnl":0.0,"daily_start_equity":100000.0,"daily_drawdown_rs":0.0,"peak_equity":100000.0,"max_drawdown_rs":0.0,"trades_today":0,"locked":False,"lock_reason":"","position":None,"last_signal":{},"last_processed_bar":{},"pairs":[],"events":0,"signals":0,"accepted_signals":0,"rejected_signals":0,"errors":0,"updated_at":None,"heartbeat_at":None,"run_started_at":None,"run_finished_at":None,"status":"STARTING","signal_map":{},"af_diagnostics":{},"af_long_candidates":0,"af_short_candidates":0}
 
 def load():
     if not STATE.exists():return default()
@@ -211,7 +236,11 @@ def process(s,pair,rows,cache):
     bt=closed[-1]["time"]
     if s["last_processed_bar"].get(pair)==bt:return
     s["last_processed_bar"][pair]=bt;s["events"]+=1
-    combined,t,a,d=signal(closed); s["signal_map"][pair]={"combined":combined,"turtle":t,"af":a,"dtp":d,"bar_time":bt}
+    combined,t,a,d,ad=signal(closed)
+    s["signal_map"][pair]={"combined":combined,"turtle":t,"af":a,"dtp":d,"bar_time":bt}
+    s.setdefault("af_diagnostics",{})[pair]={**ad,"bar_time":bt}
+    if ad.get("bull"):s["af_long_candidates"]=s.get("af_long_candidates",0)+1
+    if ad.get("bear"):s["af_short_candidates"]=s.get("af_short_candidates",0)+1
     if not combined:return
     sid=f"{pair}-{bt}-{combined}"
     if s["last_signal"].get(pair)==sid:return
