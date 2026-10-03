@@ -97,7 +97,7 @@ def af(r):
         lengths[i]=ln
         w=r[max(0,i-ln+1):i+1]; hi=max(x["high"] for x in w); lo=min(x["low"] for x in w)
         kraw[i]=((c[i]-lo)/(hi-lo)*100) if hi>lo else 50
-    k=sma([50 if not math.isfinite(x) else x for x in kraw],3); d=sma(k,3)
+    k=sma([50 if not math.isfinite(x) else x for x in kraw],3); d=sma([50 if not math.isfinite(x) else x for x in k],3)
     fisher=[float("nan")]*len(c)
     for i,x in enumerate(k):
         if math.isfinite(x):
