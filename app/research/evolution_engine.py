@@ -30,7 +30,7 @@ class Candidate:
 def candidate_space() -> list[Candidate]:
     rows = []
     for h, ema, vol, atr, dist, cd in product(
-        (6, 8, 10, 12), (150, 200), (1.0, 1.2), (1.0, 1.1), (0.003,), (3, 3)
+        (6, 8, 10, 12), (150, 200), (1.0, 1.2), (1.0, 1.1), (0.003,), (3,)
     ):
         rows.append(Candidate(f"TW-h{h}-e{ema}-v{vol:.1f}-a{atr:.1f}-d{dist:.3f}-c{cd}",
                               h, ema, vol, atr, dist, cd))
