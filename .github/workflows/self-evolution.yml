@@ -1,0 +1,44 @@
+name: AMTE Self-Evolution Research
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "25 2 * * *"
+  push:
+    branches: [main]
+    paths:
+      - "app/research/evolution_engine.py"
+      - "scripts/run_self_evolution.py"
+      - ".github/workflows/self-evolution.yml"
+      - "app/signals/tw_all_in_one_filtered.py"
+      - "app/backtest/**"
+      - "app/analytics/**"
+      - "data/paper_live/trade_journal.csv"
+
+jobs:
+  evolve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt tabulate
+      - name: Run tests
+        run: python -m pytest -q
+      - name: Run self-evolution research
+        env:
+          PYTHONPATH: \${{ github.workspace }}
+        run: python scripts/run_self_evolution.py --days 180
+      - name: Upload evolution report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: amte-self-evolution
+          path: research_artifacts/self_evolution/
+          retention-days: 30
