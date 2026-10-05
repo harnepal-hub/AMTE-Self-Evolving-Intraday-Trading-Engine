@@ -13,7 +13,6 @@ on:
       - "app/signals/tw_all_in_one_filtered.py"
       - "app/backtest/**"
       - "app/analytics/**"
-      - "data/paper_live/trade_journal.csv"
 
 jobs:
   evolve:
