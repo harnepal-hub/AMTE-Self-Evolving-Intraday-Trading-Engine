@@ -202,11 +202,14 @@ jobs:
         if: steps.guard.outputs.should_run == 'true'
         id: deployment
         uses: actions/deploy-pages@v4
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # A transient Pages/OIDC deployment timeout must not stop the engine loop.
+      # The next cycle republishes fresh data and retries the deployment.
       - name: Start next capture cycle
-        if: steps.guard.outputs.should_run == 'true'
+        if: always() && steps.guard.outputs.should_run == 'true'
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
