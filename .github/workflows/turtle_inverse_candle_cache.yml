@@ -12,6 +12,8 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 concurrency:
   group: amte-turtle-inverse-candle-cache
@@ -36,7 +38,15 @@ jobs:
           git add docs/turtle-inverse-data/btc-usdt-5m-30d.json
           if git diff --cached --quiet; then
             echo "Candle cache unchanged."
-            exit 0
+          else
+            git commit -m "data: refresh Turtle Soup lab candle cache"
+            git push origin HEAD:main
           fi
-          git commit -m "data: refresh Turtle Soup lab candle cache"
-          git push origin HEAD:main
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload dashboard artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./docs
+      - name: Deploy research lab and candle cache
+        uses: actions/deploy-pages@v4
