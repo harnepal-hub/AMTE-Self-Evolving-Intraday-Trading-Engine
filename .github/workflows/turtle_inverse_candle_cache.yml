@@ -35,7 +35,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/turtle-inverse-data/btc-usdt-5m-30d.json
+          git add docs/turtle-inverse-data/btc-usdt-5m-30d.json docs/turtle-inverse-data/multi-pair-results.json
           if git diff --cached --quiet; then
             echo "Candle cache unchanged."
           else
