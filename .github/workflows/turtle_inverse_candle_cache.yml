@@ -40,7 +40,18 @@ jobs:
             echo "Candle cache unchanged."
           else
             git commit -m "data: refresh Turtle Soup lab candle cache"
-            git push origin HEAD:main
+            # The paper engine may push its own state commit at the same time.
+            # Rebase on the latest main and retry instead of losing the research results.
+            for attempt in 1 2 3; do
+              if git push origin HEAD:main; then
+                exit 0
+              fi
+              echo "Push attempt $attempt rejected; rebasing on latest main."
+              git fetch origin main
+              git rebase origin/main
+            done
+            echo "Could not publish research data after 3 push attempts."
+            exit 1
           fi
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
