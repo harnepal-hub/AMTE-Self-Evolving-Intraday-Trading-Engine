@@ -1,0 +1,42 @@
+name: AMTE Turtle Inverse Lab Candle Cache
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 2 * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/fetch_turtle_inverse_candles.py'
+      - '.github/workflows/turtle_inverse_candle_cache.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: amte-turtle-inverse-candle-cache
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch public futures candles
+        run: python scripts/fetch_turtle_inverse_candles.py
+      - name: Commit cached research data
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/turtle-inverse-data/btc-usdt-5m-30d.json
+          if git diff --cached --quiet; then
+            echo "Candle cache unchanged."
+            exit 0
+          fi
+          git commit -m "data: refresh Turtle Soup lab candle cache"
+          git push origin HEAD:main
