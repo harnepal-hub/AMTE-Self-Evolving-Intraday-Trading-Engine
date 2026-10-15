@@ -1,9 +1,9 @@
 {
   "mode": "SERVER_SIDE_MULTI_COIN_TW_AI_PAPER_TRAINING",
   "status": "LIVE_PAPER",
-  "updated_at": "2026-10-15T00:59:24.653362+00:00",
-  "run_started_at": "2026-10-15T00:54:35.655993+00:00",
-  "run_finished_at": "2026-10-15T00:59:24.653362+00:00",
+  "updated_at": "2026-10-15T01:08:35.794328+00:00",
+  "run_started_at": "2026-10-15T01:03:59.779574+00:00",
+  "run_finished_at": "2026-10-15T01:08:35.794328+00:00",
   "day_ist": "2026-10-15",
   "capital": 100000.0,
   "cash": 95616.64732601766,
@@ -24,8 +24,8 @@
     "B-ZEC_USDT",
     "B-XAG_USDT",
     "B-CL_USDT",
-    "B-NEAR_USDT",
     "B-XRP_USDT",
+    "B-NEAR_USDT",
     "B-BTW_USDT",
     "B-HYPE_USDT",
     "B-WAL_USDT",
@@ -46,12 +46,12 @@
     "B-ADA_USDT",
     "B-FIL_USDT",
     "B-AVAX_USDT",
-    "B-PONS_USDT"
+    "B-ZEREBRO_USDT"
   ],
-  "events": 193261,
-  "signals": 821,
+  "events": 193321,
+  "signals": 822,
   "accepted_signals": 140,
-  "rejected_signals": 680,
+  "rejected_signals": 681,
   "errors": 217,
   "position": {
     "trade_id": "298a303bd6d641cda5afc83dd6975974",
@@ -66,7 +66,7 @@
     "opened_at": "2026-10-15T00:17:29.009075+00:00",
     "kind": "TW_FILTERED_PLUS_AI",
     "ai_score": 24.0,
-    "mfe_price": 103.13882000000001,
+    "mfe_price": 103.57882000000001,
     "mae_price": 102.72882000000001
   },
   "browser_required": false,
