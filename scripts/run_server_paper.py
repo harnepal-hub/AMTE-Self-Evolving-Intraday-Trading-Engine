@@ -344,6 +344,40 @@ def enter(s, pair, side, bid, ask, signal_id, signal_source, ai_score):
     return True
 
 
+def excursion_percentages(side, entry_price, mfe_price, mae_price):
+    """Return directional MFE/MAE as positive fractions of entry price."""
+    if entry_price <= 0:
+        raise ValueError("entry_price must be positive")
+    if side == "LONG":
+        return (
+            max(0.0, (mfe_price - entry_price) / entry_price),
+            max(0.0, (entry_price - mae_price) / entry_price),
+        )
+    if side == "SHORT":
+        return (
+            max(0.0, (entry_price - mfe_price) / entry_price),
+            max(0.0, (mae_price - entry_price) / entry_price),
+        )
+    raise ValueError("side must be LONG or SHORT")
+
+
+def stop_overshoot_pct(side, stop_price, bid, ask, reason):
+    """Measure adverse fill-trigger quote beyond the stop; zero for other exits."""
+    if reason != "STOP_LOSS" or stop_price <= 0:
+        return 0.0
+    if side == "LONG":
+        return max(0.0, (stop_price - bid) / stop_price)
+    if side == "SHORT":
+        return max(0.0, (ask - stop_price) / stop_price)
+    raise ValueError("side must be LONG or SHORT")
+
+
+def signal_age_seconds(bar_time_ms, now=None):
+    """Seconds elapsed since a five-minute candle's scheduled close."""
+    now = now or datetime.now(timezone.utc)
+    return max(0.0, now.timestamp() - (bar_time_ms / 1000.0 + 300.0))
+
+
 def update_excursion(s, closed_rows):
     p = s.get("position")
     if not p or not closed_rows:
@@ -379,18 +413,12 @@ def exit_position(s, bid, ask, reason):
     s["realized_pnl"] += net
     hold = (datetime.now(timezone.utc) -
             datetime.fromisoformat(p["opened_at"])).total_seconds()
-    if side == 1:
-        mfe_pct = max(0.0, (p["mfe_price"] - p["entry_price"]) / p["entry_price"])
-        mae_pct = max(0.0, (p["entry_price"] - p["mae_price"]) / p["entry_price"])
-    else:
-        mfe_pct = max(0.0, (p["entry_price"] - p["mfe_price"]) / p["entry_price"])
-        mae_pct = max(0.0, (p["mae_price"] - p["entry_price"]) / p["entry_price"])
-    stop_overshoot_pct = 0.0
-    if reason == "STOP_LOSS":
-        if side == 1:
-            stop_overshoot_pct = max(0.0, (p["stop_price"] - bid) / p["stop_price"])
-        else:
-            stop_overshoot_pct = max(0.0, (ask - p["stop_price"]) / p["stop_price"])
+    mfe_pct, mae_pct = excursion_percentages(
+        p["side"], p["entry_price"], p["mfe_price"], p["mae_price"]
+    )
+    stop_overshoot_pct_value = stop_overshoot_pct(
+        p["side"], p["stop_price"], bid, ask, reason
+    )
     trade = {
         "event": "EXIT", "trade_id": p["trade_id"], "signal_id": p["signal_id"],
         "pair": p["pair"], "side": p["side"], "entry_time": p["opened_at"],
@@ -405,7 +433,7 @@ def exit_position(s, bid, ask, reason):
         "mfe_r": mfe_pct / STOP_PCT, "mae_r": mae_pct / STOP_PCT,
         "signal_source": p["kind"], "ai_confidence": p["ai_score"],
         "trigger_bid": bid, "trigger_ask": ask,
-        "stop_overshoot_pct": stop_overshoot_pct,
+        "stop_overshoot_pct": stop_overshoot_pct_value,
     }
     event(s, trade)
     append_csv(TRADE_CSV, TRADE_FIELDS, trade)
@@ -475,8 +503,7 @@ def process(s, pair, bars_cache=None, rows=None):
                       if bid and ask else None)
 
         now = datetime.now(timezone.utc)
-        bar_close_epoch = bar_time / 1000.0 + 300.0
-        signal_age_seconds = max(0.0, now.timestamp() - bar_close_epoch)
+        signal_age = signal_age_seconds(bar_time, now)
         decision, reject = "ACCEPTED", ""
         if not q:
             decision, reject = "REJECTED", "NO_LIVE_ORDERBOOK"
@@ -502,7 +529,7 @@ def process(s, pair, bars_cache=None, rows=None):
             "bid": bid, "ask": ask, "spread_bps": spread_bps,
             "signal_source": "TW_FILTERED_PLUS_AI",
             "filter_config": json.dumps(CFG, sort_keys=True),
-            "signal_age_seconds": signal_age_seconds,
+            "signal_age_seconds": signal_age,
         }
         if decision != "ACCEPTED":
             append_csv(SIGNAL_CSV, SIGNAL_FIELDS, candidate)
