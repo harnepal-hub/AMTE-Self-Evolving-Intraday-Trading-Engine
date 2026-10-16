@@ -38,6 +38,9 @@ SLIPPAGE_BPS = 2.0
 MAX_DAILY_LOSS_RS = 2000.0
 MAX_EQUITY_DRAWDOWN_RS = 2000.0
 MAX_TRADES_PER_DAY = 10
+# Reject signals processed more than two minutes after the 5-minute candle closes.
+# This is a data-quality guard, not a claim that two minutes is an optimal trading threshold.
+MAX_SIGNAL_DELAY_SECONDS = 120.0
 CFG = {
     "hull_length": 8, "ema_length": 200, "ema_filter": True,
     "slope_filter": True, "volume_ratio_min": 1.2,
@@ -58,11 +61,12 @@ TRADE_FIELDS = [
     "entry_fee","exit_fee","fees","gross_pnl","net_pnl","reason",
     "hold_seconds","mfe_price","mae_price","mfe_pct","mae_pct",
     "mfe_r","mae_r","signal_source","ai_confidence",
+    "trigger_bid","trigger_ask","stop_overshoot_pct",
 ]
 SIGNAL_FIELDS = [
     "signal_id","time","bar_time","pair","side","tw_signal","ai_side",
     "ai_confidence","decision","reject_reason","entry_price","bid","ask",
-    "spread_bps","signal_source","filter_config",
+    "spread_bps","signal_source","filter_config","signal_age_seconds",
 ]
 
 
@@ -230,11 +234,29 @@ def save_state(path, s):
 def append_csv(path, fields, row):
     path.parent.mkdir(parents=True, exist_ok=True)
     new = not path.exists() or path.stat().st_size == 0
+    if not new:
+        with path.open("r", newline="", encoding="utf-8") as f:
+            old_fields = next(csv.reader(f), [])
+        # Schema upgrades preserve all historical rows and append newly introduced
+        # audit columns as blank values for old records.
+        if any(k not in old_fields for k in fields):
+            with path.open("r", newline="", encoding="utf-8") as f:
+                old_rows = list(csv.DictReader(f))
+            combined_fields = old_fields + [k for k in fields if k not in old_fields]
+            tmp = path.with_suffix(path.suffix + ".tmp")
+            with tmp.open("w", newline="", encoding="utf-8") as f:
+                w = csv.DictWriter(f, fieldnames=combined_fields, extrasaction="ignore")
+                w.writeheader()
+                w.writerows(old_rows)
+            tmp.replace(path)
+            new = False
     with path.open("a", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=fields, extrasaction="ignore")
+        with path.open("r", newline="", encoding="utf-8") as header_file:
+            current_fields = next(csv.reader(header_file), [])
+        w = csv.DictWriter(f, fieldnames=current_fields or fields, extrasaction="ignore")
         if new:
             w.writeheader()
-        w.writerow({k: row.get(k, "") for k in fields})
+        w.writerow({k: row.get(k, "") for k in (current_fields or fields)})
 
 
 def event(s, row):
@@ -322,18 +344,24 @@ def enter(s, pair, side, bid, ask, signal_id, signal_source, ai_score):
     return True
 
 
-def update_excursion(s, rows):
-    p = s["position"]
-    if not p or not rows:
+def update_excursion(s, closed_rows):
+    p = s.get("position")
+    if not p or not closed_rows:
         return
     side = 1 if p["side"] == "LONG" else -1
-    for x in rows[-3:]:
+    opened_ms = int(datetime.fromisoformat(p["opened_at"]).timestamp() * 1000)
+    # Use only fully closed candles whose open time is at/after entry. Excluding
+    # the entry candle avoids importing price movement that happened before entry.
+    for x in closed_rows:
+        if x["time"] < opened_ms:
+            continue
         if side == 1:
             p["mfe_price"] = max(p["mfe_price"], x["high"])
             p["mae_price"] = min(p["mae_price"], x["low"])
         else:
-            p["mfe_price"] = max(p["mfe_price"], 2*p["entry_price"] - x["low"])
-            p["mae_price"] = min(p["mae_price"], 2*p["entry_price"] - x["high"])
+            # Store actual market prices for both directions, not reflected prices.
+            p["mfe_price"] = min(p["mfe_price"], x["low"])
+            p["mae_price"] = max(p["mae_price"], x["high"])
 
 
 def exit_position(s, bid, ask, reason):
@@ -351,8 +379,18 @@ def exit_position(s, bid, ask, reason):
     s["realized_pnl"] += net
     hold = (datetime.now(timezone.utc) -
             datetime.fromisoformat(p["opened_at"])).total_seconds()
-    mfe_pct = abs(p["mfe_price"] - p["entry_price"]) / p["entry_price"]
-    mae_pct = abs(p["mae_price"] - p["entry_price"]) / p["entry_price"]
+    if side == 1:
+        mfe_pct = max(0.0, (p["mfe_price"] - p["entry_price"]) / p["entry_price"])
+        mae_pct = max(0.0, (p["entry_price"] - p["mae_price"]) / p["entry_price"])
+    else:
+        mfe_pct = max(0.0, (p["entry_price"] - p["mfe_price"]) / p["entry_price"])
+        mae_pct = max(0.0, (p["mae_price"] - p["entry_price"]) / p["entry_price"])
+    stop_overshoot_pct = 0.0
+    if reason == "STOP_LOSS":
+        if side == 1:
+            stop_overshoot_pct = max(0.0, (p["stop_price"] - bid) / p["stop_price"])
+        else:
+            stop_overshoot_pct = max(0.0, (ask - p["stop_price"]) / p["stop_price"])
     trade = {
         "event": "EXIT", "trade_id": p["trade_id"], "signal_id": p["signal_id"],
         "pair": p["pair"], "side": p["side"], "entry_time": p["opened_at"],
@@ -366,6 +404,8 @@ def exit_position(s, bid, ask, reason):
         "mfe_pct": mfe_pct, "mae_pct": mae_pct,
         "mfe_r": mfe_pct / STOP_PCT, "mae_r": mae_pct / STOP_PCT,
         "signal_source": p["kind"], "ai_confidence": p["ai_score"],
+        "trigger_bid": bid, "trigger_ask": ask,
+        "stop_overshoot_pct": stop_overshoot_pct,
     }
     event(s, trade)
     append_csv(TRADE_CSV, TRADE_FIELDS, trade)
@@ -402,13 +442,12 @@ def process(s, pair, bars_cache=None, rows=None):
             bars_cache[pair] = rows[-80:]
         if len(rows) < 210:
             return
-        if s["position"] and s["position"]["pair"] == pair:
-            update_excursion(s, rows)
-
         bucket = (int(time.time()) // 300) * 300000
         closed = [r for r in rows if r["time"] < bucket]
         if len(closed) < 210:
             return
+        if s["position"] and s["position"]["pair"] == pair:
+            update_excursion(s, closed)
 
         # Count/process a 5m market event once per newly closed candle.
         # Polling the same closed candle must not inflate the event counter.
@@ -435,10 +474,14 @@ def process(s, pair, bars_cache=None, rows=None):
         spread_bps = ((ask - bid) / ((ask + bid) / 2) * 10000
                       if bid and ask else None)
 
-        # This row is deliberately written BEFORE the entry decision.
+        now = datetime.now(timezone.utc)
+        bar_close_epoch = bar_time / 1000.0 + 300.0
+        signal_age_seconds = max(0.0, now.timestamp() - bar_close_epoch)
         decision, reject = "ACCEPTED", ""
         if not q:
             decision, reject = "REJECTED", "NO_LIVE_ORDERBOOK"
+        elif signal_age_seconds > MAX_SIGNAL_DELAY_SECONDS:
+            decision, reject = "REJECTED", "STALE_SIGNAL"
         elif s["position"]:
             decision, reject = "REJECTED", "POSITION_ALREADY_OPEN"
         elif s["locked"]:
@@ -451,7 +494,7 @@ def process(s, pair, bars_cache=None, rows=None):
             decision, reject = "REJECTED", "AI_LOW_CONFIDENCE"
 
         candidate = {
-            "signal_id": signal_id, "time": datetime.now(timezone.utc).isoformat(),
+            "signal_id": signal_id, "time": now.isoformat(),
             "bar_time": datetime.fromtimestamp(bar_time/1000, timezone.utc).isoformat(),
             "pair": pair, "side": wanted, "tw_signal": sig, "ai_side": ai_side,
             "ai_confidence": score, "decision": decision,
@@ -459,21 +502,25 @@ def process(s, pair, bars_cache=None, rows=None):
             "bid": bid, "ask": ask, "spread_bps": spread_bps,
             "signal_source": "TW_FILTERED_PLUS_AI",
             "filter_config": json.dumps(CFG, sort_keys=True),
+            "signal_age_seconds": signal_age_seconds,
         }
-        append_csv(SIGNAL_CSV, SIGNAL_FIELDS, candidate)
-        s["signals"] += 1
         if decision != "ACCEPTED":
+            append_csv(SIGNAL_CSV, SIGNAL_FIELDS, candidate)
+            s["signals"] += 1
             s["rejected_signals"] += 1
             event(s, {"event": "SIGNAL_REJECTED", **candidate})
             return
 
         entered = enter(s, pair, sig, bid, ask, signal_id, "TW_FILTERED_PLUS_AI", score)
-        if not entered:
-            s["rejected_signals"] += 1
-            candidate["decision"] = "REJECTED"
-            candidate["reject_reason"] = "ENTRY_GUARD"
+        s["signals"] += 1
+        if entered:
             append_csv(SIGNAL_CSV, SIGNAL_FIELDS, candidate)
-            event(s, {"event": "SIGNAL_REJECTED", **candidate})
+            return
+        s["rejected_signals"] += 1
+        candidate["decision"] = "REJECTED"
+        candidate["reject_reason"] = "ENTRY_GUARD"
+        append_csv(SIGNAL_CSV, SIGNAL_FIELDS, candidate)
+        event(s, {"event": "SIGNAL_REJECTED", **candidate})
     except Exception as exc:
         s["errors"] += 1
         event(s, {"event": "PAIR_ERROR", "pair": pair, "error": str(exc)})
