@@ -507,7 +507,7 @@ def process(s, pair, bars_cache=None, rows=None):
         decision, reject = "ACCEPTED", ""
         if not q:
             decision, reject = "REJECTED", "NO_LIVE_ORDERBOOK"
-        elif signal_age_seconds > MAX_SIGNAL_DELAY_SECONDS:
+        elif signal_age > MAX_SIGNAL_DELAY_SECONDS:
             decision, reject = "REJECTED", "STALE_SIGNAL"
         elif s["position"]:
             decision, reject = "REJECTED", "POSITION_ALREADY_OPEN"
