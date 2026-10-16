@@ -134,6 +134,7 @@ def main() -> None:
         },
         "shared_assumptions": {
             "initial_capital": config.initial_capital,
+            "pnl_currency_note": "P&L values are simulation units, not INR: BTC_USDT quote-currency results are not converted through USD/INR. Compare returns, win rate, profit factor and relative differences; do not interpret absolute amounts as rupees.",
             "risk_per_trade": config.risk_per_trade,
             "stop_loss_pct": config.stop_loss_pct,
             "take_profit_pct": config.take_profit_pct,
@@ -178,17 +179,18 @@ def main() -> None:
         "- The AI component is deterministic rules, not a trained model or calibrated win probability.",
         "- Settings are fixed in advance; the final 20% is reported separately as holdout.",
         "- This is a single-instrument ablation; the live multi-coin 10-trades/day cap is not modeled.",
+        "- P&L/fees are simulation units, not INR: BTC_USDT results are not converted through USD/INR. Compare percentage return and relative metrics, not absolute amounts as rupees.",
         "",
     ]
     for period in ("development", "holdout"):
-        lines += [f"## {period.title()}", "", "| Variant | Trades | Win rate | Net P&L | Expectancy/trade | Profit factor | Max DD | Fees |", "|---|---:|---:|---:|---:|---:|---:|---:|"]
+        lines += [f"## {period.title()}", "", "| Variant | Trades | Win rate | Net P&L (units) | Expectancy/trade (units) | Profit factor | Max DD | Fees (units) |", "|---|---:|---:|---:|---:|---:|---:|---:|"]
         for variant in ("TW_FILTERED_ONLY", "TW_FILTERED_PLUS_AI"):
             m = report["results"][period][variant]
             def val(key, suffix=""):
                 x = m.get(key)
                 return "n/a" if x is None else f"{x}{suffix}"
             lines.append(
-                f"| {variant} | {m.get('trades', 0)} | {val('win_rate_pct', '%')} | ₹{m.get('net_pnl', 0):,.2f} | {val('expectancy_per_trade', ' ₹')} | {val('profit_factor')} | {val('max_drawdown_pct', '%')} | ₹{m.get('fees_total', 0):,.2f} |"
+                f"| {variant} | {m.get('trades', 0)} | {val('win_rate_pct', '%')} | {m.get('net_pnl', 0):,.2f} | {val('expectancy_per_trade', ' units')} | {val('profit_factor')} | {val('max_drawdown_pct', '%')} | {m.get('fees_total', 0):,.2f} |"
             )
         lines.append("")
     lines += [
