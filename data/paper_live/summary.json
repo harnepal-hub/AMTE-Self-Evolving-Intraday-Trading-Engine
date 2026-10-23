@@ -1,9 +1,9 @@
 {
   "mode": "SERVER_SIDE_MULTI_COIN_TW_AI_PAPER_TRAINING",
   "status": "LIVE_PAPER",
-  "updated_at": "2026-10-23T01:22:02.295324+00:00",
-  "run_started_at": "2026-10-23T01:17:09.271073+00:00",
-  "run_finished_at": "2026-10-23T01:22:02.295324+00:00",
+  "updated_at": "2026-10-23T01:31:34.941223+00:00",
+  "run_started_at": "2026-10-23T01:26:46.313510+00:00",
+  "run_finished_at": "2026-10-23T01:31:34.941223+00:00",
   "day_ist": "2026-10-23",
   "capital": 100000.0,
   "cash": 94676.20377927636,
@@ -13,7 +13,7 @@
   "max_daily_loss_rs": 2000.0,
   "max_equity_drawdown_rs": 2000.0,
   "daily_start_equity": 94930.69950471973,
-  "daily_drawdown_rs": 275.3449210043036,
+  "daily_drawdown_rs": 276.8980613187741,
   "lock_reason": "",
   "pairs": 30,
   "pair_list": [
@@ -32,8 +32,8 @@
     "B-WLD_USDT",
     "B-DOGE_USDT",
     "B-IRYS_USDT",
-    "B-ENA_USDT",
     "B-BTW_USDT",
+    "B-ENA_USDT",
     "B-1000PEPE_USDT",
     "B-BNB_USDT",
     "B-PUMP_USDT",
@@ -48,10 +48,10 @@
     "B-PAXG_USDT",
     "B-ALT_USDT"
   ],
-  "events": 261548,
-  "signals": 1180,
+  "events": 261608,
+  "signals": 1181,
   "accepted_signals": 210,
-  "rejected_signals": 969,
+  "rejected_signals": 970,
   "errors": 220,
   "position": {
     "trade_id": "25e4e396fe524a3b8e8d7f46de5c9301",
@@ -67,7 +67,7 @@
     "kind": "TW_FILTERED_PLUS_AI",
     "ai_score": 24.0,
     "mfe_price": 4020.19,
-    "mae_price": 4026.92
+    "mae_price": 4031.41
   },
   "browser_required": false,
   "real_orders": false,
