@@ -1,9 +1,9 @@
 {
   "mode": "SERVER_SIDE_MULTI_COIN_TW_AI_PAPER_TRAINING",
   "status": "LIVE_PAPER",
-  "updated_at": "2026-10-25T07:12:24.083526+00:00",
-  "run_started_at": "2026-10-25T07:07:44.634313+00:00",
-  "run_finished_at": "2026-10-25T07:12:24.083526+00:00",
+  "updated_at": "2026-10-25T07:21:43.933194+00:00",
+  "run_started_at": "2026-10-25T07:16:49.579781+00:00",
+  "run_finished_at": "2026-10-25T07:21:43.933194+00:00",
   "day_ist": "2026-10-25",
   "capital": 100000.0,
   "cash": 94890.85651829265,
@@ -13,7 +13,7 @@
   "max_daily_loss_rs": 2000.0,
   "max_equity_drawdown_rs": 2000.0,
   "daily_start_equity": 94854.84644753988,
-  "daily_drawdown_rs": 18.538030712021282,
+  "daily_drawdown_rs": 31.32587851646531,
   "lock_reason": "",
   "pairs": 30,
   "pair_list": [
@@ -25,8 +25,8 @@
     "B-NEAR_USDT",
     "B-XRP_USDT",
     "B-IRYS_USDT",
-    "B-BIRB_USDT",
     "B-JCT_USDT",
+    "B-BIRB_USDT",
     "B-HYPE_USDT",
     "B-XAU_USDT",
     "B-DOGE_USDT",
@@ -48,7 +48,7 @@
     "B-IN_USDT",
     "B-Q_USDT"
   ],
-  "events": 280899,
+  "events": 280959,
   "signals": 1282,
   "accepted_signals": 213,
   "rejected_signals": 1068,
@@ -67,7 +67,7 @@
     "kind": "TW_FILTERED_PLUS_AI",
     "ai_score": 24.0,
     "mfe_price": 0.4604,
-    "mae_price": 0.4642
+    "mae_price": 0.465
   },
   "browser_required": false,
   "real_orders": false,
