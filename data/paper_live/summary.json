@@ -1,9 +1,9 @@
 {
   "mode": "SERVER_SIDE_MULTI_COIN_TW_AI_PAPER_TRAINING",
   "status": "LIVE_PAPER",
-  "updated_at": "2026-10-28T03:33:29.271757+00:00",
-  "run_started_at": "2026-10-28T03:28:49.692257+00:00",
-  "run_finished_at": "2026-10-28T03:33:29.271757+00:00",
+  "updated_at": "2026-10-28T03:42:31.815050+00:00",
+  "run_started_at": "2026-10-28T03:37:56.526651+00:00",
+  "run_finished_at": "2026-10-28T03:42:31.815050+00:00",
   "day_ist": "2026-10-28",
   "capital": 100000.0,
   "cash": 94821.00420322704,
@@ -13,7 +13,7 @@
   "max_daily_loss_rs": 2000.0,
   "max_equity_drawdown_rs": 2000.0,
   "daily_start_equity": 94951.67669308254,
-  "daily_drawdown_rs": 217.36101142627012,
+  "daily_drawdown_rs": 224.62810074877052,
   "lock_reason": "",
   "pairs": 30,
   "pair_list": [
@@ -39,16 +39,16 @@
     "B-EVAA_USDT",
     "B-WLD_USDT",
     "B-SUI_USDT",
-    "B-DOOD_USDT",
     "B-JCT_USDT",
+    "B-DOOD_USDT",
     "B-BTW_USDT",
     "B-AKE_USDT",
     "B-QNT_USDT",
     "B-PUMP_USDT",
-    "B-HUMA_USDT",
-    "B-BCH_USDT"
+    "B-BCH_USDT",
+    "B-HUMA_USDT"
   ],
-  "events": 304902,
+  "events": 304962,
   "signals": 1437,
   "accepted_signals": 239,
   "rejected_signals": 1197,
@@ -67,7 +67,7 @@
     "kind": "TW_FILTERED_PLUS_AI",
     "ai_score": 92.0,
     "mfe_price": 4078.52,
-    "mae_price": 4052.92
+    "mae_price": 4051.31
   },
   "browser_required": false,
   "real_orders": false,
