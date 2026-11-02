@@ -1,9 +1,9 @@
 {
   "mode": "SERVER_SIDE_MULTI_COIN_TW_AI_PAPER_TRAINING",
   "status": "LIVE_PAPER",
-  "updated_at": "2026-11-02T14:28:59.024306+00:00",
-  "run_started_at": "2026-11-02T14:24:13.810413+00:00",
-  "run_finished_at": "2026-11-02T14:28:59.024306+00:00",
+  "updated_at": "2026-11-02T14:38:12.289999+00:00",
+  "run_started_at": "2026-11-02T14:33:28.634063+00:00",
+  "run_finished_at": "2026-11-02T14:38:12.289999+00:00",
   "day_ist": "2026-11-02",
   "capital": 100000.0,
   "cash": 93846.26479690487,
@@ -34,9 +34,9 @@
     "B-1000PEPE_USDT",
     "B-TRUMP_USDT",
     "B-DOGE_USDT",
+    "B-ENA_USDT",
     "B-UNI_USDT",
     "B-AIN_USDT",
-    "B-ENA_USDT",
     "B-ARIA_USDT",
     "B-LYN_USDT",
     "B-AKE_USDT",
@@ -46,12 +46,12 @@
     "B-SUI_USDT",
     "B-AAVE_USDT",
     "B-AVAX_USDT",
-    "B-APR_USDT"
+    "B-PAXG_USDT"
   ],
-  "events": 351573,
-  "signals": 1636,
+  "events": 351631,
+  "signals": 1639,
   "accepted_signals": 279,
-  "rejected_signals": 1356,
+  "rejected_signals": 1359,
   "errors": 222,
   "position": {
     "trade_id": "43507abb926f4dc2823ce1ed86347116",
@@ -67,7 +67,7 @@
     "kind": "TW_FILTERED_PLUS_AI",
     "ai_score": 24.0,
     "mfe_price": 4.033,
-    "mae_price": 4.097
+    "mae_price": 4.104
   },
   "browser_required": false,
   "real_orders": false,
