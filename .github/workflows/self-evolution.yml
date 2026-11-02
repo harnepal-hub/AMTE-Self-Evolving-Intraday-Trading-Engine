@@ -35,6 +35,17 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: python scripts/run_signal_ablation.py --days 180
+      - name: Run AI-accepted TW filter confluence research
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python scripts/run_ai_accepted_tw_filter_research.py
+      - name: Upload AI-accepted TW filter report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: amte-ai-accepted-tw-filter
+          path: research_artifacts/ai_accepted_tw_filter/
+          retention-days: 30
       - name: Upload signal ablation report
         if: always()
         uses: actions/upload-artifact@v4
