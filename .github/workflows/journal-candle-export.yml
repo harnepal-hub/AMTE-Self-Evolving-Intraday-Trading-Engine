@@ -1,0 +1,30 @@
+name: AMTE Journal Candle Data Export
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/download_journal_candles.py'
+      - '.github/workflows/journal-candle-export.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install data dependencies
+        run: python -m pip install pandas requests
+      - name: Download historical futures candles for journal trades
+        run: python scripts/download_journal_candles.py
+      - name: Package datasets
+        run: cd research_artifacts && zip -r ../amte-journal-candles.zip journal_candles
+      - uses: actions/upload-artifact@v4
+        with:
+          name: amte-journal-candles-5m
+          path: amte-journal-candles.zip
+          retention-days: 30
