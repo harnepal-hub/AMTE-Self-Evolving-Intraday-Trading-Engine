@@ -1,9 +1,9 @@
 {
   "mode": "SERVER_SIDE_MULTI_COIN_TW_AI_PAPER_TRAINING",
   "status": "LIVE_PAPER",
-  "updated_at": "2026-11-08T12:27:54.257653+00:00",
-  "run_started_at": "2026-11-08T12:23:06.742924+00:00",
-  "run_finished_at": "2026-11-08T12:27:54.257653+00:00",
+  "updated_at": "2026-11-08T12:37:06.361951+00:00",
+  "run_started_at": "2026-11-08T12:32:14.120385+00:00",
+  "run_finished_at": "2026-11-08T12:37:06.361951+00:00",
   "day_ist": "2026-11-08",
   "capital": 100000.0,
   "cash": 92677.87602934011,
@@ -13,7 +13,7 @@
   "max_daily_loss_rs": 2000.0,
   "max_equity_drawdown_rs": 2000.0,
   "daily_start_equity": 93177.31070433483,
-  "daily_drawdown_rs": 505.91803476322093,
+  "daily_drawdown_rs": 560.7099105620146,
   "lock_reason": "",
   "pairs": 30,
   "pair_list": [
@@ -48,7 +48,7 @@
     "B-MET_USDT",
     "B-LINK_USDT"
   ],
-  "events": 397994,
+  "events": 398054,
   "signals": 1874,
   "accepted_signals": 333,
   "rejected_signals": 1540,
@@ -67,7 +67,7 @@
     "kind": "TW_FILTERED_PLUS_AI",
     "ai_score": 92.0,
     "mfe_price": 0.005007201239999999,
-    "mae_price": 0.005007201239999999
+    "mae_price": 0.004987
   },
   "browser_required": false,
   "real_orders": false,
