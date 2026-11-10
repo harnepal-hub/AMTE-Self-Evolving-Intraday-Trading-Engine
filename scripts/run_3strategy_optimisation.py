@@ -162,8 +162,6 @@ def simulate(series, mode, direction, exit_mode, max_open, split_start, split_en
                 trades.append({"pair":pair,"side":"LONG" if side==1 else "SHORT","net":net,
                     "gross":gross,"fees":p["entry_fee"]+fee,"reason":reason,"entry":p["time"],"exit":ts})
                 del pos[pair]
-        peak=max(peak,equity); maxdd=max(maxdd,(peak-equity)/peak if peak else 0)
-        if daily_equity[day]-equity>=CAPITAL*DAILY_STOP: locked.add(day)
         # Process signals only when capital/risk controls permit.
         for _,pair,side,bar,atrv in event_map.get(ts,[]):
             if pair in pos or len(pos)>=max_open or daily_count[day]>=DAILY_CAP or day in locked: continue
@@ -178,10 +176,36 @@ def simulate(series, mode, direction, exit_mode, max_open, split_start, split_en
             fee=entry*qty*FEE
             if qty<=0 or not math.isfinite(qty): continue
             equity-=fee
-            pos[pair]={"side":side,"entry":entry,"qty":qty,"entry_fee":fee,
+            pnew={"side":side,"entry":entry,"qty":qty,"entry_fee":fee,
                 "stop":entry*(1-sl_dist if side==1 else 1+sl_dist),
                 "target":entry*(1+tp_dist if side==1 else 1-tp_dist),"time":ts}
+            # Entry candle is included; if both barriers trade through, stop wins.
+            hit_reason=None; hit_px=None
+            if side==1:
+                if bar["l"]<=pnew["stop"]: hit_reason,hit_px="STOP",pnew["stop"]*(1-SLIP)
+                elif bar["h"]>=pnew["target"]: hit_reason,hit_px="TARGET",pnew["target"]*(1-SLIP)
+            else:
+                if bar["h"]>=pnew["stop"]: hit_reason,hit_px="STOP",pnew["stop"]*(1+SLIP)
+                elif bar["l"]<=pnew["target"]: hit_reason,hit_px="TARGET",pnew["target"]*(1+SLIP)
+            if hit_reason:
+                gross=(hit_px-entry)*qty*side; exit_fee=hit_px*qty*FEE
+                net=gross-fee-exit_fee; equity+=gross-exit_fee
+                trades.append({"pair":pair,"side":"LONG" if side==1 else "SHORT","net":net,
+                    "gross":gross,"fees":fee+exit_fee,"reason":hit_reason,"entry":ts,"exit":ts})
+            else:
+                pos[pair]=pnew
             daily_count[day]+=1
+        # Mark open positions to market for realistic portfolio drawdown measurement.
+        marks={pair:bar for pair,bar in timeline[ts]}
+        mark_equity=equity
+        for pair,p in pos.items():
+            bar=marks.get(pair)
+            if bar:
+                mark_px=bar["c"]
+                mark_equity+=(mark_px-p["entry"])*p["qty"]*p["side"]
+        peak=max(peak,mark_equity)
+        maxdd=max(maxdd,(peak-mark_equity)/peak if peak else 0)
+        if daily_equity[day]-mark_equity>=CAPITAL*DAILY_STOP: locked.add(day)
     # Force-mark any open positions at final close with taker fee and slippage.
     for pair,p in list(pos.items()):
         rows=series[pair]; bar=next((x for x in reversed(rows) if split_start<=x["t"]<split_end),None)
