@@ -1,0 +1,51 @@
+name: Three Strategy Profitability Research
+
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "Historical 5m candle lookback"
+        required: true
+        default: "90"
+        type: choice
+        options: ["60", "90", "120"]
+      max_pairs:
+        description: "Top USDT futures pairs by volume"
+        required: true
+        default: "30"
+        type: choice
+        options: ["10", "20", "30"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: three-strategy-profitability-research
+  cancel-in-progress: false
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run isolated portfolio optimisation
+        run: |
+          python scripts/run_3strategy_optimisation.py \
+            --days "\${{ inputs.days }}" \
+            --max-pairs "\${{ inputs.max_pairs }}" \
+            --workers 6
+      - name: Upload research results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: three-strategy-optimisation-\${{ github.run_id }}
+          path: research_artifacts/three_strategy_optimisation/
+          if-no-files-found: warn
+          retention-days: 30
