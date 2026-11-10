@@ -142,7 +142,7 @@ def simulate(series, mode, direction, exit_mode, max_open, split_start, split_en
     equity=CAPITAL; peak=CAPITAL; maxdd=0.0; pos={}; trades=[]; daily_count=defaultdict(int)
     daily_equity={}; locked=set(); event_map=by_time
     for ts in sorted(timeline):
-        day=ts//86400
+        day=ts//86400000
         daily_equity.setdefault(day,equity)
         # Manage exits first. If both barriers touched, assume stop was hit first.
         for pair,p in list(pos.items()):
@@ -193,7 +193,7 @@ def simulate(series, mode, direction, exit_mode, max_open, split_start, split_en
                 "gross":gross,"fees":p["entry_fee"]+fee,"reason":"END_MARK","entry":p["time"],"exit":bar["t"]})
     wins=[x for x in trades if x["net"]>0]; losses=[x for x in trades if x["net"]<0]
     gp=sum(x["net"] for x in wins); gl=abs(sum(x["net"] for x in losses))
-    days=max(1,(split_end-split_start)/86400)
+    days=max(1,(split_end-split_start)/86400000)
     return {"trades":len(trades),"net_pnl":round(sum(x["net"] for x in trades),2),
         "return_pct":round((equity/CAPITAL-1)*100,3),"profit_factor":round(gp/gl,3) if gl else 99.0,
         "win_rate_pct":round(100*len(wins)/len(trades),2) if trades else 0,
@@ -223,9 +223,9 @@ def main():
     lo,hi=all_times[0],all_times[-1]+300
     # 60/20/20 chronological development/validation/locked test.
     cut1=lo+(hi-lo)*.60; cut2=lo+(hi-lo)*.80
-    modes=["ALL3","TURTLE_AF","TURTLE_DTP","AF_DTP","2_OF_3"]
+    modes=["ALL3","TURTLE_AF","AF_DTP","2_OF_3"]
     directions=["BOTH","SHORT_ONLY","LONG_ONLY"]
-    exits=["FIXED_05_10","FIXED_06_12","FIXED_05_15","ATR"]
+    exits=["FIXED_05_10","FIXED_06_12","ATR"]
     rows_out=[]
     for mode in modes:
       for direction in directions:
