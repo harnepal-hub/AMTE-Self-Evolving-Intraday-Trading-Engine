@@ -1,16 +1,33 @@
 {
   "version": 1,
   "day_ist": "2026-11-22",
-  "cash": 100417.9827079737,
+  "cash": 100407.9409097029,
   "realized_pnl": 0,
   "daily_start_equity": 100417.9827079737,
-  "daily_drawdown_rs": 0,
+  "daily_drawdown_rs": 36.10455161969003,
   "peak_equity": 101374.85204049603,
   "max_drawdown_rs": 1242.9830386170652,
-  "trades_today": 0,
+  "trades_today": 1,
   "locked": false,
   "lock_reason": "",
-  "position": null,
+  "position": {
+    "trade_id": "545011e11fef467badd829d9783c240d",
+    "signal_id": "B-WLD_USDT-1795302600000--1",
+    "pair": "B-WLD_USDT",
+    "side": "SHORT",
+    "entry_price": 0.22775444,
+    "quantity": 88180.92214401942,
+    "entry_fee": 10.041798270797372,
+    "stop_price": 0.22889321219999997,
+    "target_price": 0.2254768956,
+    "opened_at": "2026-11-21T23:15:05.278802+00:00",
+    "kind": "TURTLE+AF_STOCHZ+DTP",
+    "mfe_price": 0.22820888,
+    "mae_price": 0.22740888,
+    "turtle_signal": -1,
+    "af_signal": -1,
+    "dtp_signal": -1
+  },
   "last_signal": {
     "B-BZ_USDT": "B-BZ_USDT-1794962700000-1",
     "B-PUMP_USDT": "B-PUMP_USDT-1794234300000-1",
@@ -20,7 +37,7 @@
     "B-ADA_USDT": "B-ADA_USDT-1795222800000-1",
     "B-AXS_USDT": "B-AXS_USDT-1791149100000-1",
     "B-FET_USDT": "B-FET_USDT-1791155400000--1",
-    "B-WLD_USDT": "B-WLD_USDT-1794443400000--1",
+    "B-WLD_USDT": "B-WLD_USDT-1795302600000--1",
     "B-SOL_USDT": "B-SOL_USDT-1795220100000-1",
     "B-AAVE_USDT": "B-AAVE_USDT-1794557700000-1",
     "B-SUI_USDT": "B-SUI_USDT-1795220700000-1",
@@ -79,37 +96,37 @@
     "B-CYBER_USDT": "B-CYBER_USDT-1795206600000--1"
   },
   "last_processed_bar": {
-    "B-BTC_USDT": 1795302000000,
-    "B-ETH_USDT": 1795302000000,
-    "B-SOL_USDT": 1795302000000,
-    "B-ZEC_USDT": 1795302000000,
-    "B-XAU_USDT": 1795302000000,
+    "B-BTC_USDT": 1795302600000,
+    "B-ETH_USDT": 1795302600000,
+    "B-SOL_USDT": 1795302600000,
+    "B-ZEC_USDT": 1795302600000,
+    "B-XAU_USDT": 1795302600000,
     "B-MOVR_USDT": 1791288300000,
-    "B-HYPE_USDT": 1795302000000,
-    "B-NEAR_USDT": 1795302000000,
+    "B-HYPE_USDT": 1795302600000,
+    "B-NEAR_USDT": 1795302600000,
     "B-CL_USDT": 1795294500000,
     "B-QNT_USDT": 1793493600000,
-    "B-XRP_USDT": 1795302000000,
-    "B-XAG_USDT": 1795302000000,
+    "B-XRP_USDT": 1795302600000,
+    "B-XAG_USDT": 1795302600000,
     "B-BZ_USDT": 1795283100000,
-    "B-DOGE_USDT": 1795302000000,
-    "B-SUI_USDT": 1795302000000,
-    "B-ENA_USDT": 1795302000000,
-    "B-UNI_USDT": 1795302000000,
-    "B-WLD_USDT": 1795302000000,
-    "B-PUMP_USDT": 1795302000000,
-    "B-1000PEPE_USDT": 1795302000000,
+    "B-DOGE_USDT": 1795302600000,
+    "B-SUI_USDT": 1795302600000,
+    "B-ENA_USDT": 1795302600000,
+    "B-UNI_USDT": 1795302600000,
+    "B-WLD_USDT": 1795302600000,
+    "B-PUMP_USDT": 1795302600000,
+    "B-1000PEPE_USDT": 1795302600000,
     "B-BTW_USDT": 1795162800000,
-    "B-BNB_USDT": 1795302000000,
+    "B-BNB_USDT": 1795302600000,
     "B-TRUMP_USDT": 1795262400000,
-    "B-AAVE_USDT": 1795302000000,
-    "B-ADA_USDT": 1795302000000,
-    "B-LINK_USDT": 1795302000000,
+    "B-AAVE_USDT": 1795302600000,
+    "B-ADA_USDT": 1795302600000,
+    "B-LINK_USDT": 1795302600000,
     "B-US_USDT": 1791808500000,
     "B-ONDO_USDT": 1794324000000,
     "B-SOON_USDT": 1790871300000,
-    "B-TAO_USDT": 1795302000000,
-    "B-AVAX_USDT": 1795302000000,
+    "B-TAO_USDT": 1795302600000,
+    "B-AVAX_USDT": 1795302600000,
     "B-MON_USDT": 1790897400000,
     "B-GTC_USDT": 1792794600000,
     "B-ALICE_USDT": 1790949000000,
@@ -163,7 +180,7 @@
     "B-WAL_USDT": 1792168200000,
     "B-PONS_USDT": 1792025700000,
     "B-ZEREBRO_USDT": 1792233300000,
-    "B-AKE_USDT": 1795302000000,
+    "B-AKE_USDT": 1795302600000,
     "B-SIREN_USDT": 1792301700000,
     "B-ICNT_USDT": 1795231200000,
     "B-AVA_USDT": 1792395600000,
@@ -192,11 +209,11 @@
     "B-BANK_USDT": 1793102100000,
     "B-HUMA_USDT": 1795115100000,
     "B-TAG_USDT": 1793137800000,
-    "B-EVAA_USDT": 1795302000000,
+    "B-EVAA_USDT": 1795302600000,
     "B-BCH_USDT": 1794178500000,
     "B-HAEDAL_USDT": 1793199600000,
     "B-XAN_USDT": 1793258100000,
-    "B-BLESS_USDT": 1795302000000,
+    "B-BLESS_USDT": 1795302600000,
     "B-INIT_USDT": 1794848400000,
     "B-PARTI_USDT": 1793439900000,
     "B-TRX_USDT": 1793580000000,
@@ -209,7 +226,7 @@
     "B-POWR_USDT": 1793590500000,
     "B-G_USDT": 1793607300000,
     "B-HOT_USDT": 1794286500000,
-    "B-IDOL_USDT": 1795302000000,
+    "B-IDOL_USDT": 1795302600000,
     "B-CLANKER_USDT": 1793921400000,
     "B-WLFI_USDT": 1793837700000,
     "B-ELSA_USDT": 1793955000000,
@@ -219,7 +236,7 @@
     "B-KOMA_USDT": 1794210000000,
     "B-TA_USDT": 1794174600000,
     "B-ON_USDT": 1794343800000,
-    "B-PIEVERSE_USDT": 1795302000000,
+    "B-PIEVERSE_USDT": 1795302600000,
     "B-EDGE_USDT": 1794327900000,
     "B-GRAM_USDT": 1794439200000,
     "B-KGEN_USDT": 1794553800000,
@@ -231,7 +248,7 @@
     "B-RARE_USDT": 1794934200000,
     "B-SPACE_USDT": 1794930900000,
     "B-BREV_USDT": 1795119900000,
-    "B-MMT_USDT": 1795302000000,
+    "B-MMT_USDT": 1795302600000,
     "B-PIPPIN_USDT": 1795137900000,
     "B-ZKC_USDT": 1795080900000,
     "B-NAORIS_USDT": 1795170900000,
@@ -239,8 +256,8 @@
     "B-1000LUNC_USDT": 1795139400000,
     "B-YB_USDT": 1795181700000,
     "B-KERNEL_USDT": 1795279200000,
-    "B-ENSO_USDT": 1795302000000,
-    "B-DODOX_USDT": 1795302000000
+    "B-ENSO_USDT": 1795302600000,
+    "B-DODOX_USDT": 1795302600000
   },
   "pairs": [
     "B-BTC_USDT",
@@ -258,8 +275,8 @@
     "B-IDOL_USDT",
     "B-1000PEPE_USDT",
     "B-UNI_USDT",
-    "B-ADA_USDT",
     "B-SUI_USDT",
+    "B-ADA_USDT",
     "B-XAG_USDT",
     "B-ENA_USDT",
     "B-MMT_USDT",
@@ -274,15 +291,15 @@
     "B-TAO_USDT",
     "B-AAVE_USDT"
   ],
-  "events": 389145,
-  "signals": 221,
-  "accepted_signals": 147,
+  "events": 389205,
+  "signals": 222,
+  "accepted_signals": 148,
   "rejected_signals": 74,
   "errors": 19,
-  "updated_at": "2026-11-21T23:07:38.871814+00:00",
-  "heartbeat_at": "2026-11-21T23:07:38.871814+00:00",
-  "run_started_at": "2026-11-21T23:03:57.158239+00:00",
-  "run_finished_at": "2026-11-21T23:07:38.871814+00:00",
+  "updated_at": "2026-11-21T23:16:52.230854+00:00",
+  "heartbeat_at": "2026-11-21T23:16:52.230854+00:00",
+  "run_started_at": "2026-11-21T23:13:07.048402+00:00",
+  "run_finished_at": "2026-11-21T23:16:52.230854+00:00",
   "status": "LIVE_PAPER",
   "signal_map": {
     "B-BTC_USDT": {
@@ -290,35 +307,35 @@
       "turtle": 0,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-ETH_USDT": {
       "combined": 0,
-      "turtle": 1,
+      "turtle": 0,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-SOL_USDT": {
       "combined": 0,
       "turtle": 0,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-ZEC_USDT": {
       "combined": 0,
-      "turtle": 1,
+      "turtle": 0,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-XAU_USDT": {
       "combined": 0,
       "turtle": 0,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-MOVR_USDT": {
       "combined": 0,
@@ -331,15 +348,15 @@
       "combined": 0,
       "turtle": 0,
       "af": 0,
-      "dtp": 0,
-      "bar_time": 1795302000000
+      "dtp": -1,
+      "bar_time": 1795302600000
     },
     "B-NEAR_USDT": {
       "combined": 0,
       "turtle": 0,
       "af": 0,
-      "dtp": 0,
-      "bar_time": 1795302000000
+      "dtp": 1,
+      "bar_time": 1795302600000
     },
     "B-CL_USDT": {
       "combined": 0,
@@ -357,17 +374,17 @@
     },
     "B-XRP_USDT": {
       "combined": 0,
-      "turtle": 1,
+      "turtle": 0,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-XAG_USDT": {
       "combined": 0,
-      "turtle": 1,
+      "turtle": 0,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-BZ_USDT": {
       "combined": 0,
@@ -378,52 +395,52 @@
     },
     "B-DOGE_USDT": {
       "combined": 0,
-      "turtle": 1,
+      "turtle": 0,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-SUI_USDT": {
       "combined": 0,
-      "turtle": 1,
+      "turtle": 0,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-ENA_USDT": {
       "combined": 0,
       "turtle": 0,
       "af": 0,
       "dtp": 1,
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-UNI_USDT": {
       "combined": 0,
-      "turtle": 1,
+      "turtle": 0,
       "af": 0,
       "dtp": 1,
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-WLD_USDT": {
+      "combined": -1,
+      "turtle": -1,
+      "af": -1,
+      "dtp": -1,
+      "bar_time": 1795302600000
+    },
+    "B-PUMP_USDT": {
       "combined": 0,
       "turtle": 0,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1795302000000
-    },
-    "B-PUMP_USDT": {
-      "combined": 0,
-      "turtle": 1,
-      "af": 0,
-      "dtp": -1,
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-1000PEPE_USDT": {
       "combined": 0,
-      "turtle": 1,
+      "turtle": 0,
       "af": 0,
       "dtp": 1,
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-BTW_USDT": {
       "combined": 0,
@@ -434,10 +451,10 @@
     },
     "B-BNB_USDT": {
       "combined": 0,
-      "turtle": 1,
+      "turtle": 0,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-TRUMP_USDT": {
       "combined": 0,
@@ -450,22 +467,22 @@
       "combined": 0,
       "turtle": 0,
       "af": 0,
-      "dtp": -1,
-      "bar_time": 1795302000000
+      "dtp": 0,
+      "bar_time": 1795302600000
     },
     "B-ADA_USDT": {
       "combined": 0,
-      "turtle": 1,
+      "turtle": 0,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-LINK_USDT": {
       "combined": 0,
-      "turtle": 1,
+      "turtle": 0,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-US_USDT": {
       "combined": 0,
@@ -490,17 +507,17 @@
     },
     "B-TAO_USDT": {
       "combined": 0,
-      "turtle": 0,
-      "af": 0,
+      "turtle": -1,
+      "af": -1,
       "dtp": 0,
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-AVAX_USDT": {
       "combined": 0,
-      "turtle": 1,
+      "turtle": 0,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-MON_USDT": {
       "combined": 0,
@@ -878,7 +895,7 @@
       "turtle": 0,
       "af": 0,
       "dtp": 1,
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-SIREN_USDT": {
       "combined": 0,
@@ -1081,7 +1098,7 @@
       "turtle": 0,
       "af": 0,
       "dtp": 1,
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-BCH_USDT": {
       "combined": 0,
@@ -1109,7 +1126,7 @@
       "turtle": 0,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-INIT_USDT": {
       "combined": 0,
@@ -1200,7 +1217,7 @@
       "turtle": 0,
       "af": 0,
       "dtp": 0,
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-CLANKER_USDT": {
       "combined": 0,
@@ -1267,10 +1284,10 @@
     },
     "B-PIEVERSE_USDT": {
       "combined": 0,
-      "turtle": 1,
-      "af": 0,
-      "dtp": 0,
-      "bar_time": 1795302000000
+      "turtle": 0,
+      "af": 1,
+      "dtp": 1,
+      "bar_time": 1795302600000
     },
     "B-EDGE_USDT": {
       "combined": 0,
@@ -1354,7 +1371,7 @@
       "turtle": 0,
       "af": 0,
       "dtp": -1,
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-PIPPIN_USDT": {
       "combined": 0,
@@ -1408,27 +1425,27 @@
     "B-ENSO_USDT": {
       "combined": 0,
       "turtle": 0,
-      "af": 0,
-      "dtp": -1,
-      "bar_time": 1795302000000
+      "af": -1,
+      "dtp": 0,
+      "bar_time": 1795302600000
     },
     "B-DODOX_USDT": {
       "combined": 0,
       "turtle": 0,
       "af": 0,
-      "dtp": 0,
-      "bar_time": 1795302000000
+      "dtp": -1,
+      "bar_time": 1795302600000
     }
   },
   "af_diagnostics": {
     "B-BTC_USDT": {
       "ready": true,
-      "adaptive_length": 19,
-      "k": 15.514702082682275,
-      "d": 11.598180304266414,
-      "fisher": -0.8473947171273725,
-      "z": -0.7987809261431398,
-      "prev_z": -1.3526152029350977,
+      "adaptive_length": 33,
+      "k": 37.4302139750226,
+      "d": 25.475118859244077,
+      "fisher": -0.2569021358312425,
+      "z": 0.4681171443553319,
+      "prev_z": -0.2631445079737194,
       "z_reversal_long": false,
       "z_reversal_short": false,
       "stoch_cross_long": true,
@@ -1436,16 +1453,16 @@
       "bull": false,
       "bear": false,
       "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-ETH_USDT": {
       "ready": true,
-      "adaptive_length": 24,
-      "k": 26.83682360658325,
-      "d": 25.395961356251558,
-      "fisher": -0.5014586400326347,
-      "z": -0.3986130535438343,
-      "prev_z": -0.5603985019631275,
+      "adaptive_length": 31,
+      "k": 47.056128293241834,
+      "d": 35.60318035308499,
+      "fisher": -0.05894560989293578,
+      "z": 1.0088561248748746,
+      "prev_z": 0.08967900495666378,
       "z_reversal_long": false,
       "z_reversal_short": false,
       "stoch_cross_long": true,
@@ -1453,16 +1470,16 @@
       "bull": false,
       "bear": false,
       "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-XAU_USDT": {
       "ready": true,
-      "adaptive_length": 28,
-      "k": 22.98198939667684,
-      "d": 22.51288284797218,
-      "fisher": -0.6046642294907377,
-      "z": -0.5287640411035095,
-      "prev_z": -0.7090155658338725,
+      "adaptive_length": 26,
+      "k": 28.57415927641422,
+      "d": 25.21395770588975,
+      "fisher": -0.4580784655830231,
+      "z": 0.12133300405435496,
+      "prev_z": -0.35447950045839416,
       "z_reversal_long": false,
       "z_reversal_short": false,
       "stoch_cross_long": true,
@@ -1470,16 +1487,16 @@
       "bull": false,
       "bear": false,
       "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-SOL_USDT": {
       "ready": true,
-      "adaptive_length": 29,
-      "k": 23.624302728779714,
-      "d": 19.752248856725995,
-      "fisher": -0.5866942941028173,
-      "z": 0.7463464728287722,
-      "prev_z": 0.2547470605441197,
+      "adaptive_length": 32,
+      "k": 30.6497813960495,
+      "d": 26.961153826824937,
+      "fisher": -0.40827188442443285,
+      "z": 1.4890861675963272,
+      "prev_z": 1.1719121818646765,
       "z_reversal_long": false,
       "z_reversal_short": false,
       "stoch_cross_long": true,
@@ -1487,16 +1504,16 @@
       "bull": false,
       "bear": false,
       "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-ZEC_USDT": {
       "ready": true,
-      "adaptive_length": 30,
-      "k": 14.580739130254878,
-      "d": 12.475655488633405,
-      "fisher": -0.8839350961904352,
-      "z": -0.8987853385236544,
-      "prev_z": -1.182974297148887,
+      "adaptive_length": 21,
+      "k": 20.320401466898463,
+      "d": 17.418969942640903,
+      "fisher": -0.6831940975145466,
+      "z": -0.27028517340604796,
+      "prev_z": -0.5870290768853487,
       "z_reversal_long": false,
       "z_reversal_short": false,
       "stoch_cross_long": true,
@@ -1504,7 +1521,7 @@
       "bull": false,
       "bear": false,
       "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-CL_USDT": {
       "ready": true,
@@ -1542,12 +1559,12 @@
     },
     "B-XRP_USDT": {
       "ready": true,
-      "adaptive_length": 32,
-      "k": 12.595239867967154,
-      "d": 12.511114705471988,
-      "fisher": -0.9686153953053672,
-      "z": -0.3304823637226433,
-      "prev_z": -0.7394662965526465,
+      "adaptive_length": 26,
+      "k": 37.778071789443395,
+      "d": 23.57418740685495,
+      "fisher": -0.24948932914444447,
+      "z": 2.9509558389847013,
+      "prev_z": 1.286221167305266,
       "z_reversal_long": false,
       "z_reversal_short": false,
       "stoch_cross_long": true,
@@ -1555,16 +1572,16 @@
       "bull": false,
       "bear": false,
       "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-HYPE_USDT": {
       "ready": true,
-      "adaptive_length": 27,
-      "k": 10.941863737580155,
-      "d": 10.303634985184923,
-      "fisher": -1.0483466152507706,
-      "z": -0.917498780269704,
-      "prev_z": -1.1395153001261045,
+      "adaptive_length": 29,
+      "k": 20.02053388090337,
+      "d": 14.246605031096868,
+      "fisher": -0.6925057436535045,
+      "z": -0.2692651015409381,
+      "prev_z": -0.8018279559804549,
       "z_reversal_long": false,
       "z_reversal_short": false,
       "stoch_cross_long": true,
@@ -1572,16 +1589,16 @@
       "bull": false,
       "bear": false,
       "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-XAG_USDT": {
       "ready": true,
-      "adaptive_length": 31,
-      "k": 18.263888888889046,
-      "d": 15.664682539682538,
-      "fisher": -0.7492850375412509,
-      "z": 0.42083960457052205,
-      "prev_z": -0.0774149238544799,
+      "adaptive_length": 30,
+      "k": 33.33333333333473,
+      "d": 25.601851851852775,
+      "fisher": -0.34657359027994133,
+      "z": 2.068289499000017,
+      "prev_z": 1.309500729035473,
       "z_reversal_long": false,
       "z_reversal_short": false,
       "stoch_cross_long": true,
@@ -1589,16 +1606,16 @@
       "bull": false,
       "bear": false,
       "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-DOGE_USDT": {
       "ready": true,
-      "adaptive_length": 20,
-      "k": 20.398787897369214,
-      "d": 18.00592424528826,
-      "fisher": -0.6807769189325449,
-      "z": -0.7071333778023784,
-      "prev_z": -1.1713266425520128,
+      "adaptive_length": 32,
+      "k": 41.32846937224458,
+      "d": 30.80230475712726,
+      "fisher": -0.17520150891321207,
+      "z": 1.5005327916968447,
+      "prev_z": 0.48138873198911325,
       "z_reversal_long": false,
       "z_reversal_short": false,
       "stoch_cross_long": true,
@@ -1606,7 +1623,7 @@
       "bull": false,
       "bear": false,
       "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-QNT_USDT": {
       "ready": true,
@@ -1644,46 +1661,131 @@
     },
     "B-NEAR_USDT": {
       "ready": true,
-      "adaptive_length": 34,
-      "k": 28.682170542635117,
-      "d": 32.04134366925024,
-      "fisher": -0.4554353322024212,
-      "z": -1.1628291517255736,
-      "prev_z": -0.9498074914430279,
+      "adaptive_length": 30,
+      "k": 35.65891472868194,
+      "d": 31.266149870800707,
+      "fisher": -0.29509960565375637,
+      "z": -0.5864351798387767,
+      "prev_z": -1.0264015426190936,
       "z_reversal_long": false,
       "z_reversal_short": false,
-      "stoch_cross_long": false,
-      "stoch_cross_short": true,
+      "stoch_cross_long": true,
+      "stoch_cross_short": false,
       "bull": false,
       "bear": false,
       "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-SUI_USDT": {
       "ready": true,
-      "adaptive_length": 26,
-      "k": 19.44619108216747,
-      "d": 21.63992647486994,
-      "fisher": -0.7106370876240431,
-      "z": -1.0262830942014616,
-      "prev_z": -0.9575239481945137,
+      "adaptive_length": 32,
+      "k": 42.009132420091824,
+      "d": 30.03921617552932,
+      "fisher": -0.16119925470476526,
+      "z": 0.7533101727479986,
+      "prev_z": -0.30118532721784347,
       "z_reversal_long": false,
       "z_reversal_short": false,
-      "stoch_cross_long": false,
-      "stoch_cross_short": true,
+      "stoch_cross_long": true,
+      "stoch_cross_short": false,
       "bull": false,
       "bear": false,
       "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-WLD_USDT": {
       "ready": true,
-      "adaptive_length": 22,
-      "k": 73.8585858585863,
-      "d": 67.78354978355024,
-      "fisher": 0.5193157287566086,
-      "z": 1.9190604076026736,
-      "prev_z": 2.112504437338271,
+      "adaptive_length": 24,
+      "k": 66.66666666666725,
+      "d": 69.87205387205438,
+      "fisher": 0.34657359027998585,
+      "z": 1.2652384153585312,
+      "prev_z": 1.502318796681047,
+      "z_reversal_long": false,
+      "z_reversal_short": true,
+      "stoch_cross_long": false,
+      "stoch_cross_short": true,
+      "bull": false,
+      "bear": true,
+      "reason": "SHORT_TRIGGER",
+      "bar_time": 1795302600000
+    },
+    "B-PUMP_USDT": {
+      "ready": true,
+      "adaptive_length": 32,
+      "k": 22.993366500829097,
+      "d": 19.21352831800595,
+      "fisher": -0.6043429030801176,
+      "z": 1.3653150722929364,
+      "prev_z": 1.2595225297948416,
+      "z_reversal_long": false,
+      "z_reversal_short": false,
+      "stoch_cross_long": true,
+      "stoch_cross_short": false,
+      "bull": false,
+      "bear": false,
+      "reason": "NO_TRIGGER",
+      "bar_time": 1795302600000
+    },
+    "B-UNI_USDT": {
+      "ready": true,
+      "adaptive_length": 29,
+      "k": 65.17300056721486,
+      "d": 56.42969685510787,
+      "fisher": 0.313326174850804,
+      "z": 0.15278660787406106,
+      "prev_z": -0.3353998811422325,
+      "z_reversal_long": false,
+      "z_reversal_short": false,
+      "stoch_cross_long": true,
+      "stoch_cross_short": false,
+      "bull": false,
+      "bear": false,
+      "reason": "NO_TRIGGER",
+      "bar_time": 1795302600000
+    },
+    "B-1000PEPE_USDT": {
+      "ready": true,
+      "adaptive_length": 32,
+      "k": 52.849581048683035,
+      "d": 50.27295390249352,
+      "fisher": 0.05705344528388469,
+      "z": -0.841016630458211,
+      "prev_z": -1.1058485861525504,
+      "z_reversal_long": false,
+      "z_reversal_short": false,
+      "stoch_cross_long": true,
+      "stoch_cross_short": false,
+      "bull": false,
+      "bear": false,
+      "reason": "NO_TRIGGER",
+      "bar_time": 1795302600000
+    },
+    "B-BNB_USDT": {
+      "ready": true,
+      "adaptive_length": 28,
+      "k": 42.45917387127809,
+      "d": 33.486386933896476,
+      "fisher": -0.15197585801886596,
+      "z": 1.0045865461859214,
+      "prev_z": -0.22948620325747876,
+      "z_reversal_long": false,
+      "z_reversal_short": false,
+      "stoch_cross_long": true,
+      "stoch_cross_short": false,
+      "bull": false,
+      "bear": false,
+      "reason": "NO_TRIGGER",
+      "bar_time": 1795302600000
+    },
+    "B-ENA_USDT": {
+      "ready": true,
+      "adaptive_length": 21,
+      "k": 88.69397411363855,
+      "d": 87.26738447076491,
+      "fisher": 1.029928051779961,
+      "z": 1.6882327416289544,
+      "prev_z": 1.7523416265679208,
       "z_reversal_long": false,
       "z_reversal_short": true,
       "stoch_cross_long": true,
@@ -1691,92 +1793,7 @@
       "bull": false,
       "bear": false,
       "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
-    },
-    "B-PUMP_USDT": {
-      "ready": true,
-      "adaptive_length": 33,
-      "k": 14.066033469018498,
-      "d": 11.493712085667445,
-      "fisher": -0.9049081264876506,
-      "z": 0.5579106233670772,
-      "prev_z": 0.32393452733245787,
-      "z_reversal_long": false,
-      "z_reversal_short": false,
-      "stoch_cross_long": true,
-      "stoch_cross_short": false,
-      "bull": false,
-      "bear": false,
-      "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
-    },
-    "B-UNI_USDT": {
-      "ready": true,
-      "adaptive_length": 34,
-      "k": 48.3333333333332,
-      "d": 45.12919896640813,
-      "fisher": -0.03334568724933869,
-      "z": -0.7460055080359039,
-      "prev_z": -0.9693827083144706,
-      "z_reversal_long": false,
-      "z_reversal_short": false,
-      "stoch_cross_long": true,
-      "stoch_cross_short": false,
-      "bull": false,
-      "bear": false,
-      "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
-    },
-    "B-1000PEPE_USDT": {
-      "ready": true,
-      "adaptive_length": 34,
-      "k": 48.245055684213526,
-      "d": 52.91456503478826,
-      "fisher": -0.03511331012369364,
-      "z": -1.3189128217517503,
-      "prev_z": -1.3345747553291973,
-      "z_reversal_long": true,
-      "z_reversal_short": false,
-      "stoch_cross_long": false,
-      "stoch_cross_short": true,
-      "bull": false,
-      "bear": false,
-      "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
-    },
-    "B-BNB_USDT": {
-      "ready": true,
-      "adaptive_length": 22,
-      "k": 25.147287733537194,
-      "d": 26.99467414247158,
-      "fisher": -0.5453861495503685,
-      "z": -1.180966542446029,
-      "prev_z": -1.0129018492953241,
-      "z_reversal_long": false,
-      "z_reversal_short": false,
-      "stoch_cross_long": false,
-      "stoch_cross_short": true,
-      "bull": false,
-      "bear": false,
-      "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
-    },
-    "B-ENA_USDT": {
-      "ready": true,
-      "adaptive_length": 21,
-      "k": 85.84106369820661,
-      "d": 79.9151377722808,
-      "fisher": 0.9010757621847951,
-      "z": 1.7452089872542245,
-      "prev_z": 1.5403669505684554,
-      "z_reversal_long": false,
-      "z_reversal_short": false,
-      "stoch_cross_long": true,
-      "stoch_cross_short": false,
-      "bull": false,
-      "bear": false,
-      "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-MAGMA_USDT": {
       "ready": true,
@@ -1814,29 +1831,29 @@
     },
     "B-AAVE_USDT": {
       "ready": true,
-      "adaptive_length": 29,
-      "k": 61.34751773049626,
-      "d": 67.96690307328555,
-      "fisher": 0.2309718561343135,
-      "z": 0.9364053559823994,
-      "prev_z": 1.2937803842501616,
+      "adaptive_length": 25,
+      "k": 79.4615718627877,
+      "d": 69.63139865875412,
+      "fisher": 0.6764879286717677,
+      "z": 1.5133898417630256,
+      "prev_z": 1.1246049515364946,
       "z_reversal_long": false,
       "z_reversal_short": false,
-      "stoch_cross_long": false,
-      "stoch_cross_short": true,
+      "stoch_cross_long": true,
+      "stoch_cross_short": false,
       "bull": false,
       "bear": false,
       "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-ADA_USDT": {
       "ready": true,
-      "adaptive_length": 15,
-      "k": 21.190476190475806,
-      "d": 15.396825396824532,
-      "fisher": -0.6567410028224732,
-      "z": -0.374668009656671,
-      "prev_z": -1.2684531035134172,
+      "adaptive_length": 18,
+      "k": 30.95238095238123,
+      "d": 27.30158730158718,
+      "fisher": -0.40117323626246215,
+      "z": 0.5845186497570488,
+      "prev_z": 0.532522022709966,
       "z_reversal_long": false,
       "z_reversal_short": false,
       "stoch_cross_long": true,
@@ -1844,16 +1861,16 @@
       "bull": false,
       "bear": false,
       "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-LINK_USDT": {
       "ready": true,
-      "adaptive_length": 32,
-      "k": 22.717250743567178,
-      "d": 21.324805666911548,
-      "fisher": -0.6121730920048549,
-      "z": 0.20769777510206547,
-      "prev_z": 0.015092723082304119,
+      "adaptive_length": 33,
+      "k": 33.89213775178719,
+      "d": 28.82249740436904,
+      "fisher": -0.3340523108881038,
+      "z": 1.8515173667132185,
+      "prev_z": 1.2873207985398185,
       "z_reversal_long": false,
       "z_reversal_short": false,
       "stoch_cross_long": true,
@@ -1861,33 +1878,33 @@
       "bull": false,
       "bear": false,
       "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-TAO_USDT": {
       "ready": true,
-      "adaptive_length": 16,
-      "k": 88.39361355490348,
-      "d": 84.55631584663819,
-      "fisher": 1.0151221099779146,
-      "z": 1.3370184825088756,
-      "prev_z": 1.3685495170372706,
+      "adaptive_length": 21,
+      "k": 89.46350929815112,
+      "d": 89.85226226705117,
+      "fisher": 1.069493143809114,
+      "z": 1.233789964379389,
+      "prev_z": 1.5918121919760653,
       "z_reversal_long": false,
       "z_reversal_short": true,
-      "stoch_cross_long": true,
-      "stoch_cross_short": false,
+      "stoch_cross_long": false,
+      "stoch_cross_short": true,
       "bull": false,
-      "bear": false,
-      "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
+      "bear": true,
+      "reason": "SHORT_TRIGGER",
+      "bar_time": 1795302600000
     },
     "B-AVAX_USDT": {
       "ready": true,
-      "adaptive_length": 26,
-      "k": 9.475142258160988,
-      "d": 6.8092895923084535,
-      "fisher": -1.1284763596307448,
-      "z": -0.6748763478012091,
-      "prev_z": -1.3059078561661202,
+      "adaptive_length": 27,
+      "k": 22.22222222222223,
+      "d": 16.143389571062542,
+      "fisher": -0.6263814842476838,
+      "z": 0.6650976410107046,
+      "prev_z": 0.10258153725634114,
       "z_reversal_long": false,
       "z_reversal_short": false,
       "stoch_cross_long": true,
@@ -1895,7 +1912,7 @@
       "bull": false,
       "bear": false,
       "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-TRUMP_USDT": {
       "ready": true,
@@ -2800,12 +2817,12 @@
     },
     "B-AKE_USDT": {
       "ready": true,
-      "adaptive_length": 33,
-      "k": 62.85714285714263,
-      "d": 61.379365975639075,
-      "fisher": 0.26304654794838456,
-      "z": 0.20364604872779604,
-      "prev_z": 0.17600983510263782,
+      "adaptive_length": 30,
+      "k": 62.25965084829091,
+      "d": 60.45214873097806,
+      "fisher": 0.25029188281779163,
+      "z": 0.092842444166292,
+      "prev_z": -0.5642326249264378,
       "z_reversal_long": false,
       "z_reversal_short": false,
       "stoch_cross_long": true,
@@ -2813,7 +2830,7 @@
       "bull": false,
       "bear": false,
       "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-SIREN_USDT": {
       "ready": true,
@@ -3293,12 +3310,12 @@
     },
     "B-EVAA_USDT": {
       "ready": true,
-      "adaptive_length": 32,
-      "k": 67.93199564184955,
-      "d": 71.62839841993524,
-      "fisher": 0.37532417830190795,
-      "z": -0.4980241388148952,
-      "prev_z": -0.221583600541095,
+      "adaptive_length": 21,
+      "k": 65.6732617472439,
+      "d": 66.99735115754312,
+      "fisher": 0.3243836381708087,
+      "z": -0.5661597213069197,
+      "prev_z": -0.4698396471866397,
       "z_reversal_long": false,
       "z_reversal_short": false,
       "stoch_cross_long": false,
@@ -3306,7 +3323,7 @@
       "bull": false,
       "bear": false,
       "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-BCH_USDT": {
       "ready": true,
@@ -3361,12 +3378,12 @@
     },
     "B-BLESS_USDT": {
       "ready": true,
-      "adaptive_length": 26,
-      "k": 26.781115879828302,
-      "d": 29.332390671340065,
-      "fisher": -0.5028781798410991,
-      "z": 0.916708241293579,
-      "prev_z": 1.746003175001456,
+      "adaptive_length": 29,
+      "k": 17.742264338500682,
+      "d": 22.16227263437561,
+      "fisher": -0.7669539134031904,
+      "z": -1.1682131768114665,
+      "prev_z": -0.06795237990670204,
       "z_reversal_long": false,
       "z_reversal_short": false,
       "stoch_cross_long": false,
@@ -3374,7 +3391,7 @@
       "bull": false,
       "bear": false,
       "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-INIT_USDT": {
       "ready": true,
@@ -3583,19 +3600,19 @@
     "B-IDOL_USDT": {
       "ready": true,
       "adaptive_length": 14,
-      "k": 18.726968174204217,
-      "d": 19.229480737018307,
-      "fisher": -0.7339248081744526,
-      "z": -1.2711416698690525,
-      "prev_z": -1.4163205072234393,
-      "z_reversal_long": true,
+      "k": 10.274604426951198,
+      "d": 14.25460492496894,
+      "fisher": -1.0835392923517548,
+      "z": -1.3360281723287961,
+      "prev_z": -1.3181640732747542,
+      "z_reversal_long": false,
       "z_reversal_short": false,
       "stoch_cross_long": false,
       "stoch_cross_short": true,
       "bull": false,
       "bear": false,
       "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-CLANKER_USDT": {
       "ready": true,
@@ -3753,19 +3770,19 @@
     "B-PIEVERSE_USDT": {
       "ready": true,
       "adaptive_length": 31,
-      "k": 42.59483261578101,
-      "d": 47.272308395588595,
-      "fisher": -0.14920068878503565,
-      "z": -1.1797078377550263,
-      "prev_z": -0.8923498826785032,
-      "z_reversal_long": false,
+      "k": 41.77802981531445,
+      "d": 40.559308176522734,
+      "fisher": -0.16594608961880453,
+      "z": -1.0027905351281137,
+      "prev_z": -1.3961918038599959,
+      "z_reversal_long": true,
       "z_reversal_short": false,
-      "stoch_cross_long": false,
-      "stoch_cross_short": true,
-      "bull": false,
+      "stoch_cross_long": true,
+      "stoch_cross_short": false,
+      "bull": true,
       "bear": false,
-      "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
+      "reason": "LONG_TRIGGER",
+      "bar_time": 1795302600000
     },
     "B-EDGE_USDT": {
       "ready": true,
@@ -3957,11 +3974,11 @@
     "B-MMT_USDT": {
       "ready": true,
       "adaptive_length": 33,
-      "k": 17.69547325102884,
-      "d": 21.53635116598086,
-      "fisher": -0.7685586254272359,
-      "z": 0.02548491761015094,
-      "prev_z": 0.502270091513609,
+      "k": 13.580246913580448,
+      "d": 14.814814814814957,
+      "fisher": -0.9252999846254858,
+      "z": -0.47699756277763483,
+      "prev_z": -0.5577070502015375,
       "z_reversal_long": false,
       "z_reversal_short": false,
       "stoch_cross_long": false,
@@ -3969,7 +3986,7 @@
       "bull": false,
       "bear": false,
       "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     },
     "B-PIPPIN_USDT": {
       "ready": true,
@@ -4093,41 +4110,53 @@
     "B-ENSO_USDT": {
       "ready": true,
       "adaptive_length": 11,
-      "k": 97.16475767492575,
-      "d": 85.15337629519615,
-      "fisher": 1.767140330307855,
-      "z": 2.880657698637605,
-      "prev_z": 2.808770691035204,
+      "k": 93.20093191036783,
+      "d": 95.79266941194295,
+      "fisher": 1.3089860817658578,
+      "z": 1.5918512418215511,
+      "prev_z": 2.2930872393007697,
       "z_reversal_long": false,
-      "z_reversal_short": false,
-      "stoch_cross_long": true,
-      "stoch_cross_short": false,
+      "z_reversal_short": true,
+      "stoch_cross_long": false,
+      "stoch_cross_short": true,
       "bull": false,
-      "bear": false,
-      "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
+      "bear": true,
+      "reason": "SHORT_TRIGGER",
+      "bar_time": 1795302600000
     },
     "B-DODOX_USDT": {
       "ready": true,
-      "adaptive_length": 27,
-      "k": 58.14233714440784,
-      "d": 55.01365757672706,
-      "fisher": 0.16430960491464247,
-      "z": 0.9710417495111979,
-      "prev_z": 0.6501557592925945,
+      "adaptive_length": 33,
+      "k": 47.355403348553956,
+      "d": 52.47311796239265,
+      "fisher": -0.0529413387096685,
+      "z": 0.653759422522152,
+      "prev_z": 0.8246279489707552,
       "z_reversal_long": false,
       "z_reversal_short": false,
-      "stoch_cross_long": true,
-      "stoch_cross_short": false,
+      "stoch_cross_long": false,
+      "stoch_cross_short": true,
       "bull": false,
       "bear": false,
       "reason": "NO_TRIGGER",
-      "bar_time": 1795302000000
+      "bar_time": 1795302600000
     }
   },
-  "af_long_candidates": 18420,
-  "af_short_candidates": 18678,
+  "af_long_candidates": 18422,
+  "af_short_candidates": 18682,
   "journal": [
+    {
+      "event": "ENTRY",
+      "trade_id": "545011e11fef467badd829d9783c240d",
+      "signal_id": "B-WLD_USDT-1795302600000--1",
+      "pair": "B-WLD_USDT",
+      "side": "SHORT",
+      "entry_price": 0.22775444,
+      "quantity": 88180.92214401942,
+      "stop_price": 0.22889321219999997,
+      "target_price": 0.2254768956,
+      "time": "2026-11-21T23:15:05.278812+00:00"
+    },
     {
       "event": "EXIT",
       "trade_id": "e09790a3b3914d4681c998e5c704bda8",
