@@ -1,9 +1,9 @@
 {
   "mode": "SERVER_SIDE_MULTI_COIN_TW_AI_PAPER_TRAINING",
   "status": "LIVE_PAPER",
-  "updated_at": "2026-11-25T14:24:22.300011+00:00",
-  "run_started_at": "2026-11-25T14:19:48.019448+00:00",
-  "run_finished_at": "2026-11-25T14:24:22.300011+00:00",
+  "updated_at": "2026-11-25T14:33:19.120960+00:00",
+  "run_started_at": "2026-11-25T14:28:43.498380+00:00",
+  "run_finished_at": "2026-11-25T14:33:19.120960+00:00",
   "day_ist": "2026-11-25",
   "capital": 100000.0,
   "cash": 88803.22832034019,
@@ -45,13 +45,13 @@
     "B-AIOT_USDT",
     "B-OPG_USDT",
     "B-WLD_USDT",
-    "B-TAO_USDT",
-    "B-PIEVERSE_USDT"
+    "B-MANTRA_USDT",
+    "B-TAO_USDT"
   ],
-  "events": 540315,
-  "signals": 2637,
+  "events": 540375,
+  "signals": 2639,
   "accepted_signals": 474,
-  "rejected_signals": 2162,
+  "rejected_signals": 2164,
   "errors": 225,
   "position": {
     "trade_id": "2a1c2b075565457483673bede92cc663",
@@ -66,7 +66,7 @@
     "opened_at": "2026-11-25T13:06:54.999627+00:00",
     "kind": "TW_FILTERED_PLUS_AI",
     "ai_score": 92.0,
-    "mfe_price": 89.75,
+    "mfe_price": 89.93,
     "mae_price": 89.13
   },
   "browser_required": false,
