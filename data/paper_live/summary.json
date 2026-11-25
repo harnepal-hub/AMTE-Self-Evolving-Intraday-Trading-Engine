@@ -1,9 +1,9 @@
 {
   "mode": "SERVER_SIDE_MULTI_COIN_TW_AI_PAPER_TRAINING",
   "status": "LIVE_PAPER",
-  "updated_at": "2026-11-25T00:47:37.213798+00:00",
-  "run_started_at": "2026-11-25T00:42:55.934058+00:00",
-  "run_finished_at": "2026-11-25T00:47:37.213798+00:00",
+  "updated_at": "2026-11-25T00:56:29.128034+00:00",
+  "run_started_at": "2026-11-25T00:51:52.832848+00:00",
+  "run_finished_at": "2026-11-25T00:56:29.128034+00:00",
   "day_ist": "2026-11-25",
   "capital": 100000.0,
   "cash": 89397.76941424886,
@@ -13,7 +13,7 @@
   "max_daily_loss_rs": 2000.0,
   "max_equity_drawdown_rs": 2000.0,
   "daily_start_equity": 89521.7267175245,
-  "daily_drawdown_rs": 135.86170043038146,
+  "daily_drawdown_rs": 166.20266872526554,
   "lock_reason": "",
   "pairs": 30,
   "pair_list": [
@@ -41,14 +41,14 @@
     "B-SUI_USDT",
     "B-UNI_USDT",
     "B-LINK_USDT",
-    "B-PIEVERSE_USDT",
     "B-ON_USDT",
+    "B-PIEVERSE_USDT",
     "B-WLD_USDT",
     "B-AKE_USDT",
     "B-ELSA_USDT",
     "B-AVAX_USDT"
   ],
-  "events": 535454,
+  "events": 535514,
   "signals": 2582,
   "accepted_signals": 466,
   "rejected_signals": 2115,
@@ -67,7 +67,7 @@
     "kind": "TW_FILTERED_PLUS_AI",
     "ai_score": 24.0,
     "mfe_price": 3546.56,
-    "mae_price": 3557.14
+    "mae_price": 3563.51
   },
   "browser_required": false,
   "real_orders": false,
